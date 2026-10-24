@@ -60,6 +60,29 @@ rules:
     sign_off: [compliance, legal]
     test: tests/test_rules.py::test_state_name_pay
 
+  - id: R-DIGITAL-ARREST-PAY
+    family: F1
+    severity: hard
+    # Added 24 Oct, finale night. A judge's "You are digitally arrested. You have to transfer all your bank account
+    # money to me. I am Prime Minister of India" came out GREY: no law-enforcement body was named, so R-AGENCY-PAY
+    # could not fire, and the arrest words were only a pressure cue, which never counts. The legal fact needs no
+    # sender: there is no "digital arrest" in Indian law, so a message that tells the customer she is under one and
+    # asks for money is not from any authority. Read narrowly (extract.digital_arrest_to_you): the phrase must be
+    # addressed to her, and a sentence that warns about, denies or quotes it does not count, because bank and I4C
+    # awareness messages use the same words. Stands down when a law-enforcement body is named, where R-AGENCY-PAY
+    # already says the same thing with the body's name; a lone hard rule, so alone it gives AMBER.
+    title: Says you are under a “digital arrest” and asks for money
+    reason_en: "There is no “digital arrest” in Indian law. This message says you are under one and asks for {instruction_en}."
+    reason_hi: "भारतीय क़ानून में “डिजिटल अरेस्ट” जैसा कुछ नहीं है। यह संदेश कहता है कि आप डिजिटल अरेस्ट में हैं और {instruction_hi} कह रहा है।"
+    citation:
+      source: "I4C advisory TAU/ADV/003, 6 Mar 2025; PM's Mann Ki Baat, 27 Oct 2024 (PIB PRID 2068606)"
+      url: "https://cybercrime.gov.in/Webform/theme/resources/advisories/ADVISORYTAU-ADV-003DigitalArrest06.03.2025.pdf"
+      quote: "There is no concept of Digital Arrest under any Indian Laws."
+      checked: "2026-10-05"
+      verified: true
+    sign_off: [compliance, legal]
+    test: tests/test_rules.py::test_digital_arrest_pay
+
   - id: R-COURT-PAY
     family: F1
     severity: soft

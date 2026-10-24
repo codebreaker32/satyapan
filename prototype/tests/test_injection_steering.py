@@ -356,8 +356,11 @@ def test_without_anchoring_the_judges_probe_steers_to_rbi_and_goes_grey(engine, 
     case = run_text(engine, P7, amount=3800000.0)
     assert case.claim.claimed_issuer == Issuer.RBI
     assert not [s for s in case.verdict.signals if s.rule_id == "R-AGENCY-PAY"]
-    assert case.verdict.outcome == Outcome.GREY
-    assert "claiming to be from RBI" in case.verdict.explanation
+    # Since 24 Oct the steered claim no longer falls all the way to GREY: P7 tells the customer she is under digital
+    # arrest, and R-DIGITAL-ARREST-PAY reads that whoever the issuer is. The steering itself (RBI, R-AGENCY-PAY
+    # silent) is what this test proves; the new rule is a second line that a prefixed name cannot move.
+    assert case.claim.digital_arrest_span is not None
+    assert case.verdict.outcome == Outcome.AMBER and case.verdict.anchor_rule == "R-DIGITAL-ARREST-PAY"
 
 
 @pytest.mark.parametrize("sid", RED_SCENARIOS)

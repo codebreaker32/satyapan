@@ -118,6 +118,17 @@ def state_name_pay(claim: Claim, ctx: RuleContext):
     return None
 
 
+@rule("R-DIGITAL-ARREST-PAY")
+def digital_arrest_pay(claim: Claim, ctx: RuleContext):
+    """The message tells the customer she is under "digital arrest" and asks for money, and names no law-enforcement
+    body. There is no digital arrest in Indian law, so the sentence needs no sender. Registered after R-AGENCY-PAY
+    and standing down where it fires, so a named agency keeps its own sentence (and S3's card its three reasons)."""
+    if claim.digital_arrest_span is None or not _pays(claim) or claim.claimed_issuer in LAW_ENFORCEMENT:
+        return None
+    return {"evidence_key": "claim",
+            "instruction_en": INSTR_EN[claim.instruction], "instruction_hi": INSTR_HI[claim.instruction]}
+
+
 @rule("R-COURT-PAY")
 def court_pay(claim: Claim, ctx: RuleContext):
     if claim.claimed_issuer == Issuer.COURT and _pays(claim):

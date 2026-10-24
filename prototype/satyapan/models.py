@@ -176,6 +176,12 @@ class Claim(BaseModel):
     urls: list[Grounded] = Field(default_factory=list)
     language_hint: str = "en"
     extractor: str = "rules-1.0"
+    # The message tells the customer she is under "digital arrest" (extract.digital_arrest_to_you, or the offline
+    # reader when its quote passes the same warning check). R-DIGITAL-ARREST-PAY reads it.
+    digital_arrest_span: Optional[Span] = None
+    # Claim fields the offline helper reader (llm_reader.py) filled because the rules left them empty. Each still
+    # quotes the message; the console can say which words a model read rather than a pattern.
+    read_by_llm: list[str] = Field(default_factory=list)
 
     def has_content(self) -> bool:
         return self.claimed_issuer != Issuer.NONE or self.instruction != Instruction.NONE

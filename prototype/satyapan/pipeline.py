@@ -17,6 +17,7 @@ from .evidence import LocalSigner, make_pack
 from .extract import RulesExtractor, claim_from_picklist, ground
 from .forensics import DocumentForensics, RemoteForensics, SimulatedForensics, default_audio_forensics, to_signal
 from .fusion import fuse
+from .llm_reader import LocalLLMReader, configured_model
 from .media import ingest, sha256_file
 from .memory import CampaignMemory
 from .models import (Case, Channel, Claim, ClaimedOwner, Consent, Family, Flag, Instruction, Issuer, MediaRef, Outcome,
@@ -59,6 +60,10 @@ class Satyapan:
         self.book = load_rulebook(self.data_dir / "rules" / "rulebook.yaml")
         self.adapters = adapters or Adapters.mocks(self.data_dir / "mocks")
         self.extractor = extractor or RulesExtractor(bank_names=(self.book.bank_name,))
+        # The offline helper reader (llm_reader.py): fills only what the rules left empty, each field quote-checked.
+        # Off unless SATYAPAN_LLM_READER names a local model, so tests and the terminal fallback read as before.
+        model = configured_model()
+        self.reader = LocalLLMReader(model) if model else None
         self.audio = audio or default_audio_forensics()
         self.document = document or DocumentForensics()
         # Finale detectors run as a local service (satyapan-finale). Off unless a URL is given, so tests and the
@@ -158,7 +163,10 @@ class Satyapan:
             return Claim(source="none", text="")
         source = inp["texts"][0][0]
         text = "\n".join(t for _, t in inp["texts"])
-        return ground(self.extractor.extract(text, source=source))
+        claim = ground(self.extractor.extract(text, source=source))
+        if self.reader is not None:
+            claim = ground(self.reader.fill(claim))
+        return claim
 
     def run(self, case: Case, claim: Optional[Claim] = None) -> Case:
         inp = self._inputs[case.id]
@@ -262,6 +270,8 @@ class Satyapan:
             setattr(c.payee, field, None)
         elif field == "claimed_owner":
             c.payee.claimed_owner, c.payee.claimed_owner_span = ClaimedOwner.UNKNOWN, None
+        elif field == "digital_arrest":
+            c.digital_arrest_span = None
         self.decide(case, actor=actor, action="strike_field", note=f"struck {field}")
         inp = self._inputs[case.id]
         inp["picklist"] = None
@@ -288,7 +298,10 @@ class Satyapan:
             "case": case.model_dump(mode="json"),
             "rulebook": {"version": self.book.version, "sha256": self.book.sha256, "path": Path(self.book.path).name},
             "policy_version": POLICY_VERSION,
-            "extractor": getattr(self.extractor, "name", type(self.extractor).__name__),
+            # the case's own reading: "rules-1.0", or "rules-1.0 + <model> (offline, quote-checked)" when the helper
+            # reader filled a field (which ones: case.claim.read_by_llm)
+            "extractor": (case.claim.extractor if case.claim else getattr(self.extractor, "name", type(self.extractor).__name__)),
+            "reader": self.reader.name if self.reader is not None else None,
             "forensics": self._forensics_labels(),
             "adapters": self.adapters.labels(),
             "inputs": {"sender_number": inp.get("sender_number"), "bank_signature_present": bool(inp.get("signature")),

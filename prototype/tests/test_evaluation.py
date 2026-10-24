@@ -8,7 +8,7 @@ import pytest
 
 from satyapan.evaluate import LABELLED, REPORT, RESULTS, SYNTHETIC, run_evaluation
 
-OPTIONAL_LAYERS = ("audio_detector", "meaning_model", "website_registry")
+OPTIONAL_LAYERS = ("audio_detector", "meaning_model", "website_registry", "reader")
 
 
 @pytest.fixture(scope="module")

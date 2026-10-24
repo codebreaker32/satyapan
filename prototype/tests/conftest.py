@@ -9,6 +9,7 @@ import pytest
 # test module imports satyapan.api, which reads it when the engine is built.
 os.environ.setdefault("SATYAPAN_LIVE_WEB", "0")
 os.environ.setdefault("SATYAPAN_AUDIO", "aasist")   # the suite never depends on the 1.7 GB DF Arena download
+os.environ["SATYAPAN_LLM_READER"] = ""   # never the local model: the reader's tests use a stub server of their own
 
 from satyapan.models import Flag
 from satyapan.pipeline import DATA_DIR, Satyapan
