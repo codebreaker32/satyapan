@@ -24,10 +24,25 @@ LOGS="$FIN/clips/logs"
 mkdir -p "$LOGS"
 
 if ! curl -fs "http://127.0.0.1:$PORT/health" >/dev/null 2>&1; then
-  echo "starting the forensics service (first start loads about 3 GB of model, ~10-60 s)..."
-  nohup .venv/bin/python -u -m forensics.service --port "$PORT" >"$LOGS/forensics.log" 2>&1 &   # -u: the log shows a failed model load at once
+  # A loader may already be starting (a re-run after Ctrl+C during a slow cold start): wait for that one rather than
+  # start a second ~3 GB loader beside it. The bracket keeps pgrep from matching this script's own command line.
+  LOADER=$(pgrep -f 'python[^ ]* -u -m [f]orensics[.]service' | head -1 || true)
+  if [ -n "$LOADER" ]; then
+    echo "a forensics service is already starting (pid $LOADER); waiting for it..."
+  else
+    echo "starting the forensics service (first start loads about 3 GB of model, ~10-60 s)..."
+    # Appended, not truncated, so the log still says why an earlier service died. -u: a failed model load shows at once.
+    echo "=== $(date '+%F %T') demo_up.sh starts the forensics service" >>"$LOGS/forensics.log"
+    nohup .venv/bin/python -u -m forensics.service --port "$PORT" >>"$LOGS/forensics.log" 2>&1 &
+    LOADER=$!
+  fi
   for _ in $(seq 1 180); do
     curl -fs "http://127.0.0.1:$PORT/health" >/dev/null 2>&1 && break
+    if ! kill -0 "$LOADER" 2>/dev/null; then   # it died while loading (an out-of-memory kill, a missing model)
+      echo "the forensics service stopped while it was loading. The end of $LOGS/forensics.log:"
+      tail -20 "$LOGS/forensics.log"
+      exit 1
+    fi
     sleep 1
   done
 fi

@@ -279,8 +279,9 @@ def _what_ran(claim: Claim, signals: list[Signal], titles: dict[str, str], *, ex
     # "The media shows ..." itself. Listed here it read "Nothing there is strong enough to move the verdict" next to
     # the AMBER or RED that check had just produced.
     quiet_media = [s for s in signals if s.family == Family.F3 and s.severity in (Severity.ABSTAIN, Severity.INFO)]
+    flagged_media = {s.evidence_key for s in signals if s.family == Family.F3 and s not in quiet_media}
     fired = sorted({s.rule_id for s in signals if s.family not in (Family.F5, Family.F3)})
-    media = _media_checks(quiet_media)
+    media = _media_checks(quiet_media, flagged_media)
     if not fired:
         # The why-clause now carries what "nothing to corroborate" used to say, and this sentence is set on the
         # verdict band where every extra line costs. One idea, once.
@@ -297,15 +298,24 @@ def _what_ran(claim: Claim, signals: list[Signal], titles: dict[str, str], *, ex
 MEDIA_CHECK_WORDS = {"media:video": "the face check", "media:audio": "the voice check", "media:document": "the document check"}
 
 
-def _media_checks(quiet: list[Signal]) -> str:
+def _media_checks(quiet: list[Signal], flagged: set[str] = frozenset()) -> str:
     """' Media checks: the face check found no signs and the voice check abstained.' A check that found no signs counts
-    0% in the combined score; one that abstained is not counted, and when every check abstained the sentence says so."""
-    parts = []
+    0% in the combined score; one that abstained is not counted, and when every check abstained the sentence says so.
+
+    With two files of the same kind each result is named, and a quiet one beside a flagged one of the same kind is
+    "another" check: "The media shows signs of synthetic speech ... the voice check found no signs" read as one voice
+    check saying both things (bug hunt raw finding 32)."""
+    parts: list[str] = []
+    seen: dict[str, int] = {}
     for s in quiet:
         what = MEDIA_CHECK_WORDS.get(s.evidence_key, "a media check")
         did = "found no signs" if (s.detail or {}).get("status") == "clean" else "abstained"
-        if what not in " ".join(parts):
-            parts.append(f"{what} {did}")
+        n = seen.get(what, 0) + (1 if s.evidence_key in flagged else 0)
+        seen[what] = seen.get(what, 0) + 1
+        label = what if n == 0 else what.replace("the ", "another ", 1)
+        part = f"{label} {did}"
+        if part not in parts:
+            parts.append(part)
     if not parts:
         return ""
     judged = any((s.detail or {}).get("status") == "clean" for s in quiet)
