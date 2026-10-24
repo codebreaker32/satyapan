@@ -24,10 +24,13 @@ python3 -m venv prototype/.venv
 prototype/.venv/bin/pip install -e "prototype[dev,stt,ocr]"   # OCR also needs tesseract with Hindi data (Ubuntu: sudo apt install tesseract-ocr tesseract-ocr-hin)
 SATYAPAN_WHISPER_MODEL=large-v3-turbo prototype/.venv/bin/satyapan setup-models   # speech-to-text and OCR language data, once; steps for extras you did not install say FAIL
 (cd prototype/console && npm install && npm run build)        # the console the engine serves
-(cd prototype && .venv/bin/python -m pytest -q)               # engine tests
+(cd prototype && SATYAPAN_LIVE_WEB=0 .venv/bin/python -m pytest -q)   # engine tests, offline
+(cd prototype/console && npm run e2e)                         # console browser checks, against `satyapan serve --port 8010`
 
 .venv/bin/python scripts/score_video.py clip.mp4          # what the officer would see for one video
 scripts/demo_up.sh                                        # forensics service + engine + console, offline
+prototype/.venv/bin/satyapan preflight --server http://127.0.0.1:8000   # every line PASS, including the server's code and forensics
+.venv/bin/python scripts/build_demo_cases.py              # after a reset: the live cloned-voice and face-swap cases
 scripts/stop_demo.sh                                      # stop both
 ```
 
