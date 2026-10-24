@@ -89,4 +89,4 @@ any such clip is used. We make no deepfakes of ourselves or anyone else.
 - Synthetic, clearly labelled data only. No real official's name or likeness.
 - No automatic blocking: Satyapan advises and the bank officer decides. Releasing a held transfer needs a second person.
 - No scores shown to the customer: she gets plain reasons she can check herself.
-- A detector never decides alone. In the main app its calibrated band counts half in a combined score with the instruction checks; the officer still decides, and releasing a held transfer needs a second person.
+- Forensic signals only corroborate. A RED needs two independent checks, never one weak signal.
