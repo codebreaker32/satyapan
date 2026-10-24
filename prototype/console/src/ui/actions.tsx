@@ -180,6 +180,9 @@ export function Actions({ view, onView }: Props) {
             Help the customer report
           </button>
         </div>
+        {!c.consent.report && (
+          <p className="act-fix-note">She did not agree to including this in a report (C2), so reporting is off.</p>
+        )}
         {needsCoSign ? (
           <button
             className="btn btn-sm btn-ghost act-quiet"
