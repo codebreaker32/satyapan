@@ -59,6 +59,13 @@ Every detector returns the same result:
    - an uncalibrated cell abstains;
    - with a stub model returning fixed scores, each band maps to the right status.
 
+**Ready for you (Bhawna):** `scripts/prepare_audio_clips.py --download --n 60` builds a labelled Hindi set:
+60 real clips (FLEURS) and 60 synthetic clips (IndicSynth, which also names the generator per clip), each as WAV
+(`hi/wav` cell) and as a WhatsApp-like Opus note (`hi/whatsapp-opus` cell), with `clips/audio/manifest.csv`
+(path,label,source,cell), the same format as the video calibration. `scripts/calibrate_video.py` shows the
+threshold logic to mirror; `forensics/common.py` has `threshold_at_fpr` and the band rule. Expose
+`default_detector()` from `forensics/audio.py` and the joined entry point and the service pick it up automatically.
+
 ## 3. Aman: video (GenD CLIP-L/14)
 
 1. **Run it (first 2 h).** Load `yermandy/GenD_CLIP_L_14` (its `modeling_gend.py`, `trust_remote_code`). Find and align faces with

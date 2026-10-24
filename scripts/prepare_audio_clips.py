@@ -5,6 +5,7 @@ Synthetic speech: IndicSynth (vdivyasharma, CC-BY-NC-4.0), Hindi text-to-speech 
 For each clip it also makes a WhatsApp-like voice note (Opus, 16 kHz mono, 16 kbps), so the "hi/whatsapp-opus" cell can
 be calibrated as well as "hi/wav".
 
+  .venv/bin/python scripts/prepare_audio_clips.py --download --n 60     # first time: fetch the two source files (~630 MB)
   .venv/bin/python scripts/prepare_audio_clips.py --n 60
 
 Writes clips/audio/{real,fake}/*.wav, clips/audio/{real,fake}_opus/*.ogg and clips/audio/manifest.csv
@@ -39,7 +40,16 @@ def audio_bytes(cell) -> bytes:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--n", type=int, default=60, help="clips per label")
+    ap.add_argument("--download", action="store_true", help="fetch the FLEURS and IndicSynth source files first")
     a = ap.parse_args()
+    if a.download:
+        import os
+        os.environ["HF_HUB_OFFLINE"] = "0"
+        from huggingface_hub import hf_hub_download
+        hf_hub_download("google/fleurs", "parquet-data/hi_in/validation-00000-of-00001.parquet", repo_type="dataset",
+                        local_dir=A / "fleurs")
+        hf_hub_download("vdivyasharma/IndicSynth", "Hindi/train-00000-of-00107.parquet", repo_type="dataset",
+                        local_dir=A / "indicsynth")
     rows = []
     for label, (parquet, source) in SOURCES.items():
         if not parquet.exists():
