@@ -16,7 +16,8 @@ For Aman and Bhawna. What works, what was measured, how to run it, and what is l
   - uploads no longer freeze the server while Whisper works;
   - preflight has a `server forensics` line;
   - the GREY and coverage wording names quiet media checks by what they did, never as findings.
-- **Tests**: finale repo 60 pass; prototype 868+ pass; console browser e2e passes against the live server.
+- **Tests**: finale repo 60 pass; prototype 874 pass; console browser e2e passes against the live server; preflight
+  7/7 PASS with the face check connected.
 - **Live end to end** (real API, real models, this laptop):
   - the face-swap sample with an ED "digital arrest" message gives RED on the two independent checks, with
     "Signs of face manipulation (moderate)", score 0.955;
