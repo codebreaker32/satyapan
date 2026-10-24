@@ -58,6 +58,9 @@ def main() -> int:
     ap.add_argument("--n", type=int, default=20)
     ap.add_argument("--models", nargs="+", default=MODELS)
     ap.add_argument("--opus", action="store_true", help="also test WhatsApp-like Opus copies")
+    ap.add_argument("--beam", type=int, default=5, help="beam size (1 = greedy, faster)")
+    ap.add_argument("--threads", type=int, default=0, help="CPU threads for Whisper (0 = its default)")
+    ap.add_argument("--out", type=Path, default=ROOT / "calibration" / "whisper_eval.md")
     a = ap.parse_args()
     from faster_whisper import WhisperModel
 
@@ -81,18 +84,18 @@ def main() -> int:
 
     lines = ["# Whisper on Hindi voice notes: accuracy and speed", "",
              f"{len(clips)} FLEURS Hindi clips (read speech, google/fleurs, CC-BY-4.0), average {sum(c[2] for c in clips)/len(clips):.1f} s each. "
-             "CPU only (this laptop), int8. WER = word error rate against FLEURS's reference text (lower is better).", "",
+             f"CPU only (this laptop), int8, beam {a.beam}, threads {a.threads or 'default'}. WER = word error rate against FLEURS's reference text (lower is better).", "",
              "| Model | Audio | WER | Seconds per clip | Real-time factor |", "|---|---|---|---|---|"]
     for name in a.models:
         t0 = time.perf_counter()
-        model = WhisperModel(name, device="cpu", compute_type="int8", local_files_only=True)
+        model = WhisperModel(name, device="cpu", compute_type="int8", local_files_only=True, cpu_threads=a.threads)
         load = time.perf_counter() - t0
         for vname, vclips in variants:
             errs = refs = 0
             secs = audio = 0.0
             for p, ref, dur in vclips:
                 t1 = time.perf_counter()
-                segs, _ = model.transcribe(str(p), language="hi", beam_size=5)
+                segs, _ = model.transcribe(str(p), language="hi", beam_size=a.beam)
                 hyp = " ".join(s.text.strip() for s in segs)
                 secs += time.perf_counter() - t1
                 audio += dur
@@ -102,7 +105,7 @@ def main() -> int:
             lines.append(row)
             print(row, f"(load {load:.1f} s)", flush=True)
     lines += ["", "Real-time factor below 1 means faster than the audio plays. Example output for one clip is not stored."]
-    out = ROOT / "calibration" / "whisper_eval.md"
+    out = a.out
     out.write_text("\n".join(lines) + "\n")
     print(f"wrote {out}")
     return 0
