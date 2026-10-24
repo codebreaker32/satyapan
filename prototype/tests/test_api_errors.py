@@ -296,3 +296,12 @@ def test_media_ingest_runs_off_the_event_loop(monkeypatch):
     cid = open_case()
     upload(cid, "voice-note.ogg", b"OggS" + b"\x00" * 60, "audio/ogg")
     assert seen == {"on_loop": False}
+
+
+def test_a_phones_own_formats_are_accepted():
+    """An iPhone records video as .mov and Android call recorders save .amr or .3gp; a judge's kit can hold any of
+    them. The engine already decodes them (media.VIDEO / media.AUDIO); the upload gate refused them."""
+    from satyapan.media import AUDIO, VIDEO
+    for ext in (".mov", ".3gp", ".mkv", ".amr", ".aac", ".flac"):
+        assert ext in api.ALLOWED_EXTENSIONS and ext in (AUDIO | VIDEO)
+    assert {"video/quicktime", "video/3gpp", "audio/amr"} <= api.ALLOWED_CONTENT_TYPES

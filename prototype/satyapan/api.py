@@ -59,17 +59,22 @@ UPLOADS = STATE_DIR / "uploads"
 # is still read by the framework first, which is acceptable on 127.0.0.1.
 MAX_UPLOAD_MB = 25
 MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
+# A phone's own formats too: an iPhone records video as .mov, Android call recorders save .amr or .3gp, and a judge's
+# test kit can hold any of them. Each still has to open as what its name says (media.contents_contradict_name).
 ALLOWED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp",                      # images
                       ".ogg", ".opus", ".mp3", ".wav", ".m4a", ".weba",      # audio (.weba: a browser's own recording)
-                      ".mp4", ".webm",                                       # video
+                      ".aac", ".amr", ".flac",
+                      ".mp4", ".webm", ".mov", ".3gp", ".mkv",               # video
                       ".pdf",                                                # scanned notices
                       ".txt"}                                                # text
 ALLOWED_CONTENT_TYPES = {"image/png", "image/jpeg", "image/webp",
                          "audio/ogg", "audio/opus", "audio/mpeg", "audio/mp3", "audio/wav", "audio/x-wav",
-                         "audio/mp4", "audio/x-m4a", "audio/m4a", "audio/webm",
-                         "video/mp4", "video/webm", "application/pdf", "text/plain"}
-ALLOWED_PLAIN = ("an image (png, jpg, webp), a voice note or audio file (ogg, opus, mp3, wav, m4a, weba), "
-                 "a video (mp4, webm), a PDF or plain text (txt)")
+                         "audio/mp4", "audio/x-m4a", "audio/m4a", "audio/webm", "audio/aac", "audio/x-aac",
+                         "audio/amr", "audio/3gpp", "audio/flac", "audio/x-flac",
+                         "video/mp4", "video/webm", "video/quicktime", "video/3gpp", "video/x-matroska",
+                         "application/pdf", "text/plain"}
+ALLOWED_PLAIN = ("an image (png, jpg, webp), a voice note or audio file (ogg, opus, mp3, wav, m4a, weba, aac, amr, "
+                 "flac), a video (mp4, webm, mov, 3gp, mkv), a PDF or plain text (txt)")
 
 # Session state: time-to-verdict per run in this serve process, and the campaign memory as it stood at start-up,
 # so /api/demo/reset can put a rehearsal back to a clean slate without touching fixture data.
