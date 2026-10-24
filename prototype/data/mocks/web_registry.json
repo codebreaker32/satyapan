@@ -1,0 +1,95 @@
+{
+  "_note": "Answers recorded from the live domain registries over RDAP (rdap.org bootstrap), used by the tests, the preflight and an offline demo. Real public registration data, not invented; re-record with the live adapter. NOT_FOUND means the registry has no such domain.",
+  "recorded_on": "2026-10-23",
+  "domains": {
+    "rbi.org.in": {
+      "status": "FOUND",
+      "registered": "2003-02-28T05:00:00.341Z",
+      "holder": "Reserve Bank Of India",
+      "registrar": "Sify Digital Services Limited",
+      "held": false,
+      "registry_status": [
+        "client transfer prohibited",
+        "client delete prohibited"
+      ]
+    },
+    "sbi.co.in": {
+      "status": "FOUND",
+      "registered": "2002-10-30T19:05:33.000Z",
+      "holder": "State Bank of India",
+      "registrar": "Sify Digital Services Limited",
+      "held": false,
+      "registry_status": [
+        "active"
+      ]
+    },
+    "npci.org.in": {
+      "status": "FOUND",
+      "registered": "2009-02-05T08:36:18.521Z",
+      "holder": "NPCI BHARAT BILLPAY LIMITED",
+      "registrar": "OVI HOSTING PVT LTD",
+      "held": false,
+      "registry_status": [
+        "client transfer prohibited"
+      ]
+    },
+    "kmcgov.in": {
+      "status": "FOUND",
+      "registered": "2008-05-14T06:14:59.000Z",
+      "holder": "KOLKATA MUNICIPAL CORPORATION",
+      "registrar": "Endurance International Group India Private Limited",
+      "held": false,
+      "registry_status": [
+        "active"
+      ]
+    },
+    "echallanparivahan.in": {
+      "status": "FOUND",
+      "registered": "2026-06-23T13:10:12.123Z",
+      "holder": "",
+      "registrar": "Dynadot, LLC",
+      "held": true,
+      "registry_status": [
+        "server hold",
+        "server update prohibited",
+        "server renew prohibited",
+        "server delete prohibited",
+        "client transfer prohibited",
+        "server transfer prohibited"
+      ]
+    },
+    "echallan-parivahan.in": {
+      "status": "NOT_FOUND"
+    },
+    "echallan-pay.in": {
+      "status": "NOT_FOUND"
+    },
+    "mcd-propertytax.in": {
+      "status": "NOT_FOUND"
+    },
+    "rto-challan-pay.com": {
+      "status": "NOT_FOUND"
+    },
+    "parivahan-echallan.online": {
+      "status": "NOT_FOUND"
+    },
+    "rbi-goldscheme.in": {
+      "status": "NOT_FOUND"
+    },
+    "sebi-verify.in": {
+      "status": "NOT_FOUND"
+    },
+    "cbi-case-status.in": {
+      "status": "NOT_FOUND"
+    },
+    "incometax-refund-status.in": {
+      "status": "NOT_FOUND"
+    },
+    "parcel-track.in": {
+      "status": "NOT_FOUND"
+    },
+    "demobank-kyc.com": {
+      "status": "NOT_FOUND"
+    }
+  }
+}

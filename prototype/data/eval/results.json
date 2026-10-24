@@ -1,0 +1,2099 @@
+{
+  "rows": [
+    {
+      "id": "S1-rm-voice-note",
+      "source": "scenario",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake bank staff",
+      "lang": "hi",
+      "outcome": "RED",
+      "fired": [
+        "R-AUDIO-SYNTH",
+        "R-BANK-NEVER-MOVE-FD",
+        "R-BANK-SELF"
+      ]
+    },
+    {
+      "id": "S1b-rm-own-phone",
+      "source": "scenario",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake bank staff",
+      "lang": "hi",
+      "outcome": "AMBER",
+      "fired": [
+        "R-BANK-NEVER-MOVE-FD",
+        "R-BANK-RM-PHONE"
+      ]
+    },
+    {
+      "id": "S2-rbi-video",
+      "source": "scenario",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake regulator investment",
+      "lang": "en",
+      "outcome": "RED",
+      "fired": [
+        "R-CAMPAIGN-MATCH",
+        "R-PAYEE-NAME",
+        "R-RBI-INV",
+        "R-SEBI-VALID",
+        "R-SUSPECT"
+      ]
+    },
+    {
+      "id": "S3-ed-summons",
+      "source": "scenario",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "hi",
+      "outcome": "RED",
+      "fired": [
+        "R-AGENCY-PAY",
+        "R-CAMPAIGN-MATCH",
+        "R-ED-NO-PASSCODE",
+        "R-PAYEE-NAME",
+        "R-SUSPECT"
+      ]
+    },
+    {
+      "id": "S4-claim-only",
+      "source": "scenario",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "hi",
+      "outcome": "RED",
+      "fired": [
+        "R-AGENCY-PAY",
+        "R-PAYEE-NAME",
+        "R-SUSPECT"
+      ]
+    },
+    {
+      "id": "S5a-genuine-bank-notice",
+      "source": "scenario",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "bank sent it",
+      "lang": "en",
+      "outcome": "MATCHES",
+      "fired": [
+        "R-OWN-SIGNATURE"
+      ]
+    },
+    {
+      "id": "S5b-real-rbi-advisory",
+      "source": "scenario",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "awareness message",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "S5c-ed-summons-1h-old",
+      "source": "scenario",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "real government notice",
+      "lang": "en",
+      "outcome": "AMBER",
+      "fired": [
+        "R-ED-WINDOW"
+      ]
+    },
+    {
+      "id": "S5c2-ed-summons-valid",
+      "source": "scenario",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "real government notice",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "S5d-injection",
+      "source": "scenario",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "hi",
+      "outcome": "RED",
+      "fired": [
+        "R-AGENCY-PAY",
+        "R-CAMPAIGN-MATCH",
+        "R-ED-NO-PASSCODE",
+        "R-PAYEE-NAME",
+        "R-SUSPECT"
+      ]
+    },
+    {
+      "id": "S5e-genuine-sms-1600",
+      "source": "scenario",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "bank sent it",
+      "lang": "en",
+      "outcome": "MATCHES",
+      "fired": [
+        "R-OWN-SIGNATURE"
+      ]
+    },
+    {
+      "id": "S5f-court-hearing-notice",
+      "source": "scenario",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "real government notice",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "S5g-it-refund-processed",
+      "source": "scenario",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "real government notice",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "S5h-it-refund-probe",
+      "source": "scenario",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "real government notice",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "S6-fake-credit",
+      "source": "scenario",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake refund",
+      "lang": "en",
+      "outcome": "AMBER",
+      "fired": [
+        "R-LEDGER"
+      ]
+    },
+    {
+      "id": "S7-court-order",
+      "source": "scenario",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake court order",
+      "lang": "en",
+      "outcome": "AMBER",
+      "fired": [
+        "R-COURT-PAY"
+      ]
+    },
+    {
+      "id": "S8-rbi-bond-no-payee",
+      "source": "scenario",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake regulator investment",
+      "lang": "en",
+      "outcome": "AMBER",
+      "fired": [
+        "R-RBI-INV"
+      ]
+    },
+    {
+      "id": "S9-house-tax-copy",
+      "source": "scenario",
+      "label": "scam",
+      "in_scope": true,
+      "category": "copied tax notice",
+      "lang": "hi",
+      "outcome": "RED",
+      "fired": [
+        "R-DOMAIN-GOVIN",
+        "R-PAYEE-NOT-SENDER",
+        "R-WEBSITE-NEW"
+      ]
+    },
+    {
+      "id": "S9b-house-tax-official",
+      "source": "scenario",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "real government notice",
+      "lang": "hi",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "S10-echallan-copy",
+      "source": "scenario",
+      "label": "scam",
+      "in_scope": true,
+      "category": "copied challan or fine",
+      "lang": "hi",
+      "outcome": "AMBER",
+      "fired": [
+        "R-CHALLAN-OFFICIAL",
+        "R-DOMAIN-GOVIN",
+        "R-WEBSITE-NEW"
+      ]
+    },
+    {
+      "id": "S10b-echallan-paid-to-person",
+      "source": "scenario",
+      "label": "scam",
+      "in_scope": true,
+      "category": "copied challan or fine",
+      "lang": "hi",
+      "outcome": "RED",
+      "fired": [
+        "R-CHALLAN-OFFICIAL",
+        "R-DOMAIN-GOVIN",
+        "R-RECEIVER-NAME",
+        "R-WEBSITE-NEW"
+      ]
+    },
+    {
+      "id": "S10c-echallan-official",
+      "source": "scenario",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "real government notice",
+      "lang": "hi",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V01-digitl-arest-cbi",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "roman-misspelling",
+      "outcome": "AMBER",
+      "fired": [
+        "R-AGENCY-PAY"
+      ]
+    },
+    {
+      "id": "V02-suprem-court",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake court order",
+      "lang": "roman-misspelling",
+      "outcome": "AMBER",
+      "fired": [
+        "R-COURT-PAY"
+      ]
+    },
+    {
+      "id": "V03-rbi-ka-account",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake regulator investment",
+      "lang": "roman-misspelling",
+      "outcome": "AMBER",
+      "fired": [
+        "R-RBI-INV"
+      ]
+    },
+    {
+      "id": "V04-rm-acount-hack",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake bank staff",
+      "lang": "roman-misspelling",
+      "outcome": "RED",
+      "fired": [
+        "R-BANK-NEVER-MOVE-FD",
+        "R-BANK-SELF"
+      ]
+    },
+    {
+      "id": "V05-ed-bhejo",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "roman-misspelling",
+      "outcome": "AMBER",
+      "fired": [
+        "R-AGENCY-PAY"
+      ]
+    },
+    {
+      "id": "V06-galti-see-wapas",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake refund",
+      "lang": "roman-misspelling",
+      "outcome": "AMBER",
+      "fired": [
+        "R-LEDGER"
+      ]
+    },
+    {
+      "id": "V07-rm-devanagari",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake bank staff",
+      "lang": "devanagari",
+      "outcome": "RED",
+      "fired": [
+        "R-BANK-NEVER-MOVE-FD",
+        "R-BANK-SELF"
+      ]
+    },
+    {
+      "id": "V08-rbi-devanagari",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake regulator investment",
+      "lang": "devanagari",
+      "outcome": "RED",
+      "fired": [
+        "R-CAMPAIGN-MATCH",
+        "R-RBI-INV"
+      ]
+    },
+    {
+      "id": "V09-ed-devanagari",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "devanagari",
+      "outcome": "AMBER",
+      "fired": [
+        "R-AGENCY-PAY",
+        "R-ED-NO-PASSCODE"
+      ]
+    },
+    {
+      "id": "V10-fake-credit-devanagari",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake refund",
+      "lang": "devanagari",
+      "outcome": "AMBER",
+      "fired": [
+        "R-LEDGER"
+      ]
+    },
+    {
+      "id": "V11-court-devanagari",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake court order",
+      "lang": "devanagari",
+      "outcome": "AMBER",
+      "fired": [
+        "R-COURT-PAY"
+      ]
+    },
+    {
+      "id": "V12-cbi-devanagari",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "devanagari",
+      "outcome": "AMBER",
+      "fired": [
+        "R-AGENCY-PAY"
+      ]
+    },
+    {
+      "id": "V13-rbi-shulk-devanagari",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "devanagari",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V14-whatsapp-trnsfr",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "whatsapp",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V15-whatsapp-scheme",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake regulator investment",
+      "lang": "whatsapp",
+      "outcome": "AMBER",
+      "fired": [
+        "R-RBI-INV"
+      ]
+    },
+    {
+      "id": "V16-whatsapp-refund-kr",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake refund",
+      "lang": "whatsapp",
+      "outcome": "AMBER",
+      "fired": [
+        "R-LEDGER"
+      ]
+    },
+    {
+      "id": "V17-whatsapp-fd-tod",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake bank staff",
+      "lang": "whatsapp",
+      "outcome": "RED",
+      "fired": [
+        "R-BANK-NEVER-MOVE-FD",
+        "R-BANK-SELF"
+      ]
+    },
+    {
+      "id": "V18-allcaps-court",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake court order",
+      "lang": "whatsapp",
+      "outcome": "AMBER",
+      "fired": [
+        "R-COURT-PAY"
+      ]
+    },
+    {
+      "id": "V19-mixed-script-governor",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake regulator investment",
+      "lang": "mixed-script",
+      "outcome": "AMBER",
+      "fired": [
+        "R-RBI-INV"
+      ]
+    },
+    {
+      "id": "V20-negative-shaadi",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-hinglish",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V21-negative-tiffin-wapas",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-hinglish",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V22-negative-prasad",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-hinglish",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V23-negative-shukriya",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-hinglish",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V24-negative-rbi-refund-thanks",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-hinglish",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V25-negative-kripya-form",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-hinglish",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V26-negative-it-refund-credited",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-english",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V27-negative-stray-rm",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-hinglish",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V29-from-your-bank-kyc-fee",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake bank staff",
+      "lang": "vishing-english",
+      "outcome": "AMBER",
+      "fired": [
+        "R-BANK-SELF"
+      ]
+    },
+    {
+      "id": "V30-your-rm-here-transfer",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake bank staff",
+      "lang": "vishing-english",
+      "outcome": "RED",
+      "fired": [
+        "R-BANK-NEVER-MOVE-FD",
+        "R-BANK-SELF",
+        "R-SUSPECT"
+      ]
+    },
+    {
+      "id": "V31-aapke-bank-se-call",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": false,
+      "category": "scam opener, no demand yet",
+      "lang": "vishing-hinglish",
+      "outcome": "AMBER",
+      "fired": [
+        "R-BANK-SELF"
+      ]
+    },
+    {
+      "id": "V32-aapke-bank-devanagari",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": false,
+      "category": "scam opener, no demand yet",
+      "lang": "devanagari",
+      "outcome": "AMBER",
+      "fired": [
+        "R-BANK-SELF"
+      ]
+    },
+    {
+      "id": "V33-negative-rm-nagar",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-english",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V28-rm-with-bank-context",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "roman-misspelling",
+      "outcome": "AMBER",
+      "fired": [
+        "R-BANK-SELF"
+      ]
+    },
+    {
+      "id": "V34-homoglyph-zwsp-ed",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "disguised-unicode",
+      "outcome": "AMBER",
+      "fired": [
+        "R-AGENCY-PAY"
+      ]
+    },
+    {
+      "id": "V35-leetspeak-transfer",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "disguised-leetspeak",
+      "outcome": "AMBER",
+      "fired": [
+        "R-AGENCY-PAY"
+      ]
+    },
+    {
+      "id": "V36-euphemism-park",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "euphemism",
+      "outcome": "AMBER",
+      "fired": [
+        "R-AGENCY-PAY"
+      ]
+    },
+    {
+      "id": "V37-euphemism-place-nodal",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake court order",
+      "lang": "euphemism",
+      "outcome": "RED",
+      "fired": [
+        "R-COURT-PAY",
+        "R-PAYEE-NOT-SENDER",
+        "R-SUSPECT"
+      ]
+    },
+    {
+      "id": "V38-euphemism-remit-custody",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "euphemism",
+      "outcome": "AMBER",
+      "fired": [
+        "R-AGENCY-PAY"
+      ]
+    },
+    {
+      "id": "V39-euphemism-consolidate",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": false,
+      "category": "script fragment, no sender",
+      "lang": "euphemism",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V40-euphemism-route-settlement",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": false,
+      "category": "script fragment, no sender",
+      "lang": "euphemism",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V41-euphemism-daal-hinglish",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": false,
+      "category": "script fragment, no sender",
+      "lang": "euphemism",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V42-euphemism-jama-devanagari",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": false,
+      "category": "script fragment, no sender",
+      "lang": "euphemism",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V43-negative-park-the-car",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-english",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V44-negative-deposit-slip",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-english",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V45-negative-place-of-birth",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-english",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V46-negative-move-house",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-english",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V47-negative-investigation-confidential",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-english",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V48-negative-fd-matures-today",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-english",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V49-negative-jama-karein-form",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-devanagari",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V50-negative-photo-bhej-do",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-hinglish",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V51-injection-prefixed-decoy",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "injection",
+      "outcome": "AMBER",
+      "fired": [
+        "R-AGENCY-PAY"
+      ]
+    },
+    {
+      "id": "V52-anchored-decoy-prefix",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "injection",
+      "outcome": "AMBER",
+      "fired": [
+        "R-AGENCY-PAY"
+      ]
+    },
+    {
+      "id": "V53-negative-two-regulators-cited",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-english",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V54-two-bodies-one-claimed",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "multi-issuer",
+      "outcome": "RED",
+      "fired": [
+        "R-AGENCY-PAY",
+        "R-PAYEE-NOT-SENDER"
+      ]
+    },
+    {
+      "id": "V55-passive-register-notice",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "passive-register",
+      "outcome": "RED",
+      "fired": [
+        "R-AGENCY-PAY",
+        "R-PAYEE-NOT-SENDER",
+        "R-SUSPECT"
+      ]
+    },
+    {
+      "id": "V56-obligation-shall-be",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake court order",
+      "lang": "passive-register",
+      "outcome": "AMBER",
+      "fired": [
+        "R-COURT-PAY"
+      ]
+    },
+    {
+      "id": "V57-hindi-passive-participle",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "devanagari-passive",
+      "outcome": "RED",
+      "fired": [
+        "R-AGENCY-PAY",
+        "R-PAYEE-NOT-SENDER",
+        "R-SUSPECT"
+      ]
+    },
+    {
+      "id": "V58-spaced-letters",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "disguised-spacing",
+      "outcome": "RED",
+      "fired": [
+        "R-AGENCY-PAY",
+        "R-PAYEE-NOT-SENDER",
+        "R-SUSPECT"
+      ]
+    },
+    {
+      "id": "V59-negative-credited-to-your-account",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-english",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V60-negative-passive-to-your-own-account",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-english",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V61-negative-spaced-initialisms",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-english",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V62-irdai-enforcement-cell",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "open-set-authority",
+      "outcome": "AMBER",
+      "fired": [
+        "R-STATE-NAME-PAY"
+      ]
+    },
+    {
+      "id": "V63-swapak-niyantran-byuro",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "open-set-authority-devanagari",
+      "outcome": "AMBER",
+      "fired": [
+        "R-STATE-NAME-PAY"
+      ]
+    },
+    {
+      "id": "V64-marathi-wire-kara",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "roman-marathi",
+      "outcome": "AMBER",
+      "fired": [
+        "R-AGENCY-PAY"
+      ]
+    },
+    {
+      "id": "V65-rank-and-name-self-claim",
+      "source": "variant",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "roman-english",
+      "outcome": "RED",
+      "fired": [
+        "R-AGENCY-PAY",
+        "R-PAYEE-NAME",
+        "R-SUSPECT"
+      ]
+    },
+    {
+      "id": "V66-negative-customer-service-unit",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-english",
+      "outcome": "AMBER",
+      "fired": [
+        "R-BANK-SELF"
+      ]
+    },
+    {
+      "id": "V67-negative-incoming-wire",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-english",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "V68-negative-own-account-rekyc",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-english",
+      "outcome": "AMBER",
+      "fired": [
+        "R-BANK-SELF"
+      ]
+    },
+    {
+      "id": "V72-negative-bank-recovery-letter-credit",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-english",
+      "outcome": "AMBER",
+      "fired": [
+        "R-BANK-SELF"
+      ]
+    },
+    {
+      "id": "V73-negative-bank-emi-letter-push",
+      "source": "variant",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "everyday or awareness text",
+      "lang": "benign-english",
+      "outcome": "AMBER",
+      "fired": [
+        "R-BANK-SELF"
+      ]
+    },
+    {
+      "id": "E-G01",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "bank sent it",
+      "lang": "en",
+      "outcome": "MATCHES",
+      "fired": [
+        "R-OWN-SIGNATURE"
+      ]
+    },
+    {
+      "id": "E-G02",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "bank sent it",
+      "lang": "en",
+      "outcome": "MATCHES",
+      "fired": [
+        "R-OWN-SIGNATURE"
+      ]
+    },
+    {
+      "id": "E-G03",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "bank sent it",
+      "lang": "en",
+      "outcome": "MATCHES",
+      "fired": [
+        "R-OWN-SIGNATURE"
+      ]
+    },
+    {
+      "id": "E-G04",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "bank sent it",
+      "lang": "en",
+      "outcome": "MATCHES",
+      "fired": [
+        "R-OWN-SIGNATURE"
+      ]
+    },
+    {
+      "id": "E-G05",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "bank sent it",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-G06",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "family or friend payment",
+      "lang": "hinglish",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-G07",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "family or friend payment",
+      "lang": "hinglish",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-G08",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "family or friend payment",
+      "lang": "hi",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-G09",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "family or friend payment",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-G10",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "family or friend payment",
+      "lang": "hinglish",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-G11",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "shop or business payment",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-G12",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "shop or business payment",
+      "lang": "hinglish",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-G13",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "shop or business payment",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-G14",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "real government notice",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-G15",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "real government notice",
+      "lang": "hi",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-G16",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "real government notice",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-G17",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "real government notice",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-G18",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "real government notice",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-G19",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "real government notice",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-G20",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "real government notice",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-G21",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "real government notice",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-G22",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "real government notice",
+      "lang": "hi",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-G23",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "awareness message",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-G24",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "awareness message",
+      "lang": "hi",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-G25",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "awareness message",
+      "lang": "en",
+      "outcome": "AMBER",
+      "fired": [
+        "R-BANK-SELF"
+      ]
+    },
+    {
+      "id": "E-G26",
+      "source": "labelled",
+      "label": "genuine",
+      "in_scope": null,
+      "category": "awareness message",
+      "lang": "hinglish",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-S01",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "en",
+      "outcome": "RED",
+      "fired": [
+        "R-AGENCY-PAY",
+        "R-RECEIVER-NAME"
+      ]
+    },
+    {
+      "id": "E-S02",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "hi",
+      "outcome": "RED",
+      "fired": [
+        "R-AGENCY-PAY",
+        "R-PAYEE-NOT-SENDER"
+      ]
+    },
+    {
+      "id": "E-S03",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "hinglish",
+      "outcome": "RED",
+      "fired": [
+        "R-AGENCY-PAY",
+        "R-PAYEE-NAME"
+      ]
+    },
+    {
+      "id": "E-S04",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "en",
+      "outcome": "RED",
+      "fired": [
+        "R-AGENCY-PAY",
+        "R-PAYEE-NOT-SENDER",
+        "R-SUSPECT"
+      ]
+    },
+    {
+      "id": "E-S05",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "en",
+      "outcome": "RED",
+      "fired": [
+        "R-AGENCY-PAY",
+        "R-PAYEE-NOT-SENDER"
+      ]
+    },
+    {
+      "id": "E-S06",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "en",
+      "outcome": "AMBER",
+      "fired": [
+        "R-STATE-NAME-PAY"
+      ]
+    },
+    {
+      "id": "E-S07",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "hi",
+      "outcome": "AMBER",
+      "fired": [
+        "R-AGENCY-PAY"
+      ]
+    },
+    {
+      "id": "E-S08",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "digital arrest",
+      "lang": "en",
+      "outcome": "AMBER",
+      "fired": [
+        "R-AGENCY-PAY",
+        "R-DOMAIN-GOVIN",
+        "R-WEBSITE-NEW"
+      ]
+    },
+    {
+      "id": "E-S09",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake bank staff",
+      "lang": "hinglish",
+      "outcome": "RED",
+      "fired": [
+        "R-BANK-NEVER-MOVE-FD",
+        "R-BANK-SELF"
+      ]
+    },
+    {
+      "id": "E-S10",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake bank staff",
+      "lang": "en",
+      "outcome": "RED",
+      "fired": [
+        "R-BANK-SELF",
+        "R-DOMAIN-BANKIN"
+      ]
+    },
+    {
+      "id": "E-S11",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake bank staff",
+      "lang": "hi",
+      "outcome": "RED",
+      "fired": [
+        "R-BANK-NEVER-MOVE-FD",
+        "R-BANK-SELF",
+        "R-SUSPECT"
+      ]
+    },
+    {
+      "id": "E-S12",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake bank staff",
+      "lang": "en",
+      "outcome": "RED",
+      "fired": [
+        "R-BANK-NEVER-MOVE-FD",
+        "R-BANK-SELF"
+      ]
+    },
+    {
+      "id": "E-S13",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake regulator investment",
+      "lang": "en",
+      "outcome": "AMBER",
+      "fired": [
+        "R-RBI-INV",
+        "R-SEBI-VALID",
+        "R-SUSPECT",
+        "R-WEBSITE-NEW"
+      ]
+    },
+    {
+      "id": "E-S14",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake regulator investment",
+      "lang": "hinglish",
+      "outcome": "GREY",
+      "fired": [
+        "R-SEBI-VALID"
+      ]
+    },
+    {
+      "id": "E-S15",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake regulator investment",
+      "lang": "hi",
+      "outcome": "RED",
+      "fired": [
+        "R-PAYEE-NOT-SENDER",
+        "R-RBI-INV"
+      ]
+    },
+    {
+      "id": "E-S16",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake refund",
+      "lang": "en",
+      "outcome": "AMBER",
+      "fired": [
+        "R-LEDGER"
+      ]
+    },
+    {
+      "id": "E-S17",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake refund",
+      "lang": "hi",
+      "outcome": "AMBER",
+      "fired": [
+        "R-LEDGER"
+      ]
+    },
+    {
+      "id": "E-S18",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "fake court order",
+      "lang": "en",
+      "outcome": "RED",
+      "fired": [
+        "R-COURT-PAY",
+        "R-PAYEE-NAME"
+      ]
+    },
+    {
+      "id": "E-S19",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "copied challan or fine",
+      "lang": "en",
+      "outcome": "AMBER",
+      "fired": [
+        "R-CHALLAN-OFFICIAL",
+        "R-DOMAIN-GOVIN",
+        "R-WEBSITE-NEW"
+      ]
+    },
+    {
+      "id": "E-S20",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "copied challan or fine",
+      "lang": "en",
+      "outcome": "RED",
+      "fired": [
+        "R-CHALLAN-OFFICIAL",
+        "R-DOMAIN-GOVIN",
+        "R-RECEIVER-NAME",
+        "R-WEBSITE-NEW"
+      ]
+    },
+    {
+      "id": "E-S21",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "copied challan or fine",
+      "lang": "hi",
+      "outcome": "AMBER",
+      "fired": [
+        "R-CHALLAN-OFFICIAL",
+        "R-DOMAIN-GOVIN",
+        "R-WEBSITE-NEW"
+      ]
+    },
+    {
+      "id": "E-S22",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "copied challan or fine",
+      "lang": "en",
+      "outcome": "RED",
+      "fired": [
+        "R-CHALLAN-OFFICIAL",
+        "R-PAYEE-NOT-SENDER"
+      ]
+    },
+    {
+      "id": "E-S23",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "copied challan or fine",
+      "lang": "hinglish",
+      "outcome": "RED",
+      "fired": [
+        "R-CHALLAN-OFFICIAL",
+        "R-RECEIVER-NAME"
+      ]
+    },
+    {
+      "id": "E-S24",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "copied challan or fine",
+      "lang": "en",
+      "outcome": "RED",
+      "fired": [
+        "R-CHALLAN-OFFICIAL",
+        "R-RECEIVER-NAME"
+      ]
+    },
+    {
+      "id": "E-S25",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "copied challan or fine",
+      "lang": "en",
+      "outcome": "RED",
+      "fired": [
+        "R-CHALLAN-OFFICIAL",
+        "R-RECEIVER-NAME"
+      ]
+    },
+    {
+      "id": "E-S26",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "copied tax notice",
+      "lang": "en",
+      "outcome": "RED",
+      "fired": [
+        "R-DOMAIN-GOVIN",
+        "R-PAYEE-NOT-SENDER",
+        "R-WEBSITE-NEW"
+      ]
+    },
+    {
+      "id": "E-S27",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "copied tax notice",
+      "lang": "hi",
+      "outcome": "AMBER",
+      "fired": [
+        "R-RECEIVER-NAME"
+      ]
+    },
+    {
+      "id": "E-S28",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "copied tax notice",
+      "lang": "en",
+      "outcome": "AMBER",
+      "fired": [
+        "R-PAYEE-NAME"
+      ]
+    },
+    {
+      "id": "E-S29",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "known campaign, reworded",
+      "lang": "hi",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-S30",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": true,
+      "category": "known campaign, reworded",
+      "lang": "en",
+      "outcome": "RED",
+      "fired": [
+        "R-CAMPAIGN-MATCH",
+        "R-RBI-INV"
+      ]
+    },
+    {
+      "id": "E-O01",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": false,
+      "category": "family emergency",
+      "lang": "hinglish",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-O02",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": false,
+      "category": "family emergency",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-O03",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": false,
+      "category": "lottery or prize",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-O04",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": false,
+      "category": "job or task",
+      "lang": "hinglish",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-O05",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": false,
+      "category": "sextortion",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-O06",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": false,
+      "category": "utility disconnection",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-O07",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": false,
+      "category": "investment group",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    },
+    {
+      "id": "E-O08",
+      "source": "labelled",
+      "label": "scam",
+      "in_scope": false,
+      "category": "romance or gift",
+      "lang": "en",
+      "outcome": "GREY",
+      "fired": []
+    }
+  ],
+  "excluded": [
+    {
+      "id": "V69-negative-corporate-masthead",
+      "why": "a company's invoice demand; legitimacy is not in the text"
+    },
+    {
+      "id": "V70-negative-credit-bureau-limited",
+      "why": "a company's default demand; legitimacy is not in the text"
+    },
+    {
+      "id": "V71-negative-corporate-masthead-devanagari",
+      "why": "an insurer's demand; legitimacy is not in the text"
+    }
+  ],
+  "environment": {
+    "audio_detector": "AASISTAudioForensics",
+    "meaning_model": true,
+    "website_registry": "SnapshotWebsiteRegistry",
+    "rulebook": "1.6 (7a739f076d0e)"
+  },
+  "summary": {
+    "in_scope_scams": {
+      "n": 79,
+      "RED": 36,
+      "AMBER": 39,
+      "GREY": 4,
+      "MATCHES": 0,
+      "flagged_pct": 94.9,
+      "stopped_pct": 45.6,
+      "missed_pct": 5.1
+    },
+    "genuine": {
+      "n": 63,
+      "RED": 0,
+      "AMBER": 7,
+      "GREY": 50,
+      "MATCHES": 6,
+      "false_stop_pct": 0.0,
+      "asked_to_verify_pct": 11.1,
+      "left_alone_pct": 88.9
+    },
+    "out_of_scope_scams": {
+      "n": 14,
+      "RED": 0,
+      "AMBER": 2,
+      "GREY": 12,
+      "MATCHES": 0,
+      "flagged_pct": 14.3
+    },
+    "by_category": [
+      {
+        "label": "genuine",
+        "category": "awareness message",
+        "n": 5,
+        "RED": 0,
+        "AMBER": 1,
+        "GREY": 4,
+        "MATCHES": 0
+      },
+      {
+        "label": "genuine",
+        "category": "bank sent it",
+        "n": 7,
+        "RED": 0,
+        "AMBER": 0,
+        "GREY": 1,
+        "MATCHES": 6
+      },
+      {
+        "label": "genuine",
+        "category": "everyday or awareness text",
+        "n": 27,
+        "RED": 0,
+        "AMBER": 5,
+        "GREY": 22,
+        "MATCHES": 0
+      },
+      {
+        "label": "genuine",
+        "category": "family or friend payment",
+        "n": 5,
+        "RED": 0,
+        "AMBER": 0,
+        "GREY": 5,
+        "MATCHES": 0
+      },
+      {
+        "label": "genuine",
+        "category": "real government notice",
+        "n": 16,
+        "RED": 0,
+        "AMBER": 1,
+        "GREY": 15,
+        "MATCHES": 0
+      },
+      {
+        "label": "genuine",
+        "category": "shop or business payment",
+        "n": 3,
+        "RED": 0,
+        "AMBER": 0,
+        "GREY": 3,
+        "MATCHES": 0
+      },
+      {
+        "label": "scam",
+        "category": "copied challan or fine",
+        "n": 9,
+        "RED": 6,
+        "AMBER": 3,
+        "GREY": 0,
+        "MATCHES": 0
+      },
+      {
+        "label": "scam",
+        "category": "copied tax notice",
+        "n": 4,
+        "RED": 2,
+        "AMBER": 2,
+        "GREY": 0,
+        "MATCHES": 0
+      },
+      {
+        "label": "scam",
+        "category": "digital arrest",
+        "n": 31,
+        "RED": 13,
+        "AMBER": 16,
+        "GREY": 2,
+        "MATCHES": 0
+      },
+      {
+        "label": "scam",
+        "category": "fake bank staff",
+        "n": 11,
+        "RED": 9,
+        "AMBER": 2,
+        "GREY": 0,
+        "MATCHES": 0
+      },
+      {
+        "label": "scam",
+        "category": "fake court order",
+        "n": 7,
+        "RED": 2,
+        "AMBER": 5,
+        "GREY": 0,
+        "MATCHES": 0
+      },
+      {
+        "label": "scam",
+        "category": "fake refund",
+        "n": 6,
+        "RED": 0,
+        "AMBER": 6,
+        "GREY": 0,
+        "MATCHES": 0
+      },
+      {
+        "label": "scam",
+        "category": "fake regulator investment",
+        "n": 9,
+        "RED": 3,
+        "AMBER": 5,
+        "GREY": 1,
+        "MATCHES": 0
+      },
+      {
+        "label": "scam",
+        "category": "family emergency",
+        "n": 2,
+        "RED": 0,
+        "AMBER": 0,
+        "GREY": 2,
+        "MATCHES": 0
+      },
+      {
+        "label": "scam",
+        "category": "investment group",
+        "n": 1,
+        "RED": 0,
+        "AMBER": 0,
+        "GREY": 1,
+        "MATCHES": 0
+      },
+      {
+        "label": "scam",
+        "category": "job or task",
+        "n": 1,
+        "RED": 0,
+        "AMBER": 0,
+        "GREY": 1,
+        "MATCHES": 0
+      },
+      {
+        "label": "scam",
+        "category": "known campaign, reworded",
+        "n": 2,
+        "RED": 1,
+        "AMBER": 0,
+        "GREY": 1,
+        "MATCHES": 0
+      },
+      {
+        "label": "scam",
+        "category": "lottery or prize",
+        "n": 1,
+        "RED": 0,
+        "AMBER": 0,
+        "GREY": 1,
+        "MATCHES": 0
+      },
+      {
+        "label": "scam",
+        "category": "romance or gift",
+        "n": 1,
+        "RED": 0,
+        "AMBER": 0,
+        "GREY": 1,
+        "MATCHES": 0
+      },
+      {
+        "label": "scam",
+        "category": "scam opener, no demand yet",
+        "n": 2,
+        "RED": 0,
+        "AMBER": 2,
+        "GREY": 0,
+        "MATCHES": 0
+      },
+      {
+        "label": "scam",
+        "category": "script fragment, no sender",
+        "n": 4,
+        "RED": 0,
+        "AMBER": 0,
+        "GREY": 4,
+        "MATCHES": 0
+      },
+      {
+        "label": "scam",
+        "category": "sextortion",
+        "n": 1,
+        "RED": 0,
+        "AMBER": 0,
+        "GREY": 1,
+        "MATCHES": 0
+      },
+      {
+        "label": "scam",
+        "category": "utility disconnection",
+        "n": 1,
+        "RED": 0,
+        "AMBER": 0,
+        "GREY": 1,
+        "MATCHES": 0
+      }
+    ],
+    "missed": [
+      "V13-rbi-shulk-devanagari",
+      "V14-whatsapp-trnsfr",
+      "E-S14",
+      "E-S29"
+    ],
+    "false_stops": [],
+    "asked_to_verify": [
+      "S5c-ed-summons-1h-old",
+      "V28-rm-with-bank-context",
+      "V66-negative-customer-service-unit",
+      "V68-negative-own-account-rekyc",
+      "V72-negative-bank-recovery-letter-credit",
+      "V73-negative-bank-emi-letter-push",
+      "E-G25"
+    ],
+    "total": 156
+  },
+  "made": "2026-10-23",
+  "commit": "9739e70",
+  "_note": "Synthetic evaluation set, not field data."
+}

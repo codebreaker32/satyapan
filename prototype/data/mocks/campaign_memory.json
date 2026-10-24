@@ -1,0 +1,31 @@
+{
+  "entries": [
+    {
+      "id": "CM-0001",
+      "template_text": "DIRECTORATE OF ENFORCEMENT, GOVERNMENT OF INDIA. SUMMONS under Section 50 PMLA. Summon No. ED/DLZO/2026/3310. Case No. ECIR/DLZO/09/2026. You are hereby placed under digital arrest for money laundering. You must transfer the full amount to the RBI supervision account A/c 30019988776655, IFSC HDFC0000213, for verification. Do not disclose this to anyone. The amount is refundable after verification.",
+      "sha256s": [], "phashes": [],
+      "issuer": "ED", "instruction": "TRANSFER_TO_ACCOUNT",
+      "count": 4, "first_seen": "2026-09-02T10:00:00+00:00", "last_seen": "2026-10-09T15:20:00+00:00",
+      "status": "confirmed", "approvals": ["analyst.meera", "analyst.suresh"],
+      "note": "same 'RBI supervision account' letter at 3 branches; payee frozen via CFCFRMS"
+    },
+    {
+      "id": "CM-0002",
+      "template_text": "I am speaking from the Reserve Bank of India. Under RBI's new digital gold scheme you get guaranteed 20x returns in one week. Invest today by transferring to the RBI investment account or UPI. Only a few slots left, act immediately.",
+      "sha256s": [], "phashes": [],
+      "issuer": "RBI", "instruction": "INVEST_FOR_RETURNS",
+      "count": 2, "first_seen": "2026-09-28T11:00:00+00:00", "last_seen": "2026-10-11T09:00:00+00:00",
+      "status": "confirmed", "approvals": ["analyst.meera", "analyst.suresh"],
+      "note": "deepfake 'RBI official' investment video, cropped re-uploads"
+    },
+    {
+      "id": "CM-0003",
+      "template_text": "Your SIM will be blocked in 2 hours due to illegal activity. Press 9 to speak to the telecom officer.",
+      "sha256s": [], "phashes": [],
+      "issuer": "TRAI_DOT", "instruction": "NONE",
+      "count": 1, "first_seen": "2026-10-14T12:00:00+00:00", "last_seen": "2026-10-14T12:00:00+00:00",
+      "status": "pending", "approvals": ["analyst.meera"],
+      "note": "awaiting second approval"
+    }
+  ]
+}

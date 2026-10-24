@@ -1,0 +1,33 @@
+{
+  "_note": "Synthetic, written for calibration. Each entry is a reworded or translated copy of a scam already confirmed in campaign memory (data/mocks/campaign_memory.json): the same campaign told in other words or another language. Used by `satyapan calibrate-memory` as positives; every other message in the repo is a negative. No real message, person or account.",
+  "copies": [
+    {"id": "MP-01", "entry": "CM-0001", "lang": "en", "how": "reworded",
+     "text": "Enforcement Directorate notice under the PMLA. A case of money laundering is registered against you and you are now under digital arrest. Send your entire balance to the RBI supervision account given below for verification. Keep this confidential. Your money will be returned once verification is done."},
+    {"id": "MP-02", "entry": "CM-0001", "lang": "en", "how": "reworded",
+     "text": "ED summons, Government of India: you are placed under digital custody for laundering money. All your funds must be moved to the Reserve Bank supervision account for checking. Tell no one. The money is refundable after the check."},
+    {"id": "MP-03", "entry": "CM-0001", "lang": "en", "how": "reworded",
+     "text": "Directorate of Enforcement: digital arrest ordered in your PMLA case. Transfer the full sum to RBI's supervision account to verify it; it comes back to you after verification. Do not share this with anybody."},
+    {"id": "MP-04", "entry": "CM-0001", "lang": "en", "how": "chat style",
+     "text": "ED summons!! u r under digital arrest for money laundering. transfer full amt to RBI supervision a/c for verification. dont tell anyone, refundable after verification."},
+    {"id": "MP-05", "entry": "CM-0001", "lang": "hi", "how": "translated",
+     "text": "प्रवर्तन निदेशालय, भारत सरकार। PMLA की धारा 50 के तहत समन। मनी लॉन्ड्रिंग के मामले में आपको डिजिटल अरेस्ट किया गया है। सत्यापन के लिए पूरी राशि RBI पर्यवेक्षण खाते में ट्रांसफर करें। यह बात किसी को न बताएं। सत्यापन के बाद राशि वापस कर दी जाएगी।"},
+    {"id": "MP-06", "entry": "CM-0001", "lang": "hi", "how": "translated and reworded",
+     "text": "ईडी का नोटिस: आप मनी लॉन्ड्रिंग केस में डिजिटल अरेस्ट में हैं। जाँच के लिए अपना सारा पैसा आरबीआई के निगरानी खाते में भेजें। किसी से कुछ न कहें, जाँच पूरी होने पर पैसा लौटा दिया जाएगा।"},
+    {"id": "MP-07", "entry": "CM-0001", "lang": "hinglish", "how": "translated",
+     "text": "Enforcement Directorate ki taraf se summon hai. Aap money laundering case mein digital arrest mein ho. Verification ke liye poora paisa RBI supervision account mein transfer karo. Kisi ko mat batana, verification ke baad paisa wapas mil jayega."},
+    {"id": "MP-08", "entry": "CM-0001", "lang": "hinglish", "how": "translated and reworded",
+     "text": "ED notice PMLA ke under: aapko digital arrest kiya gaya hai. Saari raashi RBI ke supervision khaate me jama karo verification ke liye. Ye baat confidential rakhna, amount refundable hai."},
+    {"id": "MP-09", "entry": "CM-0002", "lang": "en", "how": "reworded",
+     "text": "This is the Reserve Bank of India speaking. Our new digital gold scheme guarantees twenty times your money within a week. Invest today by sending money to the RBI investment account or UPI ID. Hurry, only a few slots remain."},
+    {"id": "MP-10", "entry": "CM-0002", "lang": "en", "how": "reworded",
+     "text": "RBI's digital gold plan: guaranteed 20x profit in seven days. Transfer your investment to the RBI investment account now. Limited slots, act fast."},
+    {"id": "MP-11", "entry": "CM-0002", "lang": "hi", "how": "translated",
+     "text": "मैं भारतीय रिज़र्व बैंक से बोल रहा हूँ। RBI की नई डिजिटल गोल्ड योजना में एक हफ़्ते में 20 गुना गारंटीड रिटर्न मिलेगा। आज ही RBI निवेश खाते या UPI में पैसे भेजकर निवेश करें। बस कुछ ही स्लॉट बचे हैं, तुरंत करें।"},
+    {"id": "MP-12", "entry": "CM-0002", "lang": "hi", "how": "translated and reworded",
+     "text": "आरबीआई डिजिटल गोल्ड स्कीम: एक सप्ताह में बीस गुना पक्का मुनाफ़ा। निवेश की राशि आरबीआई के निवेश खाते में ट्रांसफर करें। सीमित सीटें, जल्दी करें।"},
+    {"id": "MP-13", "entry": "CM-0002", "lang": "hinglish", "how": "translated",
+     "text": "Main Reserve Bank of India se bol raha hoon. RBI ki nayi digital gold scheme mein ek hafte mein 20 guna guaranteed return. Aaj hi RBI investment account ya UPI pe paisa bhej ke invest karo. Sirf kuch slots bache hain."},
+    {"id": "MP-14", "entry": "CM-0002", "lang": "hinglish", "how": "translated and reworded",
+     "text": "RBI digital gold yojana: 7 din mein 20x pakka munafa. Invest karne ke liye RBI ke investment khaate me transfer karo, jaldi karo slots khatam ho rahe hain."}
+  ]
+}

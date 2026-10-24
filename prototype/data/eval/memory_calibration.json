@@ -1,0 +1,40 @@
+{
+  "_note": "Cosine threshold for a meaning-level campaign-memory match. Only a message naming the same body as a confirmed case is compared, and the threshold sits just above the highest such message in the repo that is not a copy. Synthetic messages, not field data.",
+  "_made": "2026-10-23",
+  "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "threshold": 0.72,
+  "margin": 0.02,
+  "negatives_compared": 8,
+  "highest_negative": {
+    "id": "E-S13",
+    "score": 0.7
+  },
+  "positives": 14,
+  "positives_caught": 8,
+  "missed": [
+    [
+      "MP-02",
+      null
+    ],
+    [
+      "MP-04",
+      0.707
+    ],
+    [
+      "MP-05",
+      0.64
+    ],
+    [
+      "MP-06",
+      null
+    ],
+    [
+      "MP-13",
+      0.631
+    ],
+    [
+      "MP-14",
+      0.601
+    ]
+  ]
+}
