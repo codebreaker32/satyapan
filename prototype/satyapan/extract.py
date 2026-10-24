@@ -1304,9 +1304,18 @@ RE_DEMAND_IN_CLAUSE = re.compile(
 def _reports_completed_txn(text: str, m: re.Match) -> bool:
     """Is this TRANSFER/MOVE_FD match part of the clause that reports a completed transaction, not a demand?
 
-    Scoped to the one clause the match sits in (the sentence bounded by . ; ! ? । or a newline), so a report in
-    one clause never silences a demand in another."""
-    clause = text[_sentence_start(text, m.start()):_sentence_end(text, m.end())]
+    Scoped to the one clause the match sits in: the sentence (bounded by . ; ! ? । or a newline), narrowed to the
+    part of it between ", " separators, so a report in one clause never silences a demand in another. "Rs 49,000 has
+    been debited, to reverse it transfer Rs 1 to account ..." is a report and then a demand in one sentence, and the
+    demand must still read. A comma inside a number ("Rs 2,00,000") has no space after it and splits nothing."""
+    start, end = _sentence_start(text, m.start()), _sentence_end(text, m.end())
+    comma = text.rfind(", ", start, m.start())
+    if comma != -1:
+        start = comma + 2
+    comma = text.find(", ", m.end(), end)
+    if comma != -1:
+        end = comma
+    clause = text[start:end]
     return bool(RE_COMPLETED_TXN.search(clause)) and not RE_DEMAND_IN_CLAUSE.search(clause)
 
 

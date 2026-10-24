@@ -32,6 +32,10 @@ DEMANDS = [
     "Demo Bank: Rs 10,000 debited from your account. Now transfer Rs 49,000 to safe account 30011223344 today.",
     "Demo Bank: your FD has been closed and the amount must be transferred to safe account 30011223344 today.",
     "Demo Bank: Rs 2,000 credited by NEFT; transfer Rs 49,000 to A/c 30011223344, IFSC DEMO0001234 immediately.",
+    # a report and a demand joined by a comma in one sentence: the demand still reads
+    "Demo Bank: Rs 49,000 has been debited, to reverse it transfer Rs 1 to account 30011223344 and share the OTP.",
+    "Demo Bank: your FD has been closed, so transfer the amount to account 30011223344 for safety.",
+    "Your KYC has been completed, transfer Rs 1 to account 30011223344 to activate it. - Demo Bank",
 ]
 
 
