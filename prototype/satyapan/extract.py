@@ -1234,6 +1234,71 @@ def _matched_passive(m: re.Match) -> bool:
     return m.re.pattern in _PASSIVE_SET
 
 
+# A bank's own transaction SMS reports money that already moved, or a setting that already changed: "Rs 5,000
+# credited to your A/c by NEFT", "Rs 10,000 debited via IMPS", "Your fund transfer ... is successful", "Your FD
+# has been closed prematurely", "Your IMPS limit has been increased". The payment-rail word (NEFT/IMPS/RTGS) or
+# the euphemism verb in such a sentence is DESCRIBING a completed transaction, not instructing one. Read as an
+# instruction, a genuine Demo Bank SMS reached RED (R-BANK-NEVER-MOVE-FD plus R-BANK-SELF) and the card told the
+# customer to stop her own money. This is the active-family twin of RE_CREDIT_TO_CUSTOMER: when a
+# completed-transaction marker sits in the same clause as a TRANSFER/MOVE_FD span, that span is a report.
+# The markers are past/perfect completions and "is successful" only; the imperative a demand uses ("transfer",
+# "close the FD", "move the balance") is deliberately not here, so a two-clause scam ("Rs X debited; now
+# transfer to this account 123") keeps its demand, which sits in its own clause with no completion marker.
+RE_COMPLETED_TXN = re.compile(
+    r"\b(?:credited|debited|is\s+successful|was\s+successful|successful(?:ly)?"
+    r"|(?:has|have|had|been)\s+(?:closed|increased|decreased|reduced|processed|reversed|deducted|withdrawn"
+    r"|disbursed|settled|liquidated|completed))\b"
+    r"|क्रेडिट|डेबिट|सफल\w*", re.I)
+
+
+# A completion marker does not make a clause a report when the same clause also demands something: "your FD has
+# been closed and the amount must be moved to the safe account today" is a demand that opens with a report.
+RE_DEMAND_IN_CLAUSE = re.compile(
+    r"\b(?:must|should|need\s+to|needs\s+to|have\s+to|has\s+to|please|kindly|immediately|urgently|now|today"
+    r"|karein|karen|karo|kijiye|kariye|turant|abhi|jaldi)\b|safe\s+account|सुरक्षित|तुरंत|करें|करो|कीजिए", re.I)
+
+
+def _reports_completed_txn(text: str, m: re.Match) -> bool:
+    """Is this TRANSFER/MOVE_FD match part of the clause that reports a completed transaction, not a demand?
+
+    Scoped to the one clause the match sits in (the sentence bounded by . ; ! ? । or a newline), so a report in
+    one clause never silences a demand in another."""
+    clause = text[_sentence_start(text, m.start()):_sentence_end(text, m.end())]
+    return bool(RE_COMPLETED_TXN.search(clause)) and not RE_DEMAND_IN_CLAUSE.search(clause)
+
+
+def _first_demand(patterns: list[str], text: str) -> Optional[re.Match]:
+    """The earliest match of `patterns` that is not part of a completed-transaction report (see RE_COMPLETED_TXN).
+
+    Same as _first when nothing is a report, so every message without a report clause reads exactly as before."""
+    found = sorted((m for p in patterns for m in re.finditer(p, text, re.I)), key=lambda m: m.start())
+    return next((m for m in found if not _reports_completed_txn(text, m)), None)
+
+
+# The bank's bare name is a claim to BE the bank only when it is not somebody's account. "Please transfer 5000 to my
+# Demo Bank account" (a mother), "your salary ... to your Demo Bank account" (an employer) and "maine aapke Demo
+# Bank account me ... bhej diye" (a relative) name the customer's or the sender's own account, the same bare
+# possessive the BANK_SELF table above already refuses for "your bank account". Read as BANK_SELF they gave RED and
+# the card told the customer that Demo Bank had sent them. Both halves are required, a possessive before the name and
+# an account word after it: the bank itself writes "your Demo Bank debit card ... has been despatched", and that
+# signed message must stay MATCHES. A masthead, a sign-off, "from Demo Bank" and "Demo Bank se bol raha hoon" still
+# count.
+RE_POSSESSIVE_BEFORE = re.compile(
+    r"(?:\b(?:your|ur|yr|my|his|her|their|aapk[aei]|apk[aei]|aapk|mer[aei]|tumhar[aei]|tumhe|ter[aei]|apn[aei])"
+    r"|आपके|आपका|आपकी|मेरे|मेरा|मेरी|अपने|अपना|अपनी|तुम्हारे|तुम्हारा|तुम्हारी)\s+$", re.I)
+
+
+RE_ACCOUNT_AFTER = re.compile(r"\s*(?:savings\s+|current\s+|salary\s+)?(?:a/?c\b|acc(?:ou)?n?t\b|accounts?\b|khat[aei]\b"
+                              r"|खात[ाे])", re.I)
+
+
+def _bank_name_claim(patterns: list[str], text: str) -> Optional[re.Match]:
+    """The earliest mention of the bank's own name that is not somebody's account ("my Demo Bank account")."""
+    found = sorted((m for p in patterns for m in re.finditer(p, text, re.I)), key=lambda m: m.start())
+    return next((m for m in found if not (RE_POSSESSIVE_BEFORE.search(text, max(0, m.start() - 24), m.start())
+                                          and RE_ACCOUNT_AFTER.match(text, m.end()))), None)
+
+
 def _span(norm: Normalised, m: re.Match, group: int = 0) -> Span:
     """A span in ORIGINAL coordinates, quoting the original characters. The match ran on the normalised copy;
     storing its offsets directly would point every leader line in the console at the wrong characters."""
@@ -1266,7 +1331,10 @@ class RulesExtractor:
         # above). A bank-name or RM mention counts as BANK_SELF, and an authority persona outranks it:
         # "CBI says tell your bank it's for a flat" is a CBI claim.
         hits = authority_hits(t)
-        m_bank = _first(BANK_SELF_PATTERNS + list(self.bank_patterns), t)
+        m_bank = _first(BANK_SELF_PATTERNS, t)
+        m_name = _bank_name_claim(self.bank_patterns, t)
+        if m_name is not None and (m_bank is None or m_name.start() < m_bank.start()):
+            m_bank = m_name
         chosen = select_issuer(t, hits)
         # An open-set body name that contains the bank's own name is the bank's own unit, and the bank has a
         # better reading of its own name than "a government body": "Demo Bank Loan Recovery Cell, Head Office"
@@ -1295,6 +1363,8 @@ class RulesExtractor:
             if instr is Instruction.PAY_CHALLAN and not RE_VEHICLE.search(t):
                 continue       # a "challan" with no vehicle or traffic word is a deposit slip or a tax form
             m = _first(pats, t)
+            if m and instr in (Instruction.TRANSFER_TO_ACCOUNT, Instruction.MOVE_FD) and _reports_completed_txn(t, m):
+                m = _first_demand(pats, t)
             if m and not _not_this_message_asking(t, m):
                 # The passive register is blind to direction, so a matured FD, a refund or a salary "required to
                 # be remitted to the account specified herein" read as a demand to pay. When the matched clause
