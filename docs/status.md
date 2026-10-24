@@ -1,4 +1,4 @@
-# Status: Day 1 (24 Oct), 21:45 IST
+# Status: Day 1 (24 Oct), 22:50 IST
 
 For Aman and Bhawna. What works, what was measured, how to run it, and what is left.
 
@@ -28,9 +28,23 @@ For Aman and Bhawna. What works, what was measured, how to run it, and what is l
   - the GREY and coverage wording names quiet media checks by what they did, never as findings;
   - in the demo the website look-up uses the recorded registry answers (`scripts/demo_up.sh` sets
     `SATYAPAN_LIVE_WEB=0`), so nothing leaves the laptop.
-- **Tests** (21:45 IST): detectors 78 pass (3 skipped); engine 1014 pass (7 skipped); console browser e2e 190 pass;
+- **Ready for a judge's own files** (24 Oct evening, after the merged-system review):
+  - formats: voice notes and audio (ogg, opus, mp3, wav, m4a, weba, aac, amr, flac), video (mp4, mov, webm, 3gp, mkv),
+    images, PDF and text, up to 100 MB; each must open as what its name says;
+  - a video in which nobody speaks, or with no sound track, is still face-checked (a silent copy of the demo face
+    swap gives AMBER at 35% on the face check alone); a voice note with no speech is refused with a sentence;
+  - a browser voice recording gets no face check; a video re-filmed at the counter (live-replay) gets "unsure" from
+    the face check; a video's voice is judged in the cell of its original sound (Opus, 8 kHz, clean);
+  - the Evaluation page shows the face and voice checks' measured accuracy: per kind of input, false alarms on genuine
+    clips that did not set the threshold (2.9% to 4.5%), catches, unsure and declined, and ten named failure cases
+    (`scripts/accuracy_card.py` writes `calibration/accuracy.json` and `docs/accuracy.md`);
+  - the screens say what is true now: a media flag that moves the verdict is never called too weak, media reasons say
+    "one of the checks, not proof on its own", a scripted rehearsal figure is tagged Simulated on the band, and the
+    disclosure sentence is built from what is actually loaded;
+  - `/health` says whether the voice model actually loaded, and preflight fails if it did not.
+- **Tests** (22:40 IST): detectors 87 pass (3 skipped); engine 1023 pass (7 skipped); console browser e2e 190 pass;
   preflight 7/7 PASS with `--server`. The real-model slow tests pass too: GenD smoke and output index, DF Arena smoke.
-- **Live end to end** (`scripts/pipeline_check.py`: real API, real models, this laptop): 10 of 10 pass.
+- **Live end to end** (`scripts/pipeline_check.py`: real API, real models, this laptop): 12 of 12 pass.
   - A cloned Hindi voice note, read by Whisper: AMBER at 35% (voice synthetic, moderate, cell `hi/whatsapp-opus`).
   - The same cloned note with an ED scam text: RED at 80% (instruction 90%, deepfake 70%).
   - A real Hindi note with a harmless text: GREY (voice clean, 0.056).
@@ -42,8 +56,10 @@ For Aman and Bhawna. What works, what was measured, how to run it, and what is l
     of `hi/clean` (0.9903 to 0.9996).
   - The WhatsApp-size copy of the face swap: the face check abstains (0.8715, grey band) and the rules give RED.
   - A genuine WhatsApp-size video: GREY (face clean, 0.138).
-  - Upload to verdict takes about 40-60 s for the first check of a video; the same bytes again are reused at once
-    (cached by content hash in the running engine).
+  - A browser voice recording (.weba, live-replay): a voice result, no face row.
+  - The face swap re-filmed at the counter (live-replay): the face check says "unsure" (cell `video/live-replay`).
+  - Upload to verdict takes about 40-60 s for the first check of a short video, about 2.5 minutes for a one-minute
+    1080p video; the same bytes again are reused at once (cached by content hash in the running engine).
 
 ## What was measured (quote only with the sample sizes)
 
@@ -73,7 +89,7 @@ There a voice flag alone gives 50%, RED when the message asks for money.
 cd satyapan-finale && scripts/demo_up.sh        # about a minute; then open http://localhost:8000
 # in a second terminal, from satyapan-finale/:
 ../satyapan/.venv/bin/satyapan preflight --server http://127.0.0.1:8000   # 7 lines, all PASS
-.venv/bin/python scripts/pipeline_check.py      # the 10 live end-to-end cases above
+.venv/bin/python scripts/pipeline_check.py      # the 12 live end-to-end cases above
 scripts/stop_demo.sh                            # stop the engine and the forensics service
 ```
 
