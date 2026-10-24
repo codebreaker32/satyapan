@@ -194,6 +194,7 @@ class Card(BaseModel):
 # Grounded payee.account / ifsc / vpa. `claim.mentions_summons` is a bare bool with no span, so no clause here
 # depends on it; the ED reasons that rest on it also name ED, and that issuer clause is guarded.
 E_ISSUER, E_INSTRUCTION, E_OWNER, E_ACCOUNT = "issuer", "instruction", "claimed_owner", "payee_account"
+E_DIGITAL_ARREST = "digital_arrest"
 
 # The one party a reason promises a bank action about. "We will call your relationship manager" needs two things
 # the case can actually carry: the bank's RM directory must have named one (the rule puts the name in `detail`),
@@ -228,6 +229,8 @@ def grounded_entities(claim: Claim) -> set[str]:
         out.add(E_OWNER)
     if claim.payee.account and _quotes_the_message(claim.payee.account.span, claim.text):
         out.add(E_ACCOUNT)
+    if _quotes_the_message(claim.digital_arrest_span, claim.text):
+        out.add(E_DIGITAL_ARREST)
     return out
 
 
@@ -248,6 +251,22 @@ def _agency_pay(text: str, signal: Signal, claim: Claim, hi: bool) -> str | None
         return f"{law} यह संदेश {instruction} कह रहा है।"
     if instruction:
         return f"{law} This message asks for {instruction}."
+    return law
+
+
+def _digital_arrest_pay(text: str, signal: Signal, claim: Claim, hi: bool) -> str | None:
+    """"There is no digital arrest in Indian law. This message says you are under one and asks for {instruction}."
+
+    The first sentence is the law and describes no message. The second has two halves, each with its own span: the
+    digital-arrest words and the demand. The rule fires only with both, so this mostly passes the text through; it
+    exists so a struck field can never leave the card saying something the claim no longer points at."""
+    g = grounded_entities(claim)
+    law = _sentences(text)[0]
+    instruction = signal.detail.get("instruction_hi" if hi else "instruction_en") if E_INSTRUCTION in g else None
+    if E_DIGITAL_ARREST in g and instruction:
+        return text
+    if E_DIGITAL_ARREST in g:
+        return f"{law} यह संदेश कहता है कि आप डिजिटल अरेस्ट में हैं।" if hi else f"{law} This message says you are under one."
     return law
 
 
@@ -350,6 +369,7 @@ def _rm_phone(text: str, signal: Signal, claim: Claim, hi: bool) -> str | None:
 GROUNDED_CLAUSES = {
     "R-AGENCY-PAY": _agency_pay,
     "R-STATE-NAME-PAY": _state_name_pay,
+    "R-DIGITAL-ARREST-PAY": _digital_arrest_pay,
     "R-BANK-NEVER-MOVE-FD": _never_move_fd,
     "R-PAYEE-NAME": _payee_name,
     "R-PAYEE-NOT-SENDER": _payee_not_sender,

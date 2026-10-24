@@ -73,12 +73,24 @@ CC-BY-4.0) are saved in `data/forensics/fleurs/` as `hi_in_dev.tar.gz` and `en_u
 finale scenarios carry their text, so nothing in the scripted demo depends on these. `".[aws]"` (boto3) is used by
 the KMS signer; a Bedrock extractor is specified but not built.
 
+**A digital-arrest rule and an offline helper reader (24 Oct).** `R-DIGITAL-ARREST-PAY` (F1, hard, the I4C advisory
+"There is no concept of Digital Arrest under any Indian Laws") fires when the message tells the customer she is under
+"digital arrest" and asks for money, with no law-enforcement body named (`R-AGENCY-PAY` covers a named one). The
+words must be addressed to her (`extract.digital_arrest_to_you`: "you are digitally arrested", "aap digital arrest
+mein hain", "आप डिजिटल अरेस्ट में हैं"); a sentence that warns about, denies or quotes them does not count. Alone it
+gives AMBER. `SATYAPAN_LLM_READER=llama3.2:3b` turns on an offline helper reader (`satyapan/llm_reader.py`, Llama 3.2
+3B through Ollama on 127.0.0.1; Built with Llama): after the rules-based extractor it fills only what that extractor
+left empty without seeing a candidate, every field quoting the message, a government-sounding sender only ever as
+OTHER, never a payee, and the rules still decide. It is off by default and in the demo: on the 156-message evaluation it caught no scam the rules missed and turned two
+genuine bank letters into RED (now blocked: it fills no money request beside the bank's own name or a named body),
+and a read takes a median of 23 s on the laptop's CPU.
+
 ## Evaluation (`satyapan evaluate`)
 
 156 messages, each labelled scam or genuine by what it really is: the 22 scenarios, the variant corpus and 64 new
 messages in `data/eval/labelled.json`. They are synthetic, not field data. The run writes `data/eval/results.json` and
 `../docs/evaluation.md`, and the console's **Evaluation** page shows the same file. Latest run: of 79 in-scope scams,
-94.9% flagged (34 RED, 41 AMBER) and 4 missed; of 63 genuine messages, none stopped and 7 asked to verify first
+97.5% flagged (34 RED, 43 AMBER) and 2 missed; of 63 genuine messages, none stopped and 7 asked to verify first
 (11.1%); of 14 scams outside scope (family emergency, lottery, jobs), 2 flagged. The set helped find three general
 fixes, so these numbers are optimistic. `tests/test_evaluation.py` fails if a genuine message is ever stopped. It
 also compares the committed report with a fresh run, but only when the same optional models are installed as for the

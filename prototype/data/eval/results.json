@@ -438,8 +438,10 @@
       "in_scope": true,
       "category": "digital arrest",
       "lang": "whatsapp",
-      "outcome": "GREY",
-      "fired": []
+      "outcome": "AMBER",
+      "fired": [
+        "R-DIGITAL-ARREST-PAY"
+      ]
     },
     {
       "id": "V15-whatsapp-scheme",
@@ -1719,8 +1721,10 @@
       "in_scope": true,
       "category": "known campaign, reworded",
       "lang": "hi",
-      "outcome": "GREY",
-      "fired": []
+      "outcome": "AMBER",
+      "fired": [
+        "R-DIGITAL-ARREST-PAY"
+      ]
     },
     {
       "id": "E-S30",
@@ -1830,21 +1834,22 @@
     }
   ],
   "environment": {
-    "audio_detector": "DFArenaAudioForensics",
+    "audio_detector": "NullAudioForensics",
     "meaning_model": false,
     "website_registry": "SnapshotWebsiteRegistry",
-    "rulebook": "1.7 (6f76af7c67b9)"
+    "reader": null,
+    "rulebook": "1.7 (3fd38637740b)"
   },
   "summary": {
     "in_scope_scams": {
       "n": 79,
       "RED": 34,
-      "AMBER": 41,
-      "GREY": 4,
+      "AMBER": 43,
+      "GREY": 2,
       "MATCHES": 0,
-      "flagged_pct": 94.9,
+      "flagged_pct": 97.5,
       "stopped_pct": 43.0,
-      "missed_pct": 5.1
+      "missed_pct": 2.5
     },
     "genuine": {
       "n": 63,
@@ -1942,8 +1947,8 @@
         "category": "digital arrest",
         "n": 31,
         "RED": 13,
-        "AMBER": 16,
-        "GREY": 2,
+        "AMBER": 17,
+        "GREY": 1,
         "MATCHES": 0
       },
       {
@@ -2014,8 +2019,8 @@
         "category": "known campaign, reworded",
         "n": 2,
         "RED": 0,
-        "AMBER": 1,
-        "GREY": 1,
+        "AMBER": 2,
+        "GREY": 0,
         "MATCHES": 0
       },
       {
@@ -2075,9 +2080,7 @@
     ],
     "missed": [
       "V13-rbi-shulk-devanagari",
-      "V14-whatsapp-trnsfr",
-      "E-S14",
-      "E-S29"
+      "E-S14"
     ],
     "false_stops": [],
     "asked_to_verify": [
@@ -2092,6 +2095,6 @@
     "total": 156
   },
   "made": "2026-10-24",
-  "commit": "958bd56",
+  "commit": "33d874a",
   "_note": "Synthetic evaluation set, not field data."
 }

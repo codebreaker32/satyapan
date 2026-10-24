@@ -355,6 +355,8 @@ def test_every_guarded_rule_still_carries_the_clause_the_guard_expects():
                          "यह संदेश {issuer_hi} होने का दावा करता है और {instruction_hi} कह रहा है।"],
         "R-STATE-NAME-PAY": ["This message carries a government-sounding name and asks for {instruction_en}.",
                              "इस संदेश पर सरकारी दफ़्तर जैसा नाम लिखा है और यह {instruction_hi} कह रहा है।"],
+        "R-DIGITAL-ARREST-PAY": ["This message says you are under one and asks for {instruction_en}.",
+                                 "यह संदेश कहता है कि आप डिजिटल अरेस्ट में हैं और {instruction_hi} कह रहा है।"],
         "R-BANK-NEVER-MOVE-FD": ["That instruction does not come from us.", "यह निर्देश हमारी ओर से नहीं है।"],
         "R-PAYEE-NAME": ["The account you were told belongs to {claimed_en}", "जिसे {claimed_hi} का खाता बताया गया है"],
         "R-PAYEE-NOT-SENDER": ["This message is in the name of {issuer_en}", "यह संदेश {issuer_hi} के नाम से है"],

@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+import pytest
 import yaml
 
 from satyapan.models import Flag, Outcome, Severity
@@ -49,6 +50,72 @@ def test_state_name_pay(engine):
     assert "claims to be" not in s.reason_en and "दावा करता है" not in s.reason_hi
     # a lone hard rule is AMBER, and neither the widening nor the split may change that
     assert case.verdict.outcome == Outcome.AMBER
+
+
+MOTIVATING = ("You are digitally arrested. You have to transfer all your bank account money to me. I am Prime "
+              "Minister of India. Mr. Narendra Modi")
+
+
+def test_digital_arrest_pay(engine):
+    """A judge's message on 24 Oct came out GREY: no law-enforcement body was named, so R-AGENCY-PAY could not fire,
+    and "arrested" was only a pressure cue. There is no digital arrest in Indian law, so the sentence needs no
+    sender. A lone hard rule: AMBER, never RED on its own."""
+    case = run_text(engine, MOTIVATING)
+    assert case.claim.digital_arrest_span.text == "You are digitally arrested"
+    s = signal(case, "R-DIGITAL-ARREST-PAY")
+    assert s and s.severity == Severity.HARD and s.evidence_key == "claim" and s.citation_verified
+    assert "There is no “digital arrest” in Indian law" in s.reason_en and "a transfer to an account" in s.reason_en
+    assert case.verdict.outcome == Outcome.AMBER and case.verdict.anchor_rule == "R-DIGITAL-ARREST-PAY"
+    card = engine.card(case, "en")
+    assert any(r.rule_id == "R-DIGITAL-ARREST-PAY" for r in card.reasons)
+
+
+@pytest.mark.parametrize("text", [
+    "u r under digital arrest dont tell anyone. transfer 2 lakh to this account today",
+    "Do not tell anyone, you are under digital arrest. Transfer Rs 50,000 now.",
+    "We have placed you under digital arrest. Transfer the security amount today.",
+    "Aap digital arrest mein hain. Turant 2 lakh transfer karein.",
+    "आप डिजिटल अरेस्ट में हैं। तुरंत 2 लाख रुपये इस खाते में ट्रांसफर करें।",
+])
+def test_digital_arrest_pay_reads_the_ways_a_script_says_it(engine, text):
+    case = run_text(engine, text)
+    assert case.claim.digital_arrest_span is not None, text
+    assert case.claim.instruction.value != "NONE", "each line also asks for money"
+    assert signal(case, "R-DIGITAL-ARREST-PAY") is not None
+
+
+@pytest.mark.parametrize("text", [
+    "RBI never asks anyone to transfer money for verification, and there is no such thing as digital arrest.",
+    "If anyone says you are under digital arrest, hang up and call 1930. Never transfer money to them.",
+    "No agency will put you under digital arrest. Do not transfer money to callers.",
+    "Agar koi aapko digital arrest ki dhamki de aur paise transfer karne ko kahe, toh 1930 par call karein.",
+    "कोई भी एजेंसी आपको डिजिटल अरेस्ट नहीं करती। पैसे ट्रांसफर करने से पहले बैंक से पूछें।",
+    "'You are under digital arrest' - no real officer will ever say this. It is a trick to make you transfer money.",
+])
+def test_digital_arrest_pay_is_silent_on_warnings(engine, text):
+    """Bank and I4C awareness messages use the same words to say the opposite; none of them may fire the rule."""
+    case = run_text(engine, text)
+    assert case.claim.digital_arrest_span is None, (text, case.claim.digital_arrest_span)
+    assert signal(case, "R-DIGITAL-ARREST-PAY") is None
+
+
+def test_digital_arrest_pay_stands_down_for_a_named_agency(engine):
+    """R-AGENCY-PAY already says there is no digital arrest, with the agency's name; one sentence, not two."""
+    case = run_text(engine, "CBI officer here. You are under digital arrest. Transfer Rs 2,00,000 to account 99887766554433 now.")
+    assert case.claim.digital_arrest_span is not None
+    assert signal(case, "R-AGENCY-PAY") is not None and signal(case, "R-DIGITAL-ARREST-PAY") is None
+
+
+def test_digital_arrest_without_a_money_demand_fires_nothing(engine):
+    case = run_text(engine, "You are under digital arrest. Stay on the video call.")
+    assert case.claim.digital_arrest_span is not None
+    assert signal(case, "R-DIGITAL-ARREST-PAY") is None
+
+
+def test_a_struck_digital_arrest_reading_drops_the_rule(engine):
+    case = run_text(engine, MOTIVATING)
+    case = engine.strike_field(case, "digital_arrest", "officer.test")
+    assert case.claim.digital_arrest_span is None and signal(case, "R-DIGITAL-ARREST-PAY") is None
 
 
 def test_state_name_pay_is_silent_on_a_body_that_is_not_the_state(engine):

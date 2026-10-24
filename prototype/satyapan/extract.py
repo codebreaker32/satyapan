@@ -1115,6 +1115,74 @@ def _not_this_message_asking(text: str, m: re.Match) -> bool:
     """Is this instruction match inside a clause that negates it, or reports somebody else's demand?"""
     before = text[_sentence_start(text, m.start()):m.start()]
     return bool(RE_NEGATION.search(before) or RE_REPORTED_DEMAND.search(before))
+
+
+# ---------------------------------------------------------------- "you are under digital arrest" (24 Oct)
+#
+# There is no "digital arrest" in Indian law (I4C advisory TAU/ADV/003), so a message that tells the customer she is
+# under one is not from any authority, whoever it names. The arrest_threat cue above fires on any arrest word and
+# never counts. This reading is narrower on purpose: the phrase must be ADDRESSED TO HER ("you are under digital
+# arrest", "aap digital arrest mein hain", "आप डिजिटल अरेस्ट में हैं"), because bank and I4C awareness messages use the
+# same words to say the opposite ("there is no such thing as digital arrest", "if anyone says you are under digital
+# arrest, hang up"). R-DIGITAL-ARREST-PAY reads it. A judge's "You are digitally arrested. Transfer all your money
+# to me. I am Prime Minister of India" came out GREY before it: no law-enforcement body was named, so no rule fired.
+DA_PHRASE = r"digita?l(?:ly)?[\s-]*(?:arr?est(?:ed)?|custody|giraft?ar\w*)"
+DA_PHRASE_HI = r"डिजिटल\s*(?:अरेस्ट|गिरफ़?्तार\w*|हिरासत)"
+RE_DA_PHRASE = re.compile(rf"{DA_PHRASE}|{DA_PHRASE_HI}", re.I)
+RE_DIGITAL_ARREST_TO_YOU = [re.compile(p, re.I) for p in (
+    # "you are (now) (placed) under digital arrest", "you have been digitally arrested", "u r under digital arrest"
+    rf"\b(?:you|u)(?:'re|re)?\b(?:\s+(?:are|r|have|has|had|been|will|be|being|stand|now|already|hereby|officially))*"
+    rf"\s+(?:placed\s+|put\s+|kept\s+|taken\s+)?(?:under\s+|in(?:to)?\s+)?(?:a\s+|the\s+)?{DA_PHRASE}",
+    # "we have placed you under digital arrest"
+    rf"\b(?:plac\w*|put\w*|kept|keep\w*|tak\w*)\s+(?:you|u)\s+(?:under|in(?:to)?)\s+(?:a\s+|the\s+)?{DA_PHRASE}",
+    # "your digital arrest will continue"
+    rf"\byour\s+{DA_PHRASE}",
+    # "aap digital arrest mein hain", "aapko digitally arrest kiya gaya hai"
+    rf"\b(?:aap|aapko|apko|aapka|apka|aap\s+ko|tum|tumhe|tumhein|tumko|tumhara|tujhe)\b[^.!?।\n]{{0,40}}?{DA_PHRASE}",
+    # "आप डिजिटल अरेस्ट में हैं", "आपको डिजिटल गिरफ़्तार किया गया है"
+    rf"(?:आप|आपको|आपका|तुम|तुम्हें|तुमको|तुम्हारा)[^।.!?\n]{{0,40}}?{DA_PHRASE_HI}",
+)]
+# What turns the same words into a warning: a condition or a denial before the phrase in its sentence ("if anyone
+# says you are ...", "no agency will put you under ..."), or a denial after it ("... is a scam", "... does not exist").
+RE_DA_WARNING_BEFORE = re.compile(
+    r"\b(?:if|whenever|agar|yadi|jab\s+bhi|beware|aware|awareness|alert|caution|savdhan|saavdhan|nobody|no\s?one"
+    r"|no\s+(?:agency|officer|police|government|authority|bank|such|real)|there\s+is\s+no|there'?s\s+no"
+    r"|never|will\s+not|won'?t|does\s*n[o']?t|did\s*n[o']?t|koi\s+bhi|kabhi\s+bhi|kabhi\s+nahi)\b"
+    r"|अगर|यदि|सावधान|कोई\s*भी|नहीं", re.I)
+RE_DA_DENIAL_AFTER = re.compile(
+    r"\b(?:is|are|was)\s+(?:a\s+|an\s+|just\s+a\s+)?(?:scam|fraud|fake|hoax|myth|lie|not\s+real)\b|\bdoes\s*n[o']?t\s+exist"
+    r"|\bno\s+such\s+thing\b|\bno\s+real\b|\bnever\s+(?:say|says|said|ask|asks)\b|\bnahi\s+hota\b|\bnahin\s+hota\b"
+    r"|\bjaisa\s+kuch\s+nahi|जैसा\s*कुछ\s*नहीं|नहीं\s*होता|नहीं\s*है|नहीं\s*कर", re.I)
+QUOTE_MARKS = "\"'“‘«"
+
+
+def _sentence_end(text: str, at: int) -> int:
+    ends = [i for i in (text.find(c, at) for c in _SENTENCE_ENDS) if i != -1]
+    return min(ends) if ends else len(text)
+
+
+def is_warning_about(text: str, start: int, end: int) -> bool:
+    """Does the sentence around text[start:end] warn about, deny or quote what it names, rather than assert it?
+
+    Not the instruction guard's RE_NEGATION: "do not" and "don't" are how a digital-arrest script talks ("do not tell
+    anyone, you are under digital arrest"), so only the negations that deny the arrest itself count here."""
+    before = text[_sentence_start(text, start):start]
+    after = text[end:_sentence_end(text, end)]
+    quoted = start > 0 and text[start - 1] in QUOTE_MARKS          # '"You are under digital arrest" is a scam line'
+    return bool(quoted or RE_DA_WARNING_BEFORE.search(before) or RE_REPORTED_DEMAND.search(before)
+                or RE_DA_DENIAL_AFTER.search(after))
+
+
+def digital_arrest_to_you(text: str) -> Optional[re.Match]:
+    """The earliest place the message tells the customer she is under "digital arrest", or None."""
+    best = None
+    for rx in RE_DIGITAL_ARREST_TO_YOU:
+        for m in rx.finditer(text):
+            if not is_warning_about(text, m.start(), m.end()):
+                if best is None or m.start() < best.start():
+                    best = m
+                break
+    return best
 RE_URL = re.compile(r"\b(?:https?://)?(?:[a-z0-9-]+\.)+(?:bank\.in|gov\.in|nic\.in|in|com|org|net|co|xyz|online|site|info|link)\b(?:/\S*)?", re.I)
 RE_SUMMONS_WORD = re.compile(r"\bsummons?\b|समन", re.I)
 RE_DEVANAGARI = re.compile(r"[ऀ-ॿ]")
@@ -1286,6 +1354,9 @@ class RulesExtractor:
             m = _first(pats, t)
             if m:
                 claim.pressure_cues[cue] = _span(norm, m)
+        m = digital_arrest_to_you(t)
+        if m:
+            claim.digital_arrest_span = _span(norm, m)
 
         m = RE_PHONE.search(t)
         if m:
@@ -1309,6 +1380,8 @@ def ground(claim: Claim) -> Claim:
     claim.other_issuers = [g for g in claim.other_issuers if ok(g.span) and g.value in {i.value for i in Issuer}]
     if claim.instruction_span and not ok(claim.instruction_span):
         claim.instruction, claim.instruction_span = Instruction.NONE, None
+    if claim.digital_arrest_span and not ok(claim.digital_arrest_span):
+        claim.digital_arrest_span = None
     if claim.channel_span and not ok(claim.channel_span):
         claim.channel, claim.channel_span = Channel.UNKNOWN, None
     p = claim.payee

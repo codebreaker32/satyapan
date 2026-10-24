@@ -70,7 +70,7 @@ public records.
 | `prototype/data/fixtures/` | Text, JSON | The scenarios and variant corpus the demo engine runs: the sets above plus the finale additions (house-tax and e-challan copies and their controls). Written with AI; invented data only. | 22 scenarios, 73 variants |
 | `prototype/data/mocks/` | Tabular JSON, Markdown | The engine's synthetic stand-ins for bank systems, as in `datasets/mocks/`, each labelled as a mock | 8 files |
 | `prototype/data/mocks/web_registry.json` | JSON | Real public answers from the domain registries, read over RDAP (rdap.org) on 23 Oct 2026 for the website check: registration date, holder, registrar and status, or "not found". Not invented; used by the tests, the preflight and the offline demo. | 16 domains |
-| `prototype/data/rules/rulebook.yaml` | YAML | The rulebook the demo engine loads (version 1.7), drafted with AI; every rule cites a public primary source with a `verified` flag | 30 rules |
+| `prototype/data/rules/rulebook.yaml` | YAML | The rulebook the demo engine loads (version 1.7), drafted with AI; every rule cites a public primary source with a `verified` flag | 31 rules |
 | `prototype/data/eval/` | Text, JSON | Labelled evaluation set: synthetic messages written for this repo, each labelled scam or genuine (`labelled.json`), reworded copies for the meaning-memory calibration (`memory_pairs.json`), and the latest run (`results.json`, report in `docs/evaluation.md`). Not field data. | 64 messages and 14 copies; 156 messages evaluated |
 | `prototype/data/forensics/aasist_calibration.json` | JSON | AASIST-L thresholds measured on genuine FLEURS speech (numbers only, no audio) | 6 cells |
 
