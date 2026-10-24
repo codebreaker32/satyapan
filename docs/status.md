@@ -2,6 +2,27 @@
 
 For Aman and Bhawna. What works, what was measured, how to run it, and what is left.
 
+## Overnight on the workbox (25 Oct, branch `overnight`)
+
+The bug hunt's verified findings were reproduced in-process and fixed, each with a regression test, on the branch
+`overnight` (not `main`). Details and the full list: `docs/overnight-report.md`. In short:
+
+- a genuine bank transaction SMS and a relative's "my Demo Bank account" message no longer give RED;
+- evidence-pack verification trusts only the bank's own key, and the shown signing time and signer are signed;
+- the RED co-sign and the memory two-person rule compare people, not spellings, and a strike is not a way around
+  them; a strike stays struck on every later run;
+- consent is enforced by the service: a run needs C1, helping the customer report needs C2;
+- uploads as phones write them (EXIF-rotated photos, broken or locked PDFs, long Hindi file names, UTF-16 text);
+- agency demands worded with "pay" and authorities named with a city or as a masthead are read (AMBER, never RED
+  alone); the band tells a capped AMBER from a one-rule AMBER;
+- `satyapan preflight --server` now FAILs on a server that runs older engine code, or has no forensics service.
+  After merging, restart the demo before the preflight (the old server will fail the new check).
+
+Checks at the end of the night, on the workbox: engine 1191 passed (6 skipped, 6 xfailed), detectors 95 passed (3
+skipped), console e2e 192/192, preflight 22/22 scenarios, and 7/7 with `--server` on a fresh engine. Live:
+`scripts/pipeline_check.py` 12/12 and `scripts/build_demo_cases.py` both OK (RED at 80%). The labelled evaluation is
+unchanged (in-scope scams 97.5% flagged; genuine 0 stopped, 11.1% asked to verify).
+
 ## What works now
 
 - **One engine (merge done)**: Bhawna's engine and console, with the agreed 50/50 combined score, merged with Aman's
