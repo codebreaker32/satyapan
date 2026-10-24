@@ -279,7 +279,13 @@ export function CaseView({ id, view, onView, meta, reload = 0 }: Props) {
       {c.verdict && (
         <section className="section section-alt">
           <h2>Signed evidence pack</h2>
-          <EvidencePanel caseId={c.id} signer={meta?.signer ?? null} version={c.decisions.length} />
+          <EvidencePanel
+            caseId={c.id}
+            signer={meta?.signer ?? null}
+            // A new pack whenever what it signs changes: a decision, and also a re-run (re-encode, a strike) that
+            // moved the verdict while the decision count stayed the same.
+            version={`${c.decisions.length}|${c.media.length}|${c.verdict.explanation}|${c.verdict.signals.length}`}
+          />
         </section>
       )}
     </>

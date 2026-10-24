@@ -209,6 +209,9 @@ No new look; the same components say what the engine actually did.
 - The Memory page's approve guard ignores letter case, matching the engine's two-person rule.
 - "Help the customer report" is disabled, with a tooltip saying why, when the customer did not agree to reporting
   (C2). The service refuses it too (403), as it refuses a run without C1.
+- The evidence panel reloads whenever the verdict changes (a re-encode or a strike), not only on a new decision, and
+  "Download JSON" saves the pack on screen, so the downloaded file carries the hash the officer just verified
+  (e2e-guarded).
 
 ## Memorable moment
 

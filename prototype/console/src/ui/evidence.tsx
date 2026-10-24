@@ -3,7 +3,7 @@ import { api, type EvidencePack, type Label } from '../lib/api'
 import { rupees, when } from '../lib/format'
 
 // The signed evidence pack, with the demo's memorable moment: flip one byte, watch it fail, restore it, watch it pass.
-export function EvidencePanel({ caseId, signer, version }: { caseId: string; signer: Label | null; version: number }) {
+export function EvidencePanel({ caseId, signer, version }: { caseId: string; signer: Label | null; version: string | number }) {
   const [original, setOriginal] = useState<EvidencePack | null>(null)
   const [shown, setShown] = useState<EvidencePack | null>(null)
   const [tampered, setTampered] = useState<string | null>(null)
@@ -26,6 +26,16 @@ export function EvidencePanel({ caseId, signer, version }: { caseId: string; sig
   useEffect(() => {
     load()
   }, [load, version])
+
+  // The download is the pack on screen, byte for byte the one just verified. It used to fetch a fresh one, and every
+  // fetch signs again with a new time, so the hash on screen never matched the file the officer handed over.
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
+  useEffect(() => {
+    if (!original) return
+    const url = URL.createObjectURL(new Blob([JSON.stringify(original, null, 2)], { type: 'application/json' }))
+    setDownloadUrl(url)
+    return () => URL.revokeObjectURL(url)
+  }, [original])
 
   const verify = async () => {
     if (!shown) return
@@ -124,7 +134,7 @@ export function EvidencePanel({ caseId, signer, version }: { caseId: string; sig
             Flip a byte
           </button>
         )}
-        <a className="btn" href={api.evidenceDownloadUrl(caseId)} download>
+        <a className="btn" href={downloadUrl ?? api.evidenceDownloadUrl(caseId)} download={`${caseId}.evidence.json`}>
           Download JSON
         </a>
       </div>

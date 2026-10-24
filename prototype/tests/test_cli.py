@@ -58,8 +58,10 @@ def test_preflight_server_checks_match_and_catch_a_stale_rulebook(capsys):
 
     class Stub(BaseHTTPRequestHandler):
         def do_GET(self):
+            ready = {"service": {"route": "x", "health": {"ok": True, "video": {"model": "GenD", "calibrated_cells": ["video/sd"]},
+                                                          "audio": {"installed": False}}}}
             body = {"/api/health": {"ok": True, "version": "test"},
-                    "/api/meta": {"rulebook": {"sha256": sha["value"]}}}[self.path]
+                    "/api/meta": {"rulebook": {"sha256": sha["value"]}, "forensics": ready}}[self.path]
             data = json.dumps(body).encode()
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
@@ -126,8 +128,11 @@ def _forensics_line(meta, capsys):
     return next(l for l in capsys.readouterr().out.splitlines() if "server forensics" in l)
 
 
-def test_preflight_forensics_not_connected_is_a_skip(capsys):
-    assert _forensics_line({"forensics": {"service": None}}, capsys).startswith("skip")
+def test_preflight_forensics_not_connected_is_a_fail(capsys):
+    """It was a skip, and preflight then exited 0 on a server whose uploads got no face or voice check at all, while
+    the run-sheet says every line must PASS (bug hunt raw finding 48)."""
+    line = _forensics_line({"forensics": {"service": None}}, capsys)
+    assert line.startswith("FAIL") and "no face or voice check" in line and "SIMULATED" not in line
 
 
 def test_preflight_forensics_down_or_uncalibrated_fails(capsys):

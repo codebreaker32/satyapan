@@ -129,13 +129,13 @@ def verify_pack(pack: dict, trusted_public_key: str | None = None) -> tuple[bool
                        "trusted, even though its manifest and signature agree with each other.")
     try:
         if sig.get("alg") == "Ed25519":
-            Ed25519PublicKey.from_public_bytes(base64.b64decode(sig["public_key"])).verify(base64.b64decode(sig["value"]), digest.encode())
+            Ed25519PublicKey.from_public_bytes(_strict_b64(sig["public_key"])).verify(_strict_b64(sig["value"]), digest.encode())
             return True, "The manifest matches its hash, and the Ed25519 signature over that hash is good."
         if sig.get("alg") == "ECDSA_SHA_256":
             from cryptography.hazmat.primitives import hashes
             from cryptography.hazmat.primitives.asymmetric import ec
-            pub = serialization.load_der_public_key(base64.b64decode(sig["public_key"]))
-            pub.verify(base64.b64decode(sig["value"]), digest.encode(), ec.ECDSA(hashes.SHA256()))
+            pub = serialization.load_der_public_key(_strict_b64(sig["public_key"]))
+            pub.verify(_strict_b64(sig["value"]), digest.encode(), ec.ECDSA(hashes.SHA256()))
             return True, "The manifest matches its hash, and the ECDSA signature over that hash is good."
     except (InvalidSignature, ValueError, KeyError, TypeError):
         return False, "The signature does not match this manifest. The pack was signed by a different key, or it was changed after signing."
@@ -143,6 +143,15 @@ def verify_pack(pack: dict, trusted_public_key: str | None = None) -> tuple[bool
         return False, "This pack's signature does not say how it was made, so this build cannot check it."
     return False, (f"This pack is signed with {sig.get('alg')!r}, which this build cannot check. "
                    "Satyapan signs with Ed25519 on the demo laptop and ECDSA P-256 through AWS KMS in the bank.")
+
+
+def _strict_b64(value) -> bytes:
+    """Base64 exactly as the signer wrote it. The lenient decoder skipped a '!' or a newline, ignored bytes after the
+    padding and let several last characters decode the same, so an altered signature text still verified."""
+    raw = base64.b64decode(value, validate=True)
+    if base64.b64encode(raw).decode() != value:
+        raise ValueError("not canonical base64")
+    return raw
 
 
 def _same_key(given, trusted: str) -> bool:

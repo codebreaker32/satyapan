@@ -152,6 +152,16 @@ try {
   await page.getByRole('button', { name: 'Verify this pack' }).click()
   await visible(page.locator('.verify-ok'), 'S1 pack: restored pack verifies again')
 
+  // -- d2. Download JSON hands over the pack on screen, not a freshly re-signed one ----
+  {
+    const shownHash = (await page.locator('.pack .hash').first().innerText()).trim()
+    const [dl] = await Promise.all([page.waitForEvent('download'), page.getByRole('link', { name: 'Download JSON' }).click()])
+    const file = await dl.path()
+    const { readFile } = await import('node:fs/promises')
+    const got = JSON.parse(await readFile(file, 'utf-8'))
+    check(got.manifest_sha256 === shownHash, 'S1 pack: Download JSON is the pack on screen (same manifest hash)', `${got.manifest_sha256} vs ${shownHash}`)
+  }
+
   // -- e. evidence round-trip over the API -----------------------------------
   const packRes = await fetch(`${base}/api/cases/${caseId}/evidence?download=true`)
   check(packRes.ok, `GET /api/cases/${caseId}/evidence?download=true answers 200`, `got ${packRes.status}`)

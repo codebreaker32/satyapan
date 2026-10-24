@@ -330,7 +330,10 @@ async def add_media(case_id: str, file: UploadFile = File(...), derived_text: Op
                 if written > MAX_UPLOAD_BYTES:   # the size cap fires before any decoding work
                     raise HTTPException(413, f"That file is too big. Uploads are limited to {MAX_UPLOAD_MB} MB for the demo.")
                 if ext == ".txt" and written > MAX_TEXT_CHARS * 4:   # a text file IS the text; same cap as the paste box (x4 for UTF-8)
-                    raise HTTPException(413, text_too_long(written))
+                    # `written` counts bytes, and a Hindi character is three of them, so the sentence says bytes
+                    raise HTTPException(413, f"That text file is too long to check at once: more than {written:,} bytes, "
+                                             f"and a text file may hold about {MAX_TEXT_CHARS:,} characters. Paste the "
+                                             "part of the message that gives the instruction.")
                 f.write(chunk)
         if written == 0:
             raise HTTPException(415, empty_message(name))

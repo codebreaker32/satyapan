@@ -223,7 +223,10 @@ def cmd_preflight(args) -> int:
         """The finale detectors (satyapan-finale forensics service), as the running server sees them."""
         svc = (get_json(base + "/api/meta").get("forensics") or {}).get("service")
         if not svc:
-            return None, "not connected: forensics stay SIMULATED (start the demo with satyapan-finale/scripts/demo_up.sh)"
+            # A FAIL, not a skip: the run-sheet says every line must PASS, and a server with no forensics service
+            # gives uploaded voice notes and videos no face or voice check at all (they are not simulated either).
+            return False, ("not connected: uploaded voice notes and videos get no face or voice check (start the demo "
+                           "with satyapan-finale/scripts/demo_up.sh)")
         h = svc.get("health")
         if not h or not h.get("ok"):
             return False, f"configured at {svc.get('route')} but not answering; start it or restart demo_up.sh"
