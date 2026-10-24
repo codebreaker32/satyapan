@@ -44,11 +44,13 @@ demo.
 | `ai4bharat/Kathbath` (Hugging Face) | Real Hindi speech (audio detector) | Audio | CC-BY-4.0; terms accepted on Hugging Face | about 30 Hindi clips |
 | `vdivyasharma/IndicSynth` (Hugging Face) | Synthetic Hindi speech (audio detector) | Audio | CC-BY-NC-4.0 (non-commercial; this is a non-commercial hackathon prototype) | about 30 Hindi clips |
 | `mueller91/In-The-Wild` (Hugging Face) | Real and fake speech recorded in the wild, as a cross-check (audio detector) | Audio | CC-BY-SA-4.0 | a sample of about 50 clips |
-| Deepfake Detection Challenge (DFDC) sample videos (Kaggle) | Real and face-swapped video the video model never trained on (video detector) | Video | Kaggle competition data rules, accepted before download | a sample of about 40 videos |
-| `nuriachandra/Deepfake-Eval-2024` (Hugging Face) | Deepfakes circulated in 2024 (video detector) | Video | CC-BY-SA-4.0; access by manual approval, used only if approved | a sample, if approved |
+| Wikimedia Commons: interviews, talks and vlogs (incl. Indian speakers) | Genuine face video for setting the video thresholds | Video | Each file's own open licence (CC BY, CC BY-SA, CC0 or public domain), uploaded before 2021; title, author, licence and link for every clip in `calibration/sources_commons.csv` | about 60 clips, first 60 s of each |
+| `UniDataPro/deepfake-videos-dataset` (Hugging Face, vendor sample) | 5 genuine clips and their face-swapped versions: a first check that face swaps score higher | Video | CC-BY-NC-ND-4.0 (non-commercial, no derivatives distributed) | 10 clips |
+| `nuriachandra/Deepfake-Eval-2024` (Hugging Face) | Deepfakes circulated in 2024 (video detector catch rate) | Video | CC-BY-SA-4.0; access requested, awaiting the authors' manual approval; used only if approved | a sample, if approved |
 
-**WhatsApp cell.** To match what a bank officer actually receives, we forward about 10 real and 10 fake clips from
-each set through WhatsApp between our own phones and save them back. The re-encoded copies stay in `clips/`.
+**WhatsApp cell.** To match what a bank officer actually receives, we make WhatsApp-like copies (H.264, short side
+480 px, low bitrate; `scripts/whatsappify.py`, an approximation) of the calibration clips, and forward a few real clips
+through WhatsApp between our own phones as a check. All copies stay in `clips/`.
 
 **Our own recordings.** A few genuine clips of the two of us (voice notes and phone video, both consenting) check that
 the detectors don't flag real footage. Consent is recorded in `docs/consent.md`. We make no deepfakes of ourselves or

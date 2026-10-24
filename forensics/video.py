@@ -277,9 +277,10 @@ class GenDVideoForensics:
         m["frame_scores"] = [round(s, 4) for s in scores]
         m["frame_ids"] = frame_ids
         if scores:
+            # Rounded once, here: calibration, the decision and the evidence record all use this exact number.
             q = np.percentile(scores, [25, 50, 75])
-            m["median"] = float(q[1])
-            m["spread"] = float(q[2] - q[0])
+            m["median"] = round(float(q[1]), 4)
+            m["spread"] = round(float(q[2] - q[0]), 4)
         m["seconds"] = {"decode": round(t1 - t0, 2), "detect_align": round(t2 - t1, 2), "score": round(t3 - t2, 2),
                         "total": round(t3 - t0, 2)}
         return m
@@ -312,22 +313,28 @@ class GenDVideoForensics:
         reason = self.gate(m)
         if reason:
             return "abstain", "", reason, m.get("median"), cell
-        cal = self.calibration.cells.get(cell) or self.calibration.cells.get("video/any")
-        status, band, reason = classify(m["median"], cal)
+        # Only the clip's own cell: a kind of video we have not calibrated for abstains (docs/plan.md, section 1).
+        status, band, reason = classify(m["median"], self.calibration.cells.get(cell))
         return status, band, reason, m["median"], cell
 
     def analyse(self, path: Path | str, cell: Optional[str] = None) -> ForensicResult:
         path = Path(path)
         if not path.is_file():
             return ForensicResult(kind="video", status="abstain", reason="the file was not found", model=self.model_name)
+        try:                                         # hash first: the record must name the exact bytes analysed
+            digest = sha256_of(path)
+        except OSError as e:                         # locked, still downloading, or no permission
+            return ForensicResult(kind="video", status="abstain", reason=f"the file could not be read ({type(e).__name__})",
+                                  model=self.model_name, extra={"sha256": None})
         try:
             m = self.measure(path)
         except Exception as e:                       # a detector must never crash the case; it abstains instead
-            return ForensicResult(kind="video", status="abstain", reason=f"the video could not be analysed ({type(e).__name__})",
-                                  model=self.model_name, extra={"sha256": sha256_of(path)})
+            why = ("the detector's model files are missing; run scripts/fetch_models.sh" if isinstance(e, OSError)
+                   else f"the video could not be analysed ({type(e).__name__})")
+            return ForensicResult(kind="video", status="abstain", reason=why, model=self.model_name, extra={"sha256": digest})
         status, band, reason, score, cell = self.decide(m, cell)
         extra = {k: v for k, v in m.items()}
-        extra["sha256"] = sha256_of(path)
+        extra["sha256"] = digest
         extra["settings"] = vars(self.settings).copy()
-        return ForensicResult(kind="video", status=status, band=band, score=None if score is None else round(score, 4),
-                              model=self.model_name, cell=cell, reason=reason, extra=extra)
+        return ForensicResult(kind="video", status=status, band=band, score=score, model=self.model_name, cell=cell,
+                              reason=reason, extra=extra)

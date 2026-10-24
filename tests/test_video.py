@@ -159,11 +159,12 @@ def test_median_resists_a_few_outliers(tmp_path):
     assert r.status == "synthetic" and r.score == pytest.approx(0.9)
 
 
-def test_pooled_cell_used_when_specific_cell_missing(tmp_path):
-    p = make_video(tmp_path / "v.mp4")
-    cal = Calibration(model="stub", cells={"video/any": CellCalibration(t_fpr5=0.8, t_fpr20=0.6)})
+def test_uncalibrated_cell_abstains_even_if_another_cell_is_calibrated(tmp_path):
+    p = make_video(tmp_path / "v.mp4")                  # 320x240 -> video/sd, which is not calibrated here
+    cal = Calibration(model="stub", cells={"video/hd": CellCalibration(t_fpr5=0.8, t_fpr20=0.6),
+                                           "video/any": CellCalibration(t_fpr5=0.8, t_fpr20=0.6)})
     r = detector_for(tmp_path, StubDetector(), [0.9] * 16, cal=cal, n_frames=16).analyse(p)
-    assert r.status == "synthetic"
+    assert r.status == "abstain" and "not calibrated" in r.reason and r.cell == "video/sd"
 
 
 def test_detector_crash_becomes_abstain(tmp_path):
@@ -175,8 +176,53 @@ def test_detector_crash_becomes_abstain(tmp_path):
     assert r.status == "abstain" and "could not be analysed" in r.reason
 
 
-@pytest.mark.skipif(not (os.environ.get("RUN_SLOW") and os.environ.get("SMOKE_VIDEO")), reason="set RUN_SLOW=1 and SMOKE_VIDEO=path")
+def test_unreadable_file_abstains_instead_of_crashing(tmp_path):
+    if os.geteuid() == 0:
+        pytest.skip("root can read anything")
+    p = make_video(tmp_path / "v.mp4")
+    p.chmod(0)
+    try:
+        r = detector_for(tmp_path, StubDetector(), [0.9] * 16, cal=CAL).analyse(p)
+    finally:
+        p.chmod(0o644)
+    assert r.status == "abstain" and "could not be read" in r.reason
+
+
+def test_calibration_and_decision_use_the_same_rounded_median(tmp_path):
+    # a top real clip whose raw median is not 4-dp exact must not be flagged when re-run against its own thresholds
+    from forensics.common import threshold_at_fpr
+    p = make_video(tmp_path / "v.mp4")
+    det = detector_for(tmp_path, StubDetector(), [0.430031] * 16, n_frames=16)
+    top = det.measure(p)["median"]
+    reals = [0.1, 0.12, 0.15, 0.2, 0.22, 0.25, 0.3, 0.31, 0.35, 0.4, 0.41, top]
+    cal = Calibration(model="stub", cells={"video/sd": CellCalibration(t_fpr5=threshold_at_fpr(reals, 0.05),
+                                                                       t_fpr20=threshold_at_fpr(reals, 0.20))})
+    r = detector_for(tmp_path, StubDetector(), [0.430031] * 16, cal=cal, n_frames=16).analyse(p)
+    assert r.status != "synthetic" and r.score == top
+
+
+def test_result_is_json_serialisable(tmp_path):
+    import json
+    p = make_video(tmp_path / "v.mp4")
+    for scores in ([0.9] * 16, [0.05, 0.95] * 8):
+        json.dumps(detector_for(tmp_path, StubDetector(), scores, cal=CAL, n_frames=16).analyse(p).to_dict())
+
+
+@pytest.mark.skipif(not (os.environ.get("RUN_SLOW") and os.environ.get("SMOKE_VIDEO")),
+                    reason="set RUN_SLOW=1 and SMOKE_VIDEO=path to a clip with a clearly visible face")
 def test_real_model_smoke():
-    r = GenDVideoForensics().analyse(os.environ["SMOKE_VIDEO"])
-    assert r.status in ("synthetic", "clean", "abstain")
-    assert r.model.startswith("GenD_CLIP_L_14@")
+    det = GenDVideoForensics()
+    m = det.measure(os.environ["SMOKE_VIDEO"])        # no catch-all here: a model load error fails the test
+    assert m["faces_scored"] > 0 and 0.0 <= m["median"] <= 1.0
+    r = det.analyse(os.environ["SMOKE_VIDEO"])
+    assert r.model.startswith("GenD_CLIP_L_14@") and "could not" not in r.reason and "missing" not in r.reason
+
+
+@pytest.mark.skipif(not (os.environ.get("RUN_SLOW") and os.environ.get("GEND_SAMPLES")),
+                    reason="set RUN_SLOW=1 and GEND_SAMPLES=dir with GenD's README sample crops")
+def test_fake_is_output_index_one():
+    from PIL import Image
+    from forensics.video import GenDScorer
+    d = Path(os.environ["GEND_SAMPLES"])
+    fake, real = GenDScorer()([np.asarray(Image.open(d / f).convert("RGB")) for f in ("fake_DF_000_003.png", "real_000.png")])
+    assert fake > 0.9 and real < 0.5

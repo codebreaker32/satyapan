@@ -6,7 +6,7 @@ is missing the cell is worked out from the video's resolution (video/sd or video
   .venv/bin/python scripts/calibrate_video.py --manifest clips/video_manifest.csv
 
 Writes (only numbers and file lists, never the clips):
-  calibration/video.json         thresholds per cell, plus a pooled "video/any" cell
+  calibration/video.json         thresholds per cell (no pooled fallback: an uncalibrated cell abstains)
   calibration/video_runs.csv     every clip: sha256, label, cell, measurements, why it was or wasn't used
   calibration/video_report.md    plain report: counts, abstentions, catch rate at each threshold, AUC
 
@@ -63,7 +63,7 @@ def main() -> int:
         usable = gate_reason is None and score is not None
         reason = gate_reason or ""
         runs.append({"path": r["path"], "sha256": sha256_of(p) if p.is_file() else "", "label": r["label"],
-                     "source": r.get("source", ""), "cell": cell, "median": None if score is None else round(score, 4),
+                     "source": r.get("source", ""), "cell": cell, "median": score,
                      "spread": round(m["spread"], 4) if "spread" in m else None, "faces_scored": m.get("faces_scored"),
                      "frames_tried": m.get("frames_tried"), "usable": usable, "why_not": "" if usable else reason,
                      "seconds": (m.get("seconds") or {}).get("total") if isinstance(m.get("seconds"), dict) else m.get("seconds")})
@@ -79,17 +79,19 @@ def main() -> int:
     for r in runs:
         if r["usable"]:
             by_cell[r["cell"]][r["label"]].append(r["median"])
-            by_cell["video/any"][r["label"]].append(r["median"])
+    abstained_fakes = Counter(r["cell"] for r in runs if r["label"] == "fake" and not r["usable"])
 
     cal = Calibration(model=MODEL_NAME, cells={})
     lines = ["# Video detector calibration report", "", f"Model: `{MODEL_NAME}`. Manifest: `{a.manifest.name}`, {len(runs)} clips.", "",
              "Thresholds are set on real clips only. Catch rate = share of fake clips at or above the threshold.", ""]
-    lines += ["| Cell | Usable real | Usable fake | t_fpr20 | t_fpr5 | t_fpr1 | Catch at 5% FPR | Catch at 20% FPR | AUC |",
-              "|---|---|---|---|---|---|---|---|---|"]
+    lines += ["Each cell is calibrated on its own clips; a kind of video with no cell here makes the detector abstain.",
+              "Catch rates count only fakes the detector judged; 'Fakes abstained' are the ones it declined to judge.", "",
+              "| Cell | Usable real | Usable fake | Fakes abstained | t_fpr20 | t_fpr5 | t_fpr1 | Catch at 5% FPR | Catch at 20% FPR | AUC |",
+              "|---|---|---|---|---|---|---|---|---|---|"]
     for cell, d in sorted(by_cell.items()):
         real, fake = d["real"], d["fake"]
         if len(real) < MIN_REAL_FOR_CELL:
-            lines.append(f"| {cell} | {len(real)} | {len(fake)} | not set (needs {MIN_REAL_FOR_CELL} real) | | | | | |")
+            lines.append(f"| {cell} | {len(real)} | {len(fake)} | {abstained_fakes[cell]} | not set (needs {MIN_REAL_FOR_CELL} real) | | | | | |")
             continue
         t20, t5 = threshold_at_fpr(real, 0.20), threshold_at_fpr(real, 0.05)
         t1 = threshold_at_fpr(real, 0.01) if len(real) >= 100 else None
@@ -98,7 +100,7 @@ def main() -> int:
         c20 = sum(s >= t20 for s in fake) / len(fake) if fake else None
         A = auc(real, fake)
         f = lambda v: "-" if v is None else f"{v:.3f}"
-        lines.append(f"| {cell} | {len(real)} | {len(fake)} | {f(t20)} | {f(t5)} | {f(t1)} | {f(c5)} | {f(c20)} | {f(A)} |")
+        lines.append(f"| {cell} | {len(real)} | {len(fake)} | {abstained_fakes[cell]} | {f(t20)} | {f(t5)} | {f(t1)} | {f(c5)} | {f(c20)} | {f(A)} |")
     why = Counter(r["why_not"] for r in runs if not r["usable"])
     lines += ["", "## Clips not used for thresholds", ""] + ([f"- {k}: {v}" for k, v in why.most_common()] or ["- none"])
     lines += ["", "With few real clips these thresholds are coarse; the counts above say how much to trust them."]
