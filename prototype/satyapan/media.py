@@ -317,6 +317,21 @@ def ocr(path: Path, language: str = "hi") -> tuple[str, str]:
         raise MediaUnreadable(unreadable_message(path.name, kind_of(path))) from e
 
 
+def has_video_frames(path: Path) -> bool:
+    """True when the file holds a video stream and its first frame decodes."""
+    try:
+        import av
+        with av.open(str(path)) as container:
+            stream = next((s for s in container.streams if s.type == "video"), None)
+            if stream is None:
+                return False
+            for _ in container.decode(stream):
+                return True
+    except Exception:  # noqa: BLE001 - anything that will not open is not a video we can check
+        return False
+    return False
+
+
 def ingest(path: Path, derived_text: Optional[str] = None, language: str = "hi") -> MediaRef:
     kind = kind_of(path)
     ref = MediaRef(filename=path.name, kind=kind, sha256=sha256_file(path), bytes=path.stat().st_size)
@@ -325,7 +340,16 @@ def ingest(path: Path, derived_text: Optional[str] = None, language: str = "hi")
     if derived_text is not None:
         ref.derived_text = derived_text
     elif kind in ("audio", "video"):
-        ref.derived_text, ref.derived_text_engine = transcribe(path, language)
+        try:
+            ref.derived_text, ref.derived_text_engine = transcribe(path, language)
+        except MediaUnreadable:
+            # A video is still checked for its faces when nobody speaks in it: a face swap set to music, or with no
+            # sound track at all, is exactly what a test kit holds, and refusing it meant the face check never ran.
+            # It is kept with an empty transcript (the officer can type what was said) as long as its pictures open.
+            # A voice note with no speech has nothing left to check, so it is still refused with the sentence why.
+            if kind != "video" or not has_video_frames(path):
+                raise
+            ref.derived_text, ref.derived_text_engine = "", "Whisper: no speech found"
     elif kind in ("image", "pdf"):
         ref.derived_text, ref.derived_text_engine = ocr(path, language)
     elif kind == "text":

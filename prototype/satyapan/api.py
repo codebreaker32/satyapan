@@ -58,7 +58,9 @@ UPLOADS = STATE_DIR / "uploads"
 
 # Upload limits for the demo. The cap bounds what lands on disk under evidence/uploads/; the request body itself
 # is still read by the framework first, which is acceptable on 127.0.0.1.
-MAX_UPLOAD_MB = 25
+# A minute of phone video is often 50-100 MB, and a judge may bring one. The upload streams to disk under this cap,
+# the face check samples 16 frames whatever the length, and the voice check scores at most about 12 s of speech.
+MAX_UPLOAD_MB = 100
 MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
 # A phone's own formats too: an iPhone records video as .mov, Android call recorders save .amr or .3gp, and a judge's
 # test kit can hold any of them. Each still has to open as what its name says (media.contents_contradict_name).

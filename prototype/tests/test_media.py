@@ -82,3 +82,51 @@ def test_no_stt_installed_raises_with_install_hint(tmp_path):
     path.write_bytes(b"\x00fake media bytes\x00")
     with pytest.raises(RuntimeError, match=r"satyapan\[stt\]"):
         ingest(path)
+
+
+def _tiny_video(path, with_sound: bool):
+    import av
+    import numpy as np
+    with av.open(str(path), "w", format="mp4") as c:
+        v = c.add_stream("mpeg4", rate=10)
+        v.width, v.height, v.pix_fmt = 64, 64, "yuv420p"
+        a = c.add_stream("aac", rate=16000) if with_sound else None
+        for i in range(10):
+            frame = av.VideoFrame.from_ndarray(np.full((64, 64, 3), i * 20, dtype=np.uint8), format="rgb24")
+            for pkt in v.encode(frame):
+                c.mux(pkt)
+        for pkt in v.encode(None):
+            c.mux(pkt)
+        if a is not None:
+            af = av.AudioFrame.from_ndarray(np.zeros((1, 16000), dtype=np.float32), format="fltp", layout="mono")
+            af.sample_rate = 16000
+            for pkt in a.encode(af):
+                c.mux(pkt)
+            for pkt in a.encode(None):
+                c.mux(pkt)
+    return path
+
+
+@pytest.mark.parametrize("with_sound", [True, False])
+def test_a_video_with_no_speech_is_kept_for_its_face_check(tmp_path, monkeypatch, with_sound):
+    """A face swap set to music, or with no sound track, used to be refused, so the face check never ran on it."""
+    import satyapan.media as media
+
+    def no_words(path, language):
+        raise media.MediaUnreadable(media.no_speech_message(path.name, near_silent=False))
+    monkeypatch.setattr(media, "transcribe", no_words)
+    ref = media.ingest(_tiny_video(tmp_path / "clip.mp4", with_sound))
+    assert ref.kind == "video" and ref.derived_text == "" and "no speech" in ref.derived_text_engine
+
+
+def test_a_voice_note_with_no_speech_is_still_refused(tmp_path, monkeypatch):
+    import satyapan.media as media
+
+    def no_words(path, language):
+        raise media.MediaUnreadable(media.no_speech_message(path.name, near_silent=True))
+    monkeypatch.setattr(media, "transcribe", no_words)
+    note = tmp_path / "note.ogg"
+    note.write_bytes(b"OggS" + b"\x00" * 100)
+    with pytest.raises(media.MediaUnreadable):
+        media.ingest(note)
+    assert not media.has_video_frames(note)
