@@ -38,13 +38,15 @@ def main() -> int:
     out_dir = src_dir.parent / (src_dir.name + "_wa")
     out_dir.mkdir(parents=True, exist_ok=True)
     rows = list(csv.DictReader(a.manifest.open()))
+    # Keep sub-folders in the name (video/1.mp4 -> video__1.mp4) so a real and a fake with the same file name never collide.
+    out_name = lambda r: str(Path(r["path"]).with_suffix("")).replace("/", "__") + ".mp4"
     with ThreadPoolExecutor(a.workers) as ex:
-        list(ex.map(lambda r: reencode(src_dir / r["path"], out_dir / Path(r["path"]).name), rows))
+        list(ex.map(lambda r: reencode(src_dir / r["path"], out_dir / out_name(r)), rows))
     with (out_dir / "manifest.csv").open("w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["path", "label", "source"])
         for r in rows:
-            w.writerow([Path(r["path"]).name, r["label"], (r.get("source") or "") + "+whatsapp-like"])
+            w.writerow([out_name(r), r["label"], (r.get("source") or "") + "+whatsapp-like"])
     print(f"re-encoded {len(rows)} videos into {out_dir}")
     return 0
 

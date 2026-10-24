@@ -9,7 +9,7 @@ check; a deepfake flag can be that second check, but never decides alone; the of
 ```mermaid
 flowchart LR
     A["Officer uploads what the customer received<br/>(text, notice image/PDF, voice note, video)"] --> B["Intake<br/>hash, type check, size cap"]
-    B --> C["Read the instruction<br/>OCR (Tesseract) for notices;<br/>transcript typed or picked by the officer"]
+    B --> C["Read the instruction<br/>OCR (Tesseract) for notices;<br/>speech-to-text (Whisper, local) for voice and video"]
     C --> D["What is being asked?<br/>authority claimed, action, payee"]
     D --> F1["Check 1: issuer rules<br/>(cited rulebook)"]
     D --> F2["Check 2: the bank's own records<br/>(payee name, outbound log...)"]
@@ -25,7 +25,7 @@ flowchart LR
 | Layer | What it does | Built where |
 |---|---|---|
 | Intake | Hash every file, check type and size | engine |
-| Read the instruction | OCR for notices (Tesseract). Voice/video: the officer types or picks what was said (no speech-to-text model is declared) | engine |
+| Read the instruction | OCR for notices (Tesseract). Voice/video: speech-to-text with Whisper (faster-whisper, local CPU, declared in `MODELS.md`); the officer can always correct or type it | engine |
 | Two independent checks | Issuer rules with citations; the bank's own records (labelled mocks in the demo) | engine, `datasets/rules`, `datasets/mocks` |
 | **Forensics (this repo)** | `forensics/video.py`: GenD on aligned faces (Aman). `forensics/audio.py`: DF Arena (Bhawna). Both calibrated on real clips, both abstain with a plain reason when unsure | **built live at the finale** |
 | Verdict | RED needs a cited hard rule plus a second independent check. Forensics can raise AMBER at most | engine |
