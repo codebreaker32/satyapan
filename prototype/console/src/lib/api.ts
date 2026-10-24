@@ -73,6 +73,8 @@ export interface Verdict {
     combined_pct: number
     red_line_pct: number
     amber_line_pct: number
+    // the rehearsal scenarios script their media result; the band says so next to the number
+    deepfake_simulated?: boolean
   } | null
 }
 
@@ -187,7 +189,20 @@ export interface Meta {
   bank_name: string
   rulebook: { version: string; sha256: string; rules: RuleMeta[] }
   adapters: Label[]
-  forensics: { audio: Label; video?: Label; document: Label }
+  forensics: {
+    audio: Label
+    document: Label
+    // the local face and voice service, when the engine runs with SATYAPAN_FORENSICS_URL
+    service?:
+      | (Label & {
+          health?: {
+            ok?: boolean
+            video?: { model?: string; calibrated_cells?: string[] }
+            audio?: { installed?: boolean; loaded?: boolean; model?: string; error?: string | null }
+          } | null
+        })
+      | null
+  }
   signer: Label
   session_timing: SessionTiming
 }

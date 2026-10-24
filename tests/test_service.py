@@ -36,6 +36,7 @@ def post(url, body):
 def test_health(server):
     h = json.load(urllib.request.urlopen(server + "/health", timeout=10))
     assert h["ok"] and h["video"]["calibrated_cells"] == ["video/sd"] and h["audio"]["installed"] is False
+    assert h["audio"]["loaded"] is False and h["audio"]["error"] is None
 
 
 def test_analyse_text_file_returns_no_results(server, tmp_path):
@@ -56,11 +57,57 @@ def test_missing_path_key_rejected(server):
     assert e.value.code == 400
 
 
-def test_language_and_channel_are_checked(server, tmp_path):
+def test_language_channel_and_kind_are_validated(server, tmp_path):
     t = tmp_path / "x.txt"
     t.write_text("hi")
     assert post(server + "/analyse", {"path": str(t), "language": "en", "channel": "live-replay"})["results"] == []
-    for bad in ({"language": "fr"}, {"channel": "clean"}):
+    assert post(server + "/analyse", {"path": str(t), "kind": "audio"})["results"] == []
+    for bad in ({"language": "fr"}, {"channel": "carrier-pigeon"}, {"kind": "picture"}):
         with pytest.raises(urllib.error.HTTPError) as e:
-            post(server + "/analyse", {"path": str(t)} | bad)
+            post(server + "/analyse", {"path": str(t), **bad})
         assert e.value.code == 400
+
+
+class LazyVoice:
+    """Loads its model on first use, like forensics/audio.py's DF Arena detector."""
+    model_name = "lazy-voice"
+
+    def __init__(self, fail: bool):
+        self.fail, self._scorer = fail, None
+
+    @property
+    def scorer(self):
+        if self._scorer is None:
+            if self.fail:
+                raise OSError("model files are not in the cache")
+            self._scorer = lambda windows: [0.5] * len(windows)
+        return self._scorer
+
+
+def bare_service(audio) -> Service:
+    svc = Service.__new__(Service)          # skip GenD loading
+    svc.video, svc.audio, svc.lock = StubVideo(), audio, threading.Lock()
+    return svc
+
+
+def test_health_says_whether_the_voice_model_actually_loaded():
+    """A detector object that exists is not a voice check that works: /health (and preflight, which reads it) must
+    report a failed model load, with the reason, instead of "installed"."""
+    broken = bare_service(LazyVoice(fail=True))
+    broken.warm_audio()
+    h = broken.health()["audio"]
+    assert h["installed"] is True and h["loaded"] is False and "OSError" in h["error"]
+    working = bare_service(LazyVoice(fail=False))
+    working.warm_audio()
+    h = working.health()["audio"]
+    assert h["installed"] is True and h["loaded"] is True and h["error"] is None
+    assert h["model"] == "lazy-voice"
+
+
+def test_the_kind_hint_reaches_analyse(tmp_path, monkeypatch):
+    import forensics.service as service
+    seen = {}
+    monkeypatch.setattr(service, "analyse", lambda p, **kw: seen.update(kw) or [])
+    svc = bare_service(None)
+    svc.run(str(tmp_path / "rec.weba"), "en", "live-replay", "audio")
+    assert (seen["kind"], seen["language"], seen["channel"]) == ("audio", "en", "live-replay")

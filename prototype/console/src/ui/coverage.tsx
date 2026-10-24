@@ -38,6 +38,9 @@ const RECORD: Record<string, string> = {
   'bank:paused_payment': "the bank's record of the paused payment",
   'web:registry': "the domain registry's record of the website",
   'memory:template': 'campaign memory',
+  'media:video': 'the face check on the video',
+  'media:audio': 'the voice check',
+  'media:document': 'the document check',
 }
 
 export function Coverage({ view }: Props) {
@@ -77,7 +80,10 @@ export function Coverage({ view }: Props) {
   // so the count said "no outside record was checked" on a case where the beneficiary name look-up had run and
   // cleared the payee, and said "1" on a MATCHES whose band names two records. Naming what a signal rests on is
   // the claim the data actually supports.
-  const rested = [...new Set(v.signals.filter((s) => s.evidence_key.includes(':')).map((s) => RECORD[s.evidence_key] ?? s.evidence_key))]
+  // A media check that found nothing or abstained did not fire, so it is not named here (the "Also noted" list and
+  // the band say what it did).
+  const fired = v.signals.filter((s) => !(s.family === 'F3' && (s.severity === 'abstain' || s.severity === 'info')))
+  const rested = [...new Set(fired.filter((s) => s.evidence_key.includes(':')).map((s) => RECORD[s.evidence_key] ?? s.evidence_key))]
   const others = (claim as unknown as { other_issuers?: Array<{ value: string }> }).other_issuers ?? []
 
   // Claim-only mode has no artefact: the officer ticked boxes, nothing was read from a message, and saying "read

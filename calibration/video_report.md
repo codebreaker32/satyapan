@@ -31,7 +31,8 @@ With few real clips these thresholds are coarse; the counts above say how much t
   or "unsure". It still ranks fakes above genuine clips more often than not (AUC 0.87).
 - **Declining is common on real-world footage:** 66 of 138 clips were not judged (frames disagree, face too small, or
   a face in too few frames). Interviews cut between people and cameras; the detector abstains rather than guess.
-- **Why this is acceptable:** the face check never decides a case. It can raise a case to AMBER, and it can be the
+- **How it counts (since the 24 Oct merge, `docs/changes-2026-10-24.md`):** a face flag is "moderate" (70%) at most,
+  because there is no 1% line with this few genuine clips, so alone it gives 35%: AMBER. Before the merge: it could raise a case to AMBER, and it could be the
   second, independent check behind a cited issuer rule. Open detectors lose about half their accuracy on deepfakes
   circulated in 2024 (Deepfake-Eval-2024); these numbers are consistent with that, which is why Satyapan checks the
   instruction first.
@@ -45,4 +46,4 @@ size interview scores 0.971 with a 161 px face, an HD interview 0.924 with 131 p
 while a correctly cleared genuine clip has a 124 px face. A stricter face-size gate would therefore not remove these
 false alarms; they depend on the footage itself (webcam lighting, heavy compression), the in-the-wild weakness that
 Deepfake-Eval-2024 documents. The 5% thresholds mean about one genuine clip in twenty is flagged by design, which is
-why a face flag can only add weight and never decides.
+why a face flag counts only through its calibrated band, and alone gives at most AMBER.

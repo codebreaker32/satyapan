@@ -3,6 +3,8 @@ the card and the signed evidence pack. This is the one object the API, the CLI a
 """
 from __future__ import annotations
 
+import os
+
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, Optional
@@ -13,7 +15,7 @@ from .adapters import Adapters
 from .card import Card, build_card
 from .evidence import LocalSigner, make_pack
 from .extract import RulesExtractor, claim_from_picklist, ground
-from .forensics import DocumentForensics, SimulatedForensics, default_audio_forensics, default_video_forensics, to_signal
+from .forensics import DocumentForensics, RemoteForensics, SimulatedForensics, default_audio_forensics, to_signal
 from .fusion import fuse
 from .media import ingest, sha256_file
 from .memory import CampaignMemory
@@ -50,16 +52,19 @@ def _memory_also(hit: dict) -> tuple[str, str]:
 
 class Satyapan:
     def __init__(self, data_dir: Path = DATA_DIR, *, adapters: Optional[Adapters] = None, extractor=None, audio=None,
-                 video=None, document=None, memory: Optional[CampaignMemory] = None, signer=None,
-                 now: Optional[datetime | Callable[[], datetime]] = None, state_dir: Path = STATE_DIR):
+                 document=None, memory: Optional[CampaignMemory] = None, signer=None,
+                 now: Optional[datetime | Callable[[], datetime]] = None, state_dir: Path = STATE_DIR,
+                 forensics_service: Optional[str] = None):
         self.data_dir = Path(data_dir)
         self.book = load_rulebook(self.data_dir / "rules" / "rulebook.yaml")
         self.adapters = adapters or Adapters.mocks(self.data_dir / "mocks")
         self.extractor = extractor or RulesExtractor(bank_names=(self.book.bank_name,))
         self.audio = audio or default_audio_forensics()
-        # a video gets the face check and the voice check on its sound; an audio file gets the voice check alone
-        self.video = video or default_video_forensics(self.audio)
         self.document = document or DocumentForensics()
+        # Finale detectors run as a local service (satyapan-finale). Off unless a URL is given, so tests and the
+        # terminal fallback behave exactly as before.
+        url = forensics_service if forensics_service is not None else os.environ.get("SATYAPAN_FORENSICS_URL", "")
+        self.remote = RemoteForensics(url) if url else None
         self._now = now
         self.memory = memory or CampaignMemory(self.data_dir / "mocks" / "campaign_memory.json", now=self.clock())
         self.signer = signer or LocalSigner(Path(state_dir) / "keys")
@@ -115,12 +120,14 @@ class Satyapan:
         ref = ingest(Path(path), derived_text=derived_text, language=language)
         case.media.append(ref)
         inp = self._inputs[case.id]
-        inp["media_paths"][ref.filename] = Path(path)
-        # the language the recording is in, as the officer chose it for speech-to-text; the voice check uses it too,
-        # because the message's script says nothing about the voice ("Beta, paise bhej do" is Hindi in Latin letters)
-        inp.setdefault("media_languages", {})[ref.filename] = language
+        # Keyed by the upload's position in case.media, not its file name: two uploads both called PTT-WA0001.ogg
+        # once resolved to the second file, so the first (perhaps the clone) was never checked. Not by content hash
+        # either: the same bytes recorded at the counter (live-replay) and forwarded as a file are judged differently.
+        idx = len(case.media) - 1
+        inp["media_paths"][idx] = Path(path)
         if channel:
-            inp.setdefault("media_channels", {})[ref.filename] = channel
+            inp.setdefault("media_channels", {})[idx] = channel
+        inp.setdefault("media_langs", {})[idx] = language   # the remote voice check uses the same language
         inp["sender_number"] = sender_number or inp["sender_number"]
         inp["signature"] = signature or inp["signature"]
         if ref.derived_text:
@@ -153,9 +160,9 @@ class Satyapan:
         text = "\n".join(t for _, t in inp["texts"])
         return ground(self.extractor.extract(text, source=source))
 
-    def run(self, case: Case) -> Case:
+    def run(self, case: Case, claim: Optional[Claim] = None) -> Case:
         inp = self._inputs[case.id]
-        claim = self.build_claim(case)
+        claim = claim if claim is not None else self.build_claim(case)
         now = self.clock()
         sig_valid = self.adapters.signature.verify(claim.text, inp["signature"]) if inp["signature"] else None
         ctx = RuleContext(adapters=self.adapters, now=now, bank_name=self.book.bank_name, sender_number=inp["sender_number"],
@@ -166,17 +173,20 @@ class Satyapan:
         signals: list[Signal] = evaluate(self.book, claim, ctx)
 
         # F3: forensics on each media file (or the scripted rehearsal result)
-        for m in case.media:
-            path = inp["media_paths"].get(m.filename)
+        for idx, m in enumerate(case.media):
+            path = inp["media_paths"].get(idx)
             if inp["forensics_sim"] and m.kind in ("audio", "video", "image", "pdf"):
                 signals.append(to_signal(self.book, SimulatedForensics(inp["forensics_sim"]).analyse(path or Path(m.filename), claim.language_hint)))
-            elif path and m.kind == "video":
-                channel = inp.get("media_channels", {}).get(m.filename)
-                spoken = inp.get("media_languages", {}).get(m.filename, claim.language_hint)
-                signals += [to_signal(self.book, r) for r in self.video.analyse(path, spoken, channel=channel)]
-            elif path and m.kind == "audio":
-                channel = inp.get("media_channels", {}).get(m.filename)
-                spoken = inp.get("media_languages", {}).get(m.filename, claim.language_hint)
+            elif path and m.kind in ("audio", "video") and self.remote is not None:
+                # finale detectors: a video gets a face check and a voice check, each its own F3 signal
+                signals.extend(to_signal(self.book, r) for r in self.remote.analyse_all(
+                    path, m.kind, language=inp.get("media_langs", {}).get(idx, claim.language_hint),
+                    channel=inp.get("media_channels", {}).get(idx)))
+            elif path and m.kind in ("audio", "video"):
+                channel = inp.get("media_channels", {}).get(idx)
+                # the language the recording is in, as chosen at upload, not the message's script: "Beta, paise bhej
+                # do" is Hindi in Latin letters, and English thresholds would flag more real Hindi voices
+                spoken = inp.get("media_langs", {}).get(idx, claim.language_hint)
                 if channel and getattr(self.audio, "accepts_channel", False):
                     signals.append(to_signal(self.book, self.audio.analyse(path, spoken, channel=channel)))
                 else:
@@ -258,14 +268,20 @@ class Satyapan:
         self.decide(case, actor=actor, action="strike_field", note=f"struck {field}")
         inp = self._inputs[case.id]
         inp["picklist"] = None
-        # re-run on the corrected claim
-        self.extractor_override = c
-        saved = self.build_claim
-        self.build_claim = lambda _case: c  # type: ignore[assignment]
-        try:
-            return self.run(case)
-        finally:
-            self.build_claim = saved  # type: ignore[assignment]
+        # Re-run on the corrected claim, passed explicitly. It used to be patched onto the shared engine for the length
+        # of the re-run; with the finale forensics call in run() that window lasts seconds, and another case run in it
+        # would have been judged on this case's claim.
+        return self.run(case, claim=c)
+
+    def _forensics_labels(self) -> dict:
+        """What checked the media, as the pack records it. With the local service connected, voice notes and videos go
+        there (face and voice models, calibrated cells, read from its health answer at the time the pack is made), so
+        the pack names it rather than only the in-process detectors that did not judge this case's media."""
+        out = {"audio": self.audio.label.as_dict(), "document": self.document.label.as_dict()}
+        if self.remote is not None:
+            out["service"] = {**self.remote.label.as_dict(), "health": self.remote.health(),
+                              "routes": "voice notes and videos go to the service; documents are checked in-process"}
+        return out
 
     def evidence_pack(self, case: Case) -> dict:
         inp = self._inputs.get(case.id, {})
@@ -276,8 +292,7 @@ class Satyapan:
             "rulebook": {"version": self.book.version, "sha256": self.book.sha256, "path": Path(self.book.path).name},
             "policy_version": POLICY_VERSION,
             "extractor": getattr(self.extractor, "name", type(self.extractor).__name__),
-            "forensics": {"audio": self.audio.label.as_dict(), "video": self.video.label.as_dict(),
-                          "document": self.document.label.as_dict()},
+            "forensics": self._forensics_labels(),
             "adapters": self.adapters.labels(),
             "inputs": {"sender_number": inp.get("sender_number"), "bank_signature_present": bool(inp.get("signature")),
                        "forensics_simulated": bool(inp.get("forensics_sim"))},

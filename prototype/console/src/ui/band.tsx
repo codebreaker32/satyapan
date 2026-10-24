@@ -9,6 +9,12 @@ interface Props {
 
 // The engine's explanation names rules by id (R-ED-WINDOW). On the band it is set in the largest type on screen, so
 // the id is swapped for the rule's own title; the id itself still appears verbatim in the case record and the pack.
+// "Instruction checks 90%, deepfake check 70%, half each: combined 80%, at or above the 40% line for RED." -> "At or
+// above the 40% line for RED." The score panel shows the three numbers; the rest of the sentence still says why.
+function withoutScoreOpening(text: string): string {
+  return text.replace(/^Instruction checks \d+%, deepfake check \d+%, half each: combined [\d.]+%, (\w)/, (_m, c: string) => c.toUpperCase())
+}
+
 function humanise(text: string, titles: Record<string, string>): string {
   return text.replace(/R-[A-Z0-9-]+/g, (id) => titles[id] ?? id)
 }
@@ -50,16 +56,41 @@ export function VerdictBand({ view, titles }: Props) {
               </li>
               <li>
                 <b>Deepfake check</b>
-                <span>{sc.deepfake_pct}%</span>
+                <span>
+                  {sc.deepfake_pct}%
+                  {/* a scripted rehearsal result must never read as a live detector, here least of all */}
+                  {sc.deepfake_simulated && <span className="tag tag-sim">Simulated</span>}
+                </span>
               </li>
               <li>
                 <b>Combined</b>
                 <span>
-                  {sc.combined_pct}% · RED from {sc.red_line_pct}%, AMBER from {sc.amber_line_pct}%
+                  {/* only the line that matters for this verdict, so the row stays on one line at 1280x720 */}
+                  {sc.combined_pct}% ·{' '}
+                  {v.outcome === 'RED' ? `RED from ${sc.red_line_pct}%` : `AMBER from ${sc.amber_line_pct}%, RED from ${sc.red_line_pct}%`}
                 </span>
               </li>
             </ul>
-            <p>{humanise(v.explanation, titles)}</p>
+            {/* What it rests on, compactly when there is a pair (the rules' RED pair, or a rule plus the media check):
+                the panel above already carries the numbers, and a full paragraph here pushed the customer card below
+                the fold at 1280x720. Otherwise the engine's sentence, minus the opening that repeats the numbers. */}
+            {anchor && second ? (
+              <>
+                <h3>Rests on two independent checks</h3>
+                <ul>
+                  <li>
+                    <b>{FAMILY_WORD[anchor.family]}</b>
+                    <span>{titles[anchor.rule_id] ?? anchor.rule_id}</span>
+                  </li>
+                  <li>
+                    <b>{FAMILY_WORD[second.family]}</b>
+                    <span>{titles[second.rule_id] ?? second.rule_id}</span>
+                  </li>
+                </ul>
+              </>
+            ) : (
+              <p>{humanise(withoutScoreOpening(v.explanation), titles)}</p>
+            )}
           </>
         )}
         {!sc && v.outcome === 'RED' && anchor && second && (

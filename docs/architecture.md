@@ -1,8 +1,8 @@
 # Satyapan: architecture and finale plan
 
 **Verify the instruction, not the pixels.** When a bank pauses a large, unusual transfer, Satyapan helps the officer
-check the "official" voice note, video or notice behind it. A RED needs a cited issuer rule plus a second, independent
-check; a deepfake flag can be that second check, but never decides alone; the officer always decides.
+check the "official" voice note, video or notice behind it. The instruction checks and the deepfake check count half
+each in a combined score (agreed by the team on 24 Oct, `docs/changes-2026-10-24.md`); the officer always decides.
 
 ## 1. How a case flows
 
@@ -13,8 +13,8 @@ flowchart LR
     C --> D["What is being asked?<br/>authority claimed, action, payee"]
     D --> F1["Check 1: issuer rules<br/>(cited rulebook)"]
     D --> F2["Check 2: the bank's own records<br/>(payee name, outbound log...)"]
-    B --> F3["Forensics (corroborate only)<br/>video: GenD + YuNet<br/>audio: DF Arena 500M"]
-    F1 --> V{"Verdict<br/>RED needs two independent checks;<br/>forensics alone never above AMBER"}
+    B --> F3["Deepfake check<br/>video: GenD + YuNet<br/>audio: DF Arena 500M"]
+    F1 --> V{"Verdict<br/>no judged media: the rules decide;<br/>judged media: 50% instruction + 50% deepfake,<br/>RED from 40%, AMBER from 15%"}
     F2 --> V
     F3 --> V
     V --> O1["Officer screen<br/>verdict, plain reasons, hold / escalate"]
@@ -28,7 +28,7 @@ flowchart LR
 | Read the instruction | OCR for notices (Tesseract). Voice/video: speech-to-text with Whisper (faster-whisper, local CPU, declared in `MODELS.md`); the officer can always correct or type it | engine |
 | Two independent checks | Issuer rules with citations; the bank's own records (labelled mocks in the demo) | engine, `datasets/rules`, `datasets/mocks` |
 | **Forensics (this repo)** | `forensics/video.py`: GenD on aligned faces (Aman). `forensics/audio.py`: DF Arena (Bhawna). Both calibrated on real clips, both abstain with a plain reason when unsure | **built live at the finale** |
-| Verdict | RED needs a cited hard rule plus a second independent check. Forensics alone raise AMBER at most; a forensic flag can be that second check, never the anchor | engine |
+| Verdict | No media, or media no detector could judge: the rules decide (RED needs a cited hard rule plus an independent second check). Judged media: 50% instruction + 50% deepfake, RED from 40%, AMBER from 15%; a RED still needs a money demand read (`docs/changes-2026-10-24.md`) | engine |
 | Outputs | Officer screen, Hindi customer card, signed evidence record | engine, console |
 
 ### The forensics contract (both detectors)
@@ -47,21 +47,23 @@ version, the cell, the score and the file hash, so it can go into the evidence r
 
    | Detector says | Effect on the verdict |
    |---|---|
-   | `synthetic` | A soft signal. Alone it can raise the case to **AMBER**, never higher. Together with a cited issuer rule (and a money demand read from the message) it can be the independent second check that makes **RED**: it rests on different evidence (the media, not the words) |
-   | `clean` | Shown as "no signs found"; never lowers a verdict and never means "safe" |
-   | `abstain` | Shown as "unsure: <reason>"; counts for nothing |
+   | `synthetic` | Deepfake % from the calibrated band: high 100, moderate 70. It counts half in the combined score. Video has no high band (too few genuine clips for a 1% line), so a face flag alone reaches 35% (AMBER). A voice flag can be high only in a cell with a 1% line (among the cells by channel, only 8 kHz Hindi phone audio): there it alone reaches 50%, RED when a money demand was read; elsewhere it is at most moderate, 35% alone (AMBER) |
+   | `clean` | Deepfake 0%: the combined score is half the instruction %, which keeps the rules' verdict; shown as "no signs found", never "safe" |
+   | `abstain` | Shown as "unsure: <reason>"; counted as no media, so the rules decide alone |
 
 4. **On screen and in the record:** one plain line per detector on the officer screen; model, version, calibration
    cell, score and file hash in the signed evidence record.
 
-**Wiring to do (Day 1, 17:00):** the engine currently maps every non-audio forensic result to the "document editing"
-rule. Video needs its own rule (`R-VIDEO-SYNTH`, "Signs of face manipulation", family F3, soft) and its own route.
+**Wiring (done, 24 Oct):** each kind of media has its own rule and route (`rule_for` in
+`prototype/satyapan/forensics.py`): a face result maps to `R-VIDEO-SYNTH` ("Signs of face manipulation", family F3,
+soft), a voice result to `R-AUDIO-SYNTH`, and a document to `R-DOC-TAMPER`, or to `R-DOC-AI` when the file's own label
+names an AI tool.
 
-### Why forensics only corroborate
+### Why the deepfake check counts half, and only through calibration
 
 Open detectors lose about half their accuracy on deepfakes circulated in 2024 (Deepfake-Eval-2024, arXiv 2503.02857).
-So a detector here never decides. It adds weight, says "unsure" when it should, and the officer sees a sentence, not a
-score.
+So the deepfake % comes from calibrated bands, never a raw model score; "unsure" counts as no media; and the officer
+sees the three numbers and a sentence on the band, never a score on the customer's card. Worked examples: `docs/changes-2026-10-24.md`.
 
 ## 2. Finale plan (24–25 Oct)
 

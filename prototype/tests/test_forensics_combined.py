@@ -120,3 +120,24 @@ def test_an_unverified_rule_counts_zero_so_it_never_helps_a_red():
     s.citation_verified = False
     v = fuse(CLAIM, [s, voice("synthetic", "moderate")])
     assert v.scores["instruction_pct"] == 0 and v.outcome == Outcome.AMBER
+
+
+def test_when_the_media_moves_the_verdict_the_text_never_calls_it_too_weak():
+    """Review, 24 Oct: a flagged voice was listed under "What did run ... Nothing there is strong enough to move the
+    verdict" right beside the AMBER or RED it had just produced, and a lone hard rule read "One rule alone never gives
+    RED" inside a RED. The instruction-check sentences now speak for the message alone."""
+    plain = Claim(source="text", text="x", claimed_issuer=Issuer.NONE, instruction=Instruction.TRANSFER_TO_ACCOUNT)
+    v = fuse(plain, [voice("synthetic", "moderate")])
+    assert v.outcome == Outcome.AMBER and v.scores["deepfake_pct"] == 70
+    assert "strong enough to move" not in v.explanation and "What did run" not in v.explanation
+    assert "Signs of synthetic speech" in v.explanation          # named once, by the media sentence
+    red = fuse(CLAIM, ONE_HARD + [voice("synthetic", "moderate")])
+    assert red.outcome == Outcome.RED and "One rule alone never gives RED" not in red.explanation
+    assert "no independent check on the message confirmed it" in red.explanation
+    assert fuse(CLAIM, ONE_HARD).explanation.endswith("One rule alone never gives RED.")   # no media: unchanged
+
+
+def test_a_scripted_media_result_is_marked_simulated_in_the_scores():
+    sim = to_signal(BOOK, ForensicResult("audio", "synthetic", band="moderate", model="sim", cell="hi/clean", simulated=True))
+    assert fuse(CLAIM, RED_PAIR + [sim]).scores["deepfake_simulated"] is True
+    assert fuse(CLAIM, RED_PAIR + [voice("synthetic", "moderate")]).scores["deepfake_simulated"] is False

@@ -6,6 +6,9 @@ detector abstains outside the conditions it was calibrated for.
   calibration file exists.
 - DocumentForensics: error-level analysis plus creator metadata; abstains on small or recompressed images.
 - SimulatedForensics: rehearsal only; its results are labelled SIMULATED wherever they appear.
+- RemoteForensics: the finale detectors (satyapan-finale: GenD face check + audio deepfake check) through their local
+  service, which keeps the models loaded. A video gets a face result and a voice result. If the service is not
+  running, the file gets one abstaining result that says so; a case never fails because of forensics.
 """
 from __future__ import annotations
 
@@ -45,8 +48,8 @@ class AudioForensics(Protocol):
 
 
 class NullAudioForensics:
-    label = Label("Audio forensics", "AASIST-L anti-spoofing (CPU), calibrated per language × codec", "Model risk",
-                  "in-process model; abstains when no calibrated detector is loaded", mock=False)
+    label = Label("Audio forensics", "No voice detector loaded in this process", "Model risk",
+                  "abstains here; when the local forensics service runs, voice notes are checked there", mock=False)
 
     def analyse(self, path: Path, language: str = "hi") -> ForensicResult:
         return ForensicResult(kind="audio", status="abstain", reason="no calibrated audio detector loaded", model="none")
@@ -75,7 +78,8 @@ class AASISTAudioForensics:
     where the model did run, its score, so the officer sees a real model ran and why it said nothing.
 
     What the calibration measures is false alarms on real speech re-encoded through each channel. How often the model
-    catches a modern Indian-language voice clone is not measured here, which is why F3 stays corroboration only.
+    catches a modern Indian-language voice clone is not measured here, which is why it counts only through these
+    calibrated bands.
     """
     label = Label("Audio forensics", "AASIST-L (clovaai/aasist, MIT) on CPU", "Model risk", "in-process model with per-cell calibration", mock=False)
     WINDOW = 64600  # ~4 s at 16 kHz, as in the AASIST recipe; the score is the mean over windows
@@ -166,102 +170,6 @@ class DFArenaAudioForensics:
                               cell=r.cell, extra={k: v for k, v in keep.items() if v is not None})
 
 
-def _from_team(r) -> ForensicResult:
-    """A team-repository result (object or its JSON dict from the forensics service) as this engine's ForensicResult."""
-    g = r.get if isinstance(r, dict) else (lambda k, d=None: getattr(r, k, d))
-    extra = g("extra") or {}
-    keep = ("speech_s", "duration_s", "window_scores", "codec", "source_rate", "seconds", "from_video", "faces_scored",
-            "frames_tried", "spread", "short_side")
-    return ForensicResult(kind=g("kind"), status=g("status"), band=g("band") or "", score=g("score"), reason=g("reason") or "",
-                          model=g("model") or "", cell=g("cell") or "", extra={k: extra[k] for k in keep if extra.get(k) is not None})
-
-
-class _FaceCheckMissing:
-    """Stands in for the face check when it cannot load here (no OpenCV, no GenD weights): it abstains with the reason,
-    and the voice check on the same video still runs."""
-    def __init__(self, reason: str):
-        self.reason = reason
-
-    def analyse(self, path):
-        from forensics.common import ForensicResult as TeamResult
-        return TeamResult(kind="video", status="abstain", reason=self.reason, model="none")
-
-
-class TeamVideoForensics:
-    """A video gets both checks of the team repository's joined entry point (forensics/analyse.py): the face check
-    (GenD CLIP-L/14, Aman's, on YuNet faces) on its frames, and the voice check (DF Arena) on its sound track, judged
-    by the sound's own codec. An audio file never comes here; it goes to the voice check alone.
-
-    With SATYAPAN_FORENSICS_URL set, it asks the team's forensics service (scripts/demo_up.sh), which keeps both models
-    loaded in their own process. Otherwise it runs the same entry point in this process, loading GenD on the first
-    video (about 25 s on the team laptop) and sharing the voice model with the audio check."""
-    label = Label("Video forensics", "GenD CLIP-L/14 face check (yermandy/GenD, MIT) on YuNet faces, plus the DF Arena "
-                  "voice check on the sound track; both calibrated", "Model risk",
-                  "in-process models, or the team's forensics service", mock=False)
-
-    def __init__(self, repo: Path, audio, url: Optional[str] = None):
-        import sys
-        if str(repo) not in sys.path:
-            sys.path.insert(0, str(repo))
-        self.repo, self.url = repo, (url or "").rstrip("/")
-        # the voice half: the team detector inside the DF Arena adapter, else whatever audio check this engine has
-        self.audio = getattr(audio, "detector", audio)
-        self._video = None
-
-    @property
-    def video(self):
-        if self._video is None:
-            try:
-                from forensics.common import Calibration
-                from forensics.video import GenDVideoForensics
-                cal = self.repo / "calibration" / "video.json"
-                self._video = GenDVideoForensics(calibration=Calibration.load(cal) if cal.exists() else None)
-                _ = self._video.detector, self._video.scorer             # load now, so a failure is caught here
-            except Exception as e:  # noqa: BLE001 - no OpenCV or no weights: the face half abstains, the voice half runs
-                self._video = _FaceCheckMissing(f"the face check is not installed on this machine ({type(e).__name__})")
-        return self._video
-
-    def analyse(self, path: Path, language: str = "hi", channel: Optional[str] = None) -> list[ForensicResult]:
-        language = language if language in ("hi", "en") else "hi"
-        if self.url:
-            import json
-            import urllib.request
-            body = json.dumps({"path": str(Path(path).resolve()), "language": language, "channel": channel}).encode()
-            req = urllib.request.Request(self.url + "/analyse", data=body, headers={"Content-Type": "application/json"})
-            try:
-                with urllib.request.urlopen(req, timeout=600) as r:
-                    return [_from_team(x) for x in json.load(r)["results"]]
-            except Exception as e:  # noqa: BLE001 - the service is down: say so, never crash the case
-                why = f"the forensics service could not be reached ({type(e).__name__})"
-                return [ForensicResult(kind=k, status="abstain", reason=why, model="service") for k in ("video", "audio")]
-        from forensics.analyse import analyse as joined
-        return [_from_team(r) for r in joined(path, video=self.video, audio=self.audio, language=language, channel=channel)]
-
-
-class AudioOnlyVideoForensics:
-    """No team repository here: a video's sound still gets the engine's voice check; the face check says it is absent."""
-    label = Label("Video forensics", "voice check on the sound track only; no face check installed", "Model risk",
-                  "the audio check, run on the video's sound", mock=False)
-
-    def __init__(self, audio):
-        self.audio = audio
-
-    def analyse(self, path: Path, language: str = "hi", channel: Optional[str] = None) -> list[ForensicResult]:
-        voice = (self.audio.analyse(path, language, channel=channel) if channel and getattr(self.audio, "accepts_channel", False)
-                 else self.audio.analyse(path, language))
-        return [ForensicResult(kind="video", status="abstain", reason="no face check is installed", model="none"), voice]
-
-
-def default_video_forensics(audio):
-    """Both checks for a video when the team repository has the face check, else the voice check alone."""
-    if (TEAM_REPO / "forensics" / "analyse.py").exists() and os.environ.get("SATYAPAN_VIDEO", "").lower() != "none":
-        try:
-            return TeamVideoForensics(TEAM_REPO, audio, url=os.environ.get("SATYAPAN_FORENSICS_URL"))
-        except Exception:  # noqa: BLE001
-            pass
-    return AudioOnlyVideoForensics(audio)
-
-
 # The voice detector's repository: this engine's parent when it sits in prototype/ of the team repository, else a
 # sibling checkout named satyapan-team (the laptop layout). SATYAPAN_TEAM_REPO overrides both.
 TEAM_REPO = Path(os.environ.get("SATYAPAN_TEAM_REPO")
@@ -276,13 +184,18 @@ def default_audio_forensics():
     SATYAPAN_AUDIO picks one: "dfarena" (the default when the team repository and its calibration are present),
     "aasist", or "none". The test suite pins "aasist" so its results do not depend on a 1.7 GB download."""
     choice = os.environ.get("SATYAPAN_AUDIO", "").lower()
+    if choice == "none":
+        return NullAudioForensics()
+    # Both real detectors need torch. Without it (the engine's own environment on the demo laptop, where the voice check
+    # runs in the forensics service instead) the label must not name a model that cannot run in this process.
+    import importlib.util
+    if importlib.util.find_spec("torch") is None:
+        return NullAudioForensics()
     if choice in ("", "dfarena") and (TEAM_REPO / "calibration" / "audio.json").exists():
         try:
             return DFArenaAudioForensics(TEAM_REPO)
         except Exception:  # noqa: BLE001 - a broken checkout falls back to AASIST-L, never a crash
             pass
-    if choice == "none":
-        return NullAudioForensics()
     ckpt = AASIST_DIR / "models" / "weights" / "AASIST-L.pth"
     if not (ckpt.exists() and AASIST_CALIBRATION.exists()):
         return NullAudioForensics()
@@ -362,6 +275,136 @@ class DocumentForensics:
                               model="ELA", extra={"ela_mean": round(mean, 2), "ela_max": mx, "software": software})
 
 
+class RemoteForensics:
+    """Client for the satyapan-finale forensics service (`python -m forensics.service`, http://127.0.0.1:8765)."""
+
+    def __init__(self, url: str, timeout: float = 180.0):
+        self.url = url.rstrip("/")
+        self.timeout = timeout
+        # Prefetch: forensics start when a file is uploaded (alongside speech-to-text), and run() picks up the result
+        # by content hash, so the officer is not waiting for the face check after clicking Run.
+        import threading
+        self._lock = threading.Lock()
+        self._pending: dict = {}
+        self.label = Label("Video and audio forensics", "GenD CLIP-L/14 face check (MIT) and DF Arena 500M voice check "
+                           "(non-commercial licence), calibrated per kind of input", "Model risk",
+                           f"local service at {self.url}; abstains when unsure, uncalibrated or not running", mock=False)
+
+    def _call(self, method: str, route: str, body: Optional[dict] = None) -> dict:
+        import urllib.request
+        data = json.dumps(body).encode() if body is not None else None
+        req = urllib.request.Request(self.url + route, data=data, method=method, headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=self.timeout) as r:
+            return json.load(r)
+
+    def health(self) -> Optional[dict]:
+        try:
+            return self._call("GET", "/health")
+        except Exception:  # noqa: BLE001 - any failure means "not running"
+            return None
+
+    @staticmethod
+    def _sha(path: Path) -> str:
+        import hashlib
+        h = hashlib.sha256()
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(1 << 20), b""):
+                h.update(chunk)
+        return h.hexdigest()
+
+    @staticmethod
+    def _key(sha: str, language: str, channel: Optional[str]) -> str:
+        return f"{sha}|{language}|{channel or ''}"      # the voice check is calibrated per language and channel
+
+    def prefetch(self, path: Path, kind: str, language: str = "hi", channel: Optional[str] = None) -> None:
+        """Start the analysis of a private copy of `path` in the background (the upload is moved after decoding)."""
+        import shutil
+        import tempfile
+        import threading
+        try:
+            sha = self._sha(path)
+        except OSError:
+            return
+        sha = self._key(sha, language, channel)
+        with self._lock:
+            e = self._pending.get(sha)
+            if e is not None and not (e["done"].is_set() and _unreachable(e["results"] or [])):
+                return                                   # already running, or a real answer is cached
+            done = threading.Event()
+            self._pending[sha] = {"done": done, "results": None}
+        tmp = Path(tempfile.mkdtemp(prefix="satyapan-forensics-"))
+        copy = tmp / Path(path).name
+        shutil.copyfile(path, copy)
+
+        def work():
+            try:
+                self._pending[sha]["results"] = self._fetch(copy, kind, language, channel)
+            finally:
+                shutil.rmtree(tmp, ignore_errors=True)
+                done.set()
+        threading.Thread(target=work, daemon=True).start()
+
+    def analyse_all(self, path: Path, kind: str, language: str = "hi", channel: Optional[str] = None) -> list[ForensicResult]:
+        try:
+            sha = self._key(self._sha(path), language, channel)
+        except OSError:
+            sha = None
+        entry = self._pending.get(sha) if sha else None
+        if entry is not None and entry["done"].wait(self.timeout) and entry["results"] is not None:
+            # Reuse any real answer from the service, including its own abstains ("audio detector not installed yet").
+            # Only a client-side failure (service unreachable at upload time) is retried now.
+            if not _unreachable(entry["results"]):
+                return entry["results"]
+        results = self._fetch(path, kind, language, channel)
+        if sha and not _unreachable(results):          # keep it, so a re-run (strike a field) does not re-analyse
+            import threading
+            done = threading.Event()
+            done.set()
+            with self._lock:
+                self._pending[sha] = {"done": done, "results": results}
+        return results
+
+    def _fetch(self, path: Path, kind: str, language: str = "hi", channel: Optional[str] = None) -> list[ForensicResult]:
+        body = {"path": str(Path(path).resolve()), "language": language if language in ("hi", "en") else "hi"}
+        if channel:
+            body["channel"] = channel
+        if kind in ("audio", "video"):
+            body["kind"] = kind      # a browser voice recording is WebM: without this the service would face-check it
+        try:
+            out = self._call("POST", "/analyse", body)
+        except Exception:  # noqa: BLE001 - not running, timed out, or bad reply: abstain, never fail the case
+            return [ForensicResult(kind=kind, status="abstain", reason="the forensics service is not running", model="none",
+                                   extra={"unreachable": True})]
+        results = []
+        for d in out.get("results", []):
+            if d.get("status") not in ("synthetic", "clean", "abstain") or d.get("kind") not in ("audio", "video"):
+                continue
+            if kind == "audio" and d.get("kind") == "video":
+                continue             # a voice note has no face to check, whatever an older service answered
+            results.append(ForensicResult(kind=d["kind"], status=d["status"], band=d.get("band", ""), score=d.get("score"),
+                                          reason=d.get("reason", ""), model=d.get("model", ""), cell=d.get("cell", ""),
+                                          extra={"sha256": (d.get("extra") or {}).get("sha256"), "service_seconds": out.get("seconds")}))
+        return results or [ForensicResult(kind=kind, status="abstain", reason="the forensics service returned no result", model="none",
+                                          extra={"unreachable": True})]
+
+
+def _unreachable(results: list) -> bool:
+    return any((r.extra or {}).get("unreachable") for r in results)
+
+
+CHECK_EN = {"audio": "Voice check", "video": "Face check", "document": "Document check"}
+CHECK_HI = {"audio": "आवाज़ की जाँच", "video": "चेहरे की जाँच", "document": "दस्तावेज़ की जाँच"}
+
+RULE_FOR_KIND = {"audio": "R-AUDIO-SYNTH", "video": "R-VIDEO-SYNTH", "document": "R-DOC-TAMPER"}
+
+
+def rule_for(res: "ForensicResult") -> str:
+    """Voice -> R-AUDIO-SYNTH, face -> R-VIDEO-SYNTH; a document whose own label names an AI tool -> R-DOC-AI."""
+    if res.kind == "document" and res.status == "synthetic":
+        return "R-DOC-AI"
+    return RULE_FOR_KIND.get(res.kind, "R-DOC-TAMPER")
+
+
 DEEPFAKE_PCT = {"high": 100, "moderate": 70, "low": 30}   # calibrated band -> deepfake % (fusion's combined score)
 
 
@@ -379,16 +422,23 @@ def to_signal(book, res: ForensicResult):
     from .models import Family, Severity, Signal
     from .rulebook import make_signal
     tag = " (SIMULATED)" if res.simulated else ""
-    rule_id = {"audio": "R-AUDIO-SYNTH", "video": "R-VIDEO-SYNTH"}.get(res.kind) or ("R-DOC-AI" if res.status == "synthetic" else "R-DOC-TAMPER")
+    rule_id = rule_for(res)
     if res.status in ("synthetic", "edited"):
         return make_signal(book, rule_id, {"evidence_key": f"media:{res.kind}", "band": res.band + tag, "band_hi": BAND_HI.get(res.band, res.band) + tag,
                                            "score": res.score, "model": res.model, "cell": res.cell, "simulated": res.simulated,
                                            "status": res.status, "deepfake_pct": deepfake_pct(res),
                                            "tool": res.extra.get("ai_tool", "")})
-    reason = res.reason or ("no signs found" if res.status == "clean" else "abstained")
+    check_en = CHECK_EN.get(res.kind, "Media check")
+    check_hi = CHECK_HI.get(res.kind, "मीडिया की जाँच")
+    if res.status == "clean":
+        reason_en = f"{check_en}{tag}: no signs found. That does not confirm the media is genuine."
+        reason_hi = f"{check_hi}{tag}: कोई संकेत नहीं मिला। इससे यह पक्का नहीं होता कि मीडिया असली है।"
+    else:
+        reason_en = f"{check_en}{tag}: unsure: {res.reason or 'it could not judge this file'}."
+        reason_hi = f"{check_hi}{tag}: अनिश्चित।"
     return Signal(rule_id=rule_id, family=Family.F3, severity=Severity.ABSTAIN if res.status == "abstain" else Severity.INFO,
-                  evidence_key=f"media:{res.kind}", reason_en=f"Forensics ({res.kind}): {res.status}{tag}. {reason}",
-                  reason_hi=f"फ़ोरेंसिक ({res.kind}): {res.status}{tag}", citation="corroboration only", citation_verified=True,
+                  evidence_key=f"media:{res.kind}", reason_en=reason_en,
+                  reason_hi=reason_hi, citation="media check; counts in the combined score only when it can judge the media", citation_verified=True,
                   rule_version="forensics-1.0",
                   detail={"can_be_second": False, "status": res.status, "score": res.score, "model": res.model, "cell": res.cell, "simulated": res.simulated,
                           "deepfake_pct": deepfake_pct(res)})

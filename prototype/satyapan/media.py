@@ -176,10 +176,18 @@ def whisper_model(name: Optional[str] = None, *, download: bool = False):
                                          local_files_only=not download)
         except TypeError:          # a stand-in or an older faster-whisper without these keywords
             _WHISPER[key] = WhisperModel(name, device="cpu", compute_type="int8")
-        except Exception as e:     # noqa: BLE001 - not on disk: a missing install, so the console asks for a transcript
-            raise RuntimeError(f"the speech-to-text model '{name}' is not downloaded: run `satyapan setup-models`, "
-                               "or pass derived_text") from e
+        except Exception as e:     # noqa: BLE001 - not under vendor/: try the standard Hugging Face cache, offline
+            try:                   # (scripts/fetch_models.sh and earlier runs put large-v3-turbo there)
+                _WHISPER[key] = WhisperModel(name, device="cpu", compute_type="int8", local_files_only=True)
+            except Exception:      # noqa: BLE001 - not on disk anywhere: the console asks for a transcript
+                raise RuntimeError(f"the speech-to-text model '{name}' is not downloaded: run `satyapan setup-models`, "
+                                   "or pass derived_text") from e
     return _WHISPER[key], name
+
+
+def _whisper(name: str):
+    """Load (once) and return the model; the server's start-up preload calls this."""
+    return whisper_model(name)[0]
 
 
 SAMPLE_RATE = 16000
@@ -228,7 +236,9 @@ def transcribe(path: Path, language: str = "hi") -> tuple[str, str]:
     if not isinstance(audio, str) and len(audio) == 0:
         raise MediaUnreadable(no_speech_message(path.name, near_silent=True))
     try:
-        segments, _ = model.transcribe(audio, language=language if language in ("hi", "en") else None, vad_filter=True)
+        beam = int(os.environ.get("SATYAPAN_WHISPER_BEAM", "5"))   # 1 = greedy: about 2x faster on CPU, slightly less accurate
+        segments, _ = model.transcribe(audio, language=language if language in ("hi", "en") else None, vad_filter=True,
+                                       beam_size=beam)
         text = " ".join(t for t in (s.text.strip() for s in segments) if t)
     except Exception as e:  # noqa: BLE001 - any decoder failure means the same thing to the officer
         raise MediaUnreadable(unreadable_message(path.name, kind_of(path))) from e

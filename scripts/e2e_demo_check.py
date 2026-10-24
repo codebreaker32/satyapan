@@ -43,6 +43,7 @@ def main() -> int:
     ap.add_argument("--text", help="what the message says (skips speech-to-text)")
     ap.add_argument("--server", default="http://127.0.0.1:8000")
     ap.add_argument("--amount", type=float, default=3800000)
+    ap.add_argument("--language", default="hi", choices=["hi", "en"], help="how OCR / speech-to-text reads the file")
     a = ap.parse_args()
     b = a.server.rstrip("/")
     meta = call(b, "GET", "/api/meta")
@@ -53,7 +54,7 @@ def main() -> int:
     cid = case["case"]["id"]
     call(b, "POST", f"/api/cases/{cid}/consent", {"check": True, "report": False, "memory": False, "lang": "hi"})
     t0 = time.perf_counter()
-    form = {"language": "hi"} | ({"derived_text": a.text} if a.text else {})
+    form = {"language": a.language} | ({"derived_text": a.text} if a.text else {})
     call(b, "POST", f"/api/cases/{cid}/media", form, files={"file": a.media})
     t1 = time.perf_counter()
     out = call(b, "POST", f"/api/cases/{cid}/run")

@@ -41,7 +41,7 @@ When a bank's existing controls pause a large, unusual transfer, Satyapan lets t
 ## Capabilities and Constraints
 
 - The engine (Python, this repo) is the source of truth: claim extraction with quote-grounding, YAML rulebook with verified citations, ordered fusion, Hindi/English card, Ed25519-signed evidence pack, campaign memory with a two-person rule.
-- Invariants the UI must never contradict: RED needs two independent families (F5 never counts); RED also needs a money demand to have been read, so with no instruction and no payee the verdict is capped at AMBER; a lone hard rule gives AMBER; with judged media the combined score decides (50% instruction + 50% deepfake, RED from 40%, AMBER from 15%); "no warning signs" is never shown as "safe"; the system never says "fake", "genuine" or "fraud"; customers never see a score; nothing is auto-blocked.
+- Invariants the UI must never contradict: with no judged media, RED needs two independent families (F5 never counts); RED also needs a money demand to have been read, so with no instruction and no payee the verdict is capped at AMBER; a lone hard rule gives AMBER; with judged media the combined score decides (50% instruction + 50% deepfake, RED from 40%, AMBER from 15%); "no warning signs" is never shown as "safe"; the system never says "fake", "genuine" or "fraud"; customers never see a score; nothing is auto-blocked.
 - Terminology: case, flag, claim (extracted), signal, family F1–F5, verdict/outcome, card, evidence pack, hold, escalation ladder, claim-only mode, campaign memory.
 - Languages: Hindi and English on the customer card (Devanagari must render); officer UI in English.
 - Deepfake video forensics is out of scope for the two-person build; the video demo uses its audio track.

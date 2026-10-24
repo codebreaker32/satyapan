@@ -260,26 +260,59 @@ def _why_nothing_fired(claim: Claim) -> str:
     return pair + ", and the bank has no record that could check it"
 
 
-def _what_ran(claim: Claim, signals: list[Signal], titles: dict[str, str], *, explain: bool = True) -> str:
+def _what_ran(claim: Claim, signals: list[Signal], titles: dict[str, str], *, explain: bool = True,
+              media_counts: bool = False) -> str:
     """What actually fired on a GREY, so the band never claims "no rule fired" over a rule that did.
 
     A GREY can still carry signals: `R-ED-FOUND` is an F1 informational match saying ED's own system recognised
     the summons. Nothing informational moves a verdict, but saying nothing ran while the panel below lists one is
     the contradiction this whole change exists to remove. F5 is context and never counts, so it stays out.
     """
-    fired = sorted({s.rule_id for s in signals if s.family != Family.F5})
+    # A media check that found nothing or abstained is not a rule that fired: its rule title ("Signs of face
+    # manipulation") reads like a finding. Name such checks by what they did instead.
+    # A flagged media check is not listed here either: with judged media the combined score decides, and fuse() says
+    # "The media shows ..." itself. Listed here it read "Nothing there is strong enough to move the verdict" next to
+    # the AMBER or RED that check had just produced.
+    quiet_media = [s for s in signals if s.family == Family.F3 and s.severity in (Severity.ABSTAIN, Severity.INFO)]
+    fired = sorted({s.rule_id for s in signals if s.family not in (Family.F5, Family.F3)})
+    media = _media_checks(quiet_media)
     if not fired:
         # The why-clause now carries what "nothing to corroborate" used to say, and this sentence is set on the
         # verdict band where every extra line costs. One idea, once.
         why = f", because {_why_nothing_fired(claim)}" if explain else ". There is nothing to corroborate it either way"
-        return f"No rule fired on it{why}."
+        return f"No rule fired on it{why}.{media}"
+    if media_counts:
+        # quoted after "Instruction checks:" in a verdict the combined score made, so it speaks for the message only
+        return (f"What did run on the message: {_join([_named(r, titles) for r in fired])}. On its own that is not "
+                f"enough for a warning.{media}")
     return (f"What did run: {_join([_named(r, titles) for r in fired])}. Nothing there is strong enough to move the "
-            f"verdict, so there is nothing to corroborate either way.")
+            f"verdict, so there is nothing to corroborate either way.{media}")
 
 
-def _fuse_rules(claim: Claim, signals: list[Signal], names: dict[str, str], shown: list[Signal]) -> Verdict:
+MEDIA_CHECK_WORDS = {"media:video": "the face check", "media:audio": "the voice check", "media:document": "the document check"}
+
+
+def _media_checks(quiet: list[Signal]) -> str:
+    """' Media checks: the face check found no signs and the voice check abstained.' A check that found no signs counts
+    0% in the combined score; one that abstained is not counted, and when every check abstained the sentence says so."""
+    parts = []
+    for s in quiet:
+        what = MEDIA_CHECK_WORDS.get(s.evidence_key, "a media check")
+        did = "found no signs" if (s.detail or {}).get("status") == "clean" else "abstained"
+        if what not in " ".join(parts):
+            parts.append(f"{what} {did}")
+    if not parts:
+        return ""
+    judged = any((s.detail or {}).get("status") == "clean" for s in quiet)
+    return f" Media checks: {_join(parts)}{'' if judged else '; a check that is unsure is not counted'}."
+
+
+def _fuse_rules(claim: Claim, signals: list[Signal], names: dict[str, str], shown: list[Signal], *,
+                media_counts: bool = False) -> Verdict:
     """The instruction checks' own verdict: `signals` holds every family except F3 (media), and `shown` is the full
-    list the verdict carries, so a GREY still names a detector that ran and abstained."""
+    list the verdict carries, so a GREY still names a detector that ran and abstained. `media_counts` is set when judged
+    media will count half: the sentences then speak for the message alone, because fuse() quotes them after
+    "Instruction checks:" in a verdict the media may have moved."""
     hard = [s for s in signals if s.severity == Severity.HARD and s.citation_verified]
     soft = [s for s in signals if s.severity == Severity.SOFT]
     match = [s for s in signals if s.severity == Severity.MATCH]
@@ -327,6 +360,9 @@ def _fuse_rules(claim: Claim, signals: list[Signal], names: dict[str, str], show
                                        f"at “{stops_at}”.", anchor=h.rule_id, payment_neutral=True)
                     return verdict(Outcome.RED, pair + ".", anchor=h.rule_id, second=s.rule_id)
         h = hard[0]
+        if media_counts:
+            return verdict(Outcome.AMBER, f"{_named(h.rule_id, names)} fired, and no independent check on the message "
+                           "confirmed it.", anchor=h.rule_id)
         return verdict(Outcome.AMBER, f"{_named(h.rule_id, names)} fired but no independent signal from another family "
                        "confirmed it. One rule alone never gives RED.", anchor=h.rule_id)
 
@@ -352,12 +388,14 @@ def _fuse_rules(claim: Claim, signals: list[Signal], names: dict[str, str], show
     read = _what_was_read(claim)
     never_safe = "This is not a confirmation that the message is safe."
     if read:
-        return verdict(Outcome.GREY, f"Read from the message: {_join(read)}. {_what_ran(claim, shown, names)} {never_safe}")
+        ran = _what_ran(claim, shown, names, media_counts=media_counts)
+        return verdict(Outcome.GREY, f"Read from the message: {_join(read)}. {ran} {never_safe}")
     if not claim.has_content():
         # this branch already says why nothing matched, so the clause would only repeat it
-        ran = _what_ran(claim, shown, names, explain=False)
+        ran = _what_ran(claim, shown, names, explain=False, media_counts=media_counts)
         return verdict(Outcome.GREY, f"{_nothing_could_be_anchored(claim)} {ran} {never_safe}")
-    return verdict(Outcome.GREY, f"Nothing was read out of this message. {_what_ran(claim, shown, names)} {never_safe}")
+    ran = _what_ran(claim, shown, names, media_counts=media_counts)
+    return verdict(Outcome.GREY, f"Nothing was read out of this message. {ran} {never_safe}")
 
 
 # ---------------------------------------------------------------- the combined score (Bhawna, 24 Oct 2026)
@@ -410,15 +448,18 @@ def instruction_pct(rules: list[Signal]) -> int:
 def fuse(claim: Claim, signals: list[Signal], *, titles: dict[str, str] | None = None) -> Verdict:
     names = _shipped_titles() if titles is None else titles
     rules = [s for s in signals if s.family != Family.F3]
-    base = _fuse_rules(claim, rules, names, signals)
     judged = [(p, s) for s in signals if (p := deepfake_pct(s)) is not None]
+    base = _fuse_rules(claim, rules, names, signals, media_counts=bool(judged))
     if not judged:
         return base
     d, media = max(judged, key=lambda x: x[0])
     i = instruction_pct(rules)
     c = INSTRUCTION_WEIGHT * i + (1 - INSTRUCTION_WEIGHT) * d
+    # deepfake_simulated: the rehearsal scenarios script their media result (SimulatedForensics), and the band must say
+    # so next to the number, as every other place that shows a scripted result does
     scores = {"instruction_pct": i, "deepfake_pct": d, "combined_pct": round(c, 1),
-              "red_line_pct": RED_LINE_PCT, "amber_line_pct": AMBER_LINE_PCT}
+              "red_line_pct": RED_LINE_PCT, "amber_line_pct": AMBER_LINE_PCT,
+              "deepfake_simulated": bool((media.detail or {}).get("simulated"))}
     head = f"Instruction checks {i}%, deepfake check {d}%, half each: combined {c:g}%"
     found = (f"The media shows {_named(media.rule_id, names)}." if d > 0
              else "The media was checked and shows no signs of a deepfake.")

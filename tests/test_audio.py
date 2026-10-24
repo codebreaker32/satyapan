@@ -137,6 +137,28 @@ def test_a_missing_or_broken_file_abstains(tmp_path):
     assert r.status == "abstain" and r.reason.startswith("the audio could not be read")
 
 
+def test_a_missing_voice_model_is_not_blamed_on_the_recording(tmp_path, monkeypatch):
+    """Weights missing from the cache must read as the model being unavailable, never as the customer's file being
+    unreadable (24 Oct: a half-finished download made every voice note say 'the audio could not be read')."""
+    import forensics.audio as audio
+
+    def no_model(*a, **kw):
+        raise OSError("not in the Hugging Face cache")
+    monkeypatch.setattr(audio, "DFArenaScorer", no_model)
+    det = DFArenaAudioForensics(calibration=CAL, name="stub")          # no scorer given: it loads DF Arena lazily
+    r = det.analyse(write_wav(tmp_path / "v.wav", voice(8)))
+    assert r.status == "abstain" and r.reason == "the voice model is not available (OSError)"
+    assert r.extra["sha256"]
+
+
+def test_a_check_that_fails_mid_way_says_so(tmp_path):
+    def broken(windows):
+        raise RuntimeError("out of memory")
+    det = DFArenaAudioForensics(calibration=CAL, scorer=broken, name="stub")
+    r = det.analyse(write_wav(tmp_path / "v.wav", voice(8)))
+    assert r.status == "abstain" and r.reason == "the voice check failed (RuntimeError)"
+
+
 @pytest.mark.skipif(os.environ.get("RUN_SLOW") != "1", reason="loads DF Arena 500M; set RUN_SLOW=1")
 def test_real_model_scores_a_clip(tmp_path):
     clip = os.environ.get("SMOKE_AUDIO")

@@ -6,9 +6,10 @@ Prod: `npm run build` in console/ writes console/dist, which this app serves at 
 """
 from __future__ import annotations
 
+import os
+
 import copy
 import json
-import os
 import shutil
 import statistics
 import tempfile
@@ -21,6 +22,7 @@ from fastapi import Body, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
 from . import POLICY_VERSION, __version__
@@ -35,26 +37,45 @@ from .rules import ISSUER_EN
 app = FastAPI(title="Satyapan", version=__version__, description="Verify the instruction, not the pixels.")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"], allow_methods=["*"], allow_headers=["*"])
 
-# The website check asks the domain registries live when the server runs (SATYAPAN_LIVE_WEB=0 turns that off, and
-# the test suite does); offline it falls back to the recorded answers, so a dead venue network changes nothing.
-engine = Satyapan(adapters=Adapters.mocks(live_web=os.environ.get("SATYAPAN_LIVE_WEB", "1") != "0"))
+# The website check answers from the registry records saved on 23 Oct unless SATYAPAN_LIVE_WEB=1, which asks the
+# domain registries live (rdap.org) and still falls back to the recorded answers when the network fails. Off by
+# default, so nothing leaves the laptop unless someone chose that (the docs and the run-sheet say so).
+engine = Satyapan(adapters=Adapters.mocks(live_web=os.environ.get("SATYAPAN_LIVE_WEB", "0") == "1"))
+if os.environ.get("SATYAPAN_WHISPER_PRELOAD"):
+    # demo_up.sh sets this: load the speech-to-text model in the background at start-up, so the first voice note of
+    # the demo does not also wait 15-60 s for the model to load. Failure here only means the first note loads it.
+    import threading
+
+    def _preload_whisper() -> None:
+        try:
+            from .media import _whisper
+            _whisper(os.environ.get("SATYAPAN_WHISPER_MODEL", "small"))
+        except Exception:  # noqa: BLE001
+            pass
+    threading.Thread(target=_preload_whisper, daemon=True).start()
+
 UPLOADS = STATE_DIR / "uploads"
 
 # Upload limits for the demo. The cap bounds what lands on disk under evidence/uploads/; the request body itself
 # is still read by the framework first, which is acceptable on 127.0.0.1.
 MAX_UPLOAD_MB = 25
 MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
+# A phone's own formats too: an iPhone records video as .mov, Android call recorders save .amr or .3gp, and a judge's
+# test kit can hold any of them. Each still has to open as what its name says (media.contents_contradict_name).
 ALLOWED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp",                      # images
                       ".ogg", ".opus", ".mp3", ".wav", ".m4a", ".weba",      # audio (.weba: a browser's own recording)
-                      ".mp4", ".webm",                                       # video
+                      ".aac", ".amr", ".flac",
+                      ".mp4", ".webm", ".mov", ".3gp", ".mkv",               # video
                       ".pdf",                                                # scanned notices
                       ".txt"}                                                # text
 ALLOWED_CONTENT_TYPES = {"image/png", "image/jpeg", "image/webp",
                          "audio/ogg", "audio/opus", "audio/mpeg", "audio/mp3", "audio/wav", "audio/x-wav",
-                         "audio/mp4", "audio/x-m4a", "audio/m4a", "audio/webm",
-                         "video/mp4", "video/webm", "application/pdf", "text/plain"}
-ALLOWED_PLAIN = ("an image (png, jpg, webp), a voice note or audio file (ogg, opus, mp3, wav, m4a, weba), "
-                 "a video (mp4, webm), a PDF or plain text (txt)")
+                         "audio/mp4", "audio/x-m4a", "audio/m4a", "audio/webm", "audio/aac", "audio/x-aac",
+                         "audio/amr", "audio/3gpp", "audio/flac", "audio/x-flac",
+                         "video/mp4", "video/webm", "video/quicktime", "video/3gpp", "video/x-matroska",
+                         "application/pdf", "text/plain"}
+ALLOWED_PLAIN = ("an image (png, jpg, webp), a voice note or audio file (ogg, opus, mp3, wav, m4a, weba, aac, amr, "
+                 "flac), a video (mp4, webm, mov, 3gp, mkv), a PDF or plain text (txt)")
 
 # Session state: time-to-verdict per run in this serve process, and the campaign memory as it stood at start-up,
 # so /api/demo/reset can put a rehearsal back to a clean slate without touching fixture data.
@@ -122,8 +143,8 @@ def meta():
                 {"id": m.id, "family": m.family.value, "severity": m.severity.value, "title": m.title, "citation": m.citation.source,
                  "citation_url": m.citation.url, "verified": m.citation.verified, "checked": m.citation.checked} for m in engine.book.rules.values()]},
             "adapters": engine.adapters.labels(),
-            "forensics": {"audio": engine.audio.label.as_dict(), "video": engine.video.label.as_dict(),
-                          "document": engine.document.label.as_dict()},
+            "forensics": {"audio": engine.audio.label.as_dict(), "document": engine.document.label.as_dict(),
+                          "service": ({**engine.remote.label.as_dict(), "health": engine.remote.health()} if engine.remote else None)},
             "signer": engine.signer.label.as_dict(),
             # honest scope: wall time to verdict in this serve session on this laptop, not a benchmark
             "session_timing": {"count": len(_verdict_ms),
@@ -296,9 +317,13 @@ async def add_media(case_id: str, file: UploadFile = File(...), derived_text: Op
             raise HTTPException(415, empty_message(name))
         if contents_contradict_name(kind, head):   # cheap magic-byte check before OCR or speech-to-text
             raise HTTPException(415, unreadable_message(name, kind))
+        if engine.remote is not None and kind in ("audio", "video"):
+            engine.remote.prefetch(path, kind, language=language, channel=channel)   # start now, alongside speech-to-text
         try:
-            engine.add_media(case, path, derived_text=derived_text, sender_number=sender_number, language=language,
-                             channel=channel)
+            # Speech-to-text (Whisper) and OCR take seconds to a minute; run them off the event loop so the console and
+            # every other request stay responsive while a voice note or video is read.
+            await run_in_threadpool(engine.add_media, case, path, derived_text=derived_text, sender_number=sender_number,
+                                    language=language, channel=channel)
         except MediaUnreadable as e:   # a decoder opened it and found nothing readable
             raise HTTPException(415, str(e)) from e
         except RuntimeError as e:      # no STT/OCR installed: ask the console for the transcript
@@ -310,7 +335,8 @@ async def add_media(case_id: str, file: UploadFile = File(...), derived_text: Op
         # longer existed — and the manifest is what a Bharatiya Sakshya Adhiniyam s.63(4) certificate would rest on.
         final = kept / f"{max(len(case.media) - 1, 0):02d}-{name}"   # this upload's index; add_media already appended
         shutil.move(str(path), str(final))
-        engine._inputs[case.id]["media_paths"][name] = final   # forensics read the kept file
+        if case.media:   # forensics read the kept file, found by this upload's index (the same one as in its name)
+            engine._inputs[case.id]["media_paths"][len(case.media) - 1] = final
     finally:
         shutil.rmtree(staging, ignore_errors=True)
     return case_view(case)
@@ -326,6 +352,10 @@ def add_picklist(case_id: str, body: PicklistIn):
 @app.post("/api/cases/{case_id}/run")
 def run_case(case_id: str):
     case = get_case(case_id)
+    if case.media:
+        # An uploaded voice note or video can wait on the face and voice service for most of a minute. The Scenarios
+        # page's timing line says "engine only", so such runs are not recorded there.
+        return case_view(engine.run(case))
     return case_view(timed_run(lambda: engine.run(case)))
 
 

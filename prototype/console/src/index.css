@@ -571,6 +571,9 @@ textarea {
 .band-rests li b {
   font-weight: 700;
 }
+.band-rests li .tag {
+  margin-left: 8px;
+}
 .band .tag {
   background: rgba(255, 255, 255, 0.22);
   color: inherit;

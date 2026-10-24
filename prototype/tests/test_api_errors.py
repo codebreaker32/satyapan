@@ -136,7 +136,7 @@ def test_valid_small_png_is_accepted_and_kept_on_disk():
     # that no longer existed. The recorded filename the officer sees is unchanged.
     kept = api.UPLOADS / cid / "00-notice.png"
     assert kept.is_file(), "a file that decoded is kept under evidence/uploads/"
-    assert api.engine._inputs[cid]["media_paths"]["notice.png"] == kept   # forensics read the kept file
+    assert api.engine._inputs[cid]["media_paths"][0] == kept   # forensics read the kept file
 
 
 def test_two_uploads_with_the_same_name_each_keep_their_own_file():
@@ -151,6 +151,9 @@ def test_two_uploads_with_the_same_name_each_keep_their_own_file():
     assert media[0]["sha256"] != media[1]["sha256"], "two different files were uploaded"
     kept = sorted(p.name for p in (api.UPLOADS / cid).iterdir())
     assert len(kept) == 2, f"a file per recorded hash, got {kept}"
+    # and each recorded hash leads the forensics to its own file, so the first upload is still checked
+    paths = api.engine._inputs[cid]["media_paths"]
+    assert [paths[i].name for i in range(2)] == ["00-notice.png", "01-notice.png"]
 
 
 @pytest.mark.skipif(tesseract_cmd() is None, reason="tesseract binary not installed")
@@ -273,3 +276,32 @@ def test_a_real_pack_still_verifies_through_the_api():
     pack["manifest"]["case"]["flag"]["amount_inr"] += 1
     bad = client.post("/api/evidence/verify", json=pack).json()
     assert bad["ok"] is False and "altered after signing" in bad["reason"]
+
+
+def test_media_ingest_runs_off_the_event_loop(monkeypatch):
+    """Whisper takes 15-70 s on a voice note; on the event loop it froze every other request, the console included."""
+    import asyncio
+
+    from satyapan import api
+    seen = {}
+
+    def fake_add_media(case, path, **kw):
+        try:
+            asyncio.get_running_loop()
+            seen["on_loop"] = True
+        except RuntimeError:
+            seen["on_loop"] = False
+        api.engine._inputs[case.id]["texts"].append(("transcript", "hello"))
+    monkeypatch.setattr(api.engine, "add_media", fake_add_media)
+    cid = open_case()
+    upload(cid, "voice-note.ogg", b"OggS" + b"\x00" * 60, "audio/ogg")
+    assert seen == {"on_loop": False}
+
+
+def test_a_phones_own_formats_are_accepted():
+    """An iPhone records video as .mov and Android call recorders save .amr or .3gp; a judge's kit can hold any of
+    them. The engine already decodes them (media.VIDEO / media.AUDIO); the upload gate refused them."""
+    from satyapan.media import AUDIO, VIDEO
+    for ext in (".mov", ".3gp", ".mkv", ".amr", ".aac", ".flac"):
+        assert ext in api.ALLOWED_EXTENSIONS and ext in (AUDIO | VIDEO)
+    assert {"video/quicktime", "video/3gpp", "audio/amr"} <= api.ALLOWED_CONTENT_TYPES
