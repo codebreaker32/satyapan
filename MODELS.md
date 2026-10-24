@@ -7,10 +7,7 @@ No model has been trained, fine-tuned or adapted by the team. No weights file is
 |---|---|---|---|---|
 | Tesseract OCR 5.3.4, with Hindi (`hin`) language data | tesseract-ocr (open source), called through `pytesseract` | Off-the-shelf | Apache-2.0 | Reads the text of a scanned notice (e.g. a forged summons) so the rules can check the instruction |
 | AASIST-L (audio anti-spoofing) | clovaai/aasist (GitHub), PyTorch | Not loaded at check-in. Planned: off-the-shelf pre-trained weights, no fine-tuning | MIT | Corroborating signal on voice notes. Never decides a verdict on its own |
-| faster-whisper (Whisper speech-to-text) | SYSTRAN/faster-whisper (CTranslate2), OpenAI Whisper weights | Not installed at check-in. Planned: off-the-shelf | MIT | Transcribes a voice note or video's audio track so the rules can check the instruction |
-| Amazon Bedrock (foundation-model extraction) | AWS | Optional path, not active: Bedrock access on the team's account was not authorised at check-in | AWS Service Terms | Optional structured extraction of the claim from a message |
-| AWS KMS (asymmetric signing, ECC_NIST_P256) | AWS | Not active at check-in; a local Ed25519 key stands in and is labelled as a mock | AWS Service Terms | Signs the evidence pack |
-| Claude (via Claude Code) | Anthropic | API, off-the-shelf | Anthropic commercial terms | Development assistant and writing aid for the team. Not part of the product and not called at run time |
+| DFDC deepfake classifier: EfficientNet-B7 (Deepfake Detection Challenge, 1st place), with the MTCNN face detector it uses | selimsef/dfdc_deepfake_challenge (GitHub), PyTorch; MTCNN via facenet-pytorch | Not loaded at check-in. Planned: one published checkpoint used off-the-shelf, no fine-tuning | Code MIT. The weights were trained by their authors on Meta's DFDC dataset, which has its own research terms; we use the published weights only and do not download DFDC | Corroborating signal on video calls and recorded videos (face manipulation). Never decides a verdict on its own |
 
 ## Notes
 
