@@ -58,3 +58,14 @@ def test_a_wrong_transfer_scam_that_asks_for_money_back_stays_flagged(engine, te
     """Found by an independent probe of tonight's changes: with the possessive rule these went from RED / AMBER to
     GREY. A message that asks for money keeps its bank claim, as it did before the rule existed."""
     assert run_text(engine, text).verdict.outcome is not Outcome.GREY
+
+
+def test_the_bank_name_in_devanagari_is_read(engine):
+    """A Hindi scam posing as the bank writes 'डेमो बैंक'; with only the Latin name it read no bank claim (GREY)."""
+    case = run_text(engine, "आपके डेमो बैंक खाते से 40,000 रुपये कट गए हैं। रिफंड के लिए तुरंत इस खाते 30011223344 में 1 रुपया भेजें।")
+    assert case.claim.claimed_issuer is Issuer.BANK_SELF and case.verdict.outcome is Outcome.RED
+
+
+def test_a_relatives_hindi_message_about_my_devanagari_bank_account_is_not_the_bank(engine):
+    case = run_text(engine, "मैंने आपके डेमो बैंक खाते में 5,000 रुपये भेज दिए हैं, देख लेना।")
+    assert case.claim.claimed_issuer is not Issuer.BANK_SELF and case.verdict.outcome is Outcome.GREY

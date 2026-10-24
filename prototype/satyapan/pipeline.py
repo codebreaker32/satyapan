@@ -52,6 +52,11 @@ def _memory_also(hit: dict) -> tuple[str, str]:
 
 
 
+# How the bank's name is written in Devanagari. A Hindi scam posing as the bank writes "डेमो बैंक", and with only the
+# Latin name configured, "आपके डेमो बैंक खाते से ... कट गए हैं ... इस खाते में 1 रुपया भेजें" read no bank claim and came out
+# GREY (found by the 25 Oct probe). A bank deploying this would list its own spellings here.
+BANK_NAMES_HI = {"Demo Bank": ("डेमो बैंक",)}
+
 # The fields an officer can strike as wrongly read, and how each is struck.
 STRIKABLE = ("issuer", "instruction", "account", "ifsc", "vpa", "claimed_owner", "digital_arrest")
 
@@ -88,7 +93,7 @@ class Satyapan:
         self.data_dir = Path(data_dir)
         self.book = load_rulebook(self.data_dir / "rules" / "rulebook.yaml")
         self.adapters = adapters or Adapters.mocks(self.data_dir / "mocks")
-        self.extractor = extractor or RulesExtractor(bank_names=(self.book.bank_name,))
+        self.extractor = extractor or RulesExtractor(bank_names=(self.book.bank_name, *BANK_NAMES_HI.get(self.book.bank_name, ())))
         # The offline helper reader (llm_reader.py): fills only what the rules left empty, each field quote-checked.
         # Off unless SATYAPAN_LLM_READER names a local model, so tests and the terminal fallback read as before.
         model = configured_model()
