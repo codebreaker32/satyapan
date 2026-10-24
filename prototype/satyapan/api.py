@@ -312,7 +312,7 @@ async def add_media(case_id: str, file: UploadFile = File(...), derived_text: Op
         if contents_contradict_name(kind, head):   # cheap magic-byte check before OCR or speech-to-text
             raise HTTPException(415, unreadable_message(name, kind))
         if engine.remote is not None and kind in ("audio", "video"):
-            engine.remote.prefetch(path, kind)   # face/voice checks start now, alongside speech-to-text
+            engine.remote.prefetch(path, kind, language=language, channel=channel)   # start now, alongside speech-to-text
         try:
             # Speech-to-text (Whisper) and OCR take seconds to a minute; run them off the event loop so the console and
             # every other request stay responsive while a voice note or video is read.

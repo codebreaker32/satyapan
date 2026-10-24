@@ -306,7 +306,11 @@ class RemoteForensics:
                 h.update(chunk)
         return h.hexdigest()
 
-    def prefetch(self, path: Path, kind: str) -> None:
+    @staticmethod
+    def _key(sha: str, language: str, channel: Optional[str]) -> str:
+        return f"{sha}|{language}|{channel or ''}"      # the voice check is calibrated per language and channel
+
+    def prefetch(self, path: Path, kind: str, language: str = "hi", channel: Optional[str] = None) -> None:
         """Start the analysis of a private copy of `path` in the background (the upload is moved after decoding)."""
         import shutil
         import tempfile
@@ -315,6 +319,7 @@ class RemoteForensics:
             sha = self._sha(path)
         except OSError:
             return
+        sha = self._key(sha, language, channel)
         with self._lock:
             e = self._pending.get(sha)
             if e is not None and not (e["done"].is_set() and _unreachable(e["results"] or [])):
@@ -327,15 +332,15 @@ class RemoteForensics:
 
         def work():
             try:
-                self._pending[sha]["results"] = self._fetch(copy, kind)
+                self._pending[sha]["results"] = self._fetch(copy, kind, language, channel)
             finally:
                 shutil.rmtree(tmp, ignore_errors=True)
                 done.set()
         threading.Thread(target=work, daemon=True).start()
 
-    def analyse_all(self, path: Path, kind: str) -> list[ForensicResult]:
+    def analyse_all(self, path: Path, kind: str, language: str = "hi", channel: Optional[str] = None) -> list[ForensicResult]:
         try:
-            sha = self._sha(path)
+            sha = self._key(self._sha(path), language, channel)
         except OSError:
             sha = None
         entry = self._pending.get(sha) if sha else None
@@ -344,7 +349,7 @@ class RemoteForensics:
             # Only a client-side failure (service unreachable at upload time) is retried now.
             if not _unreachable(entry["results"]):
                 return entry["results"]
-        results = self._fetch(path, kind)
+        results = self._fetch(path, kind, language, channel)
         if sha and not _unreachable(results):          # keep it, so a re-run (strike a field) does not re-analyse
             import threading
             done = threading.Event()
@@ -353,9 +358,12 @@ class RemoteForensics:
                 self._pending[sha] = {"done": done, "results": results}
         return results
 
-    def _fetch(self, path: Path, kind: str) -> list[ForensicResult]:
+    def _fetch(self, path: Path, kind: str, language: str = "hi", channel: Optional[str] = None) -> list[ForensicResult]:
+        body = {"path": str(Path(path).resolve()), "language": language if language in ("hi", "en") else "hi"}
+        if channel:
+            body["channel"] = channel
         try:
-            out = self._call("POST", "/analyse", {"path": str(Path(path).resolve())})
+            out = self._call("POST", "/analyse", body)
         except Exception:  # noqa: BLE001 - not running, timed out, or bad reply: abstain, never fail the case
             return [ForensicResult(kind=kind, status="abstain", reason="the forensics service is not running", model="none",
                                    extra={"unreachable": True})]

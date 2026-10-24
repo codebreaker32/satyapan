@@ -207,3 +207,17 @@ def test_quiet_media_checks_read_in_plain_words(engine):
     assert clean.reason_hi.startswith("चेहरे की जाँच") and unsure.reason_hi == "आवाज़ की जाँच: अनिश्चित।"
     for s in (clean, unsure):
         assert "abstain" not in s.reason_en and "Forensics (" not in s.reason_en
+
+
+def test_language_and_channel_travel_to_the_service_and_key_the_cache(tmp_path):
+    bodies = []
+    httpd, url = serve(lambda body: (bodies.append(body), {"results": [VIDEO_FAKE, AUDIO_NOT_INSTALLED], "seconds": 1.0})[1])
+    try:
+        rf = RemoteForensics(url)
+        v = video_file(tmp_path)
+        rf.prefetch(v, "video", language="en", channel="live-replay")
+        rf.analyse_all(v, "video", language="en", channel="live-replay")     # reuses the prefetch
+        rf.analyse_all(v, "video", language="hi")                             # a different calibration cell: new call
+    finally:
+        httpd.shutdown()
+    assert [(b.get("language"), b.get("channel")) for b in bodies] == [("en", "live-replay"), ("hi", None)]

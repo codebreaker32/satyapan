@@ -62,7 +62,9 @@ def extract_sound_track(video: Path, out_dir: Path) -> Optional[Path]:
     return out
 
 
-def analyse(path: Path | str, video: Optional[Detector] = None, audio: Optional[Detector] = None) -> list[ForensicResult]:
+def analyse(path: Path | str, video: Optional[Detector] = None, audio: Optional[Detector] = None, language: str = "hi",
+            channel: Optional[str] = None) -> list[ForensicResult]:
+    """`language` and `channel` reach the voice detector, whose thresholds are calibrated per language and channel."""
     path = Path(path)
     kind = kind_of(path) if path.is_file() else None
     if kind is None:
@@ -81,7 +83,8 @@ def analyse(path: Path | str, video: Optional[Detector] = None, audio: Optional[
 
     results: list[ForensicResult] = []
     if kind == "audio":
-        results.append(_safe(audio, path, "audio") if audio else _no_audio_detector("the audio detector is not installed yet"))
+        results.append(_safe(audio, path, "audio", language=language, channel=channel) if audio
+                       else _no_audio_detector("the audio detector is not installed yet"))
         return results
 
     results.append(_safe(video, path, "video"))
@@ -92,16 +95,23 @@ def analyse(path: Path | str, video: Optional[Detector] = None, audio: Optional[
         elif audio is None:
             results.append(_no_audio_detector("the audio detector is not installed yet"))
         else:
-            r = _safe(audio, track, "audio")
+            r = _safe(audio, track, "audio", language=language, channel=channel)
             r.extra = {**r.extra, "from_video": str(path.name)}
             results.append(r)
     return results
 
 
-def _safe(detector: Detector, path: Path, kind: str) -> ForensicResult:
-    """One detector failing must not throw away the other's finished result: it abstains instead."""
+def _safe(detector: Detector, path: Path, kind: str, **options) -> ForensicResult:
+    """One detector failing must not throw away the other's finished result: it abstains instead. `options` (language,
+    channel) are passed only to a detector whose analyse() accepts them."""
+    import inspect
     try:
-        return detector.analyse(path)
+        params = inspect.signature(detector.analyse).parameters
+        accepted = {k: v for k, v in options.items() if k in params and v is not None}
+    except (TypeError, ValueError):
+        accepted = {}
+    try:
+        return detector.analyse(path, **accepted)
     except Exception as e:  # noqa: BLE001 - any failure in a detector reads the same to the officer
         return ForensicResult(kind=kind, status="abstain", reason=f"the {'voice' if kind == 'audio' else 'face'} check failed ({type(e).__name__})",
                               model=getattr(detector, "model_name", "") or type(detector).__name__)

@@ -103,3 +103,28 @@ def test_a_failing_voice_check_keeps_the_face_result(tmp_path):
     rs = analyse(withsound, video=Fixed("video", "synthetic"), audio=Boom())
     assert rs[0].kind == "video" and rs[0].status == "synthetic"
     assert rs[1].kind == "audio" and rs[1].status == "abstain" and "voice check failed" in rs[1].reason
+
+
+class Keen:
+    """A voice detector whose analyse() takes language and channel, like forensics/audio.py."""
+    def __init__(self):
+        self.calls = []
+
+    def analyse(self, path, language="hi", channel=None):
+        self.calls.append((Path(path).suffix, language, channel))
+        return ForensicResult(kind="audio", status="clean", model="keen")
+
+
+def test_language_and_channel_reach_a_voice_detector_that_takes_them(tmp_path):
+    o = tmp_path / "note.ogg"
+    o.write_bytes(b"OggS" + b"\x00" * 60)
+    k = Keen()
+    analyse(o, video=Fixed("video"), audio=k, language="en", channel="live-replay")
+    assert k.calls == [(".ogg", "en", "live-replay")]
+
+
+def test_a_detector_without_those_options_still_works(tmp_path):
+    o = tmp_path / "note.ogg"
+    o.write_bytes(b"OggS" + b"\x00" * 60)
+    a = Fixed("audio")                                   # analyse(self, path) only
+    assert analyse(o, video=Fixed("video"), audio=a, language="en", channel="live-replay")[0].status == "clean"

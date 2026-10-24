@@ -16,6 +16,7 @@ import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import Optional
 
 from .analyse import analyse
 from .common import Calibration
@@ -54,13 +55,17 @@ class Service:
                 "audio": {"installed": self.audio is not None,
                           "model": getattr(self.audio, "model_name", None) if self.audio else None}}
 
-    def run(self, path: str) -> dict:
+    def run(self, path: str, language: str = "hi", channel: Optional[str] = None) -> dict:
         p = Path(path)
         if not p.is_absolute():
             raise ValueError("path must be absolute")
+        if language not in ("hi", "en"):
+            raise ValueError("language must be 'hi' or 'en'")
+        if channel not in (None, "live-replay"):
+            raise ValueError("channel may only be 'live-replay'")
         t = time.perf_counter()
         with self.lock:
-            results = analyse(p, video=self.video, audio=self.audio)
+            results = analyse(p, video=self.video, audio=self.audio, language=language, channel=channel)
         return {"results": [r.to_dict() for r in results], "seconds": round(time.perf_counter() - t, 2)}
 
 
@@ -86,8 +91,8 @@ def make_handler(svc: Service):
             if n <= 0 or n > MAX_BODY:
                 return self._send(400, {"error": "body must be a small JSON object"})
             try:
-                path = json.loads(self.rfile.read(n))["path"]
-                return self._send(200, svc.run(path))
+                body = json.loads(self.rfile.read(n))
+                return self._send(200, svc.run(body["path"], body.get("language") or "hi", body.get("channel")))
             except (ValueError, KeyError, TypeError) as e:
                 return self._send(400, {"error": str(e) or type(e).__name__})
             except Exception as e:  # noqa: BLE001 - answer with an error rather than dropping the connection

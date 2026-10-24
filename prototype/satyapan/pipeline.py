@@ -123,6 +123,7 @@ class Satyapan:
         inp["media_paths"][ref.filename] = Path(path)
         if channel:
             inp.setdefault("media_channels", {})[ref.filename] = channel
+        inp.setdefault("media_langs", {})[ref.filename] = language   # the remote voice check uses the same language
         inp["sender_number"] = sender_number or inp["sender_number"]
         inp["signature"] = signature or inp["signature"]
         if ref.derived_text:
@@ -174,7 +175,9 @@ class Satyapan:
                 signals.append(to_signal(self.book, SimulatedForensics(inp["forensics_sim"]).analyse(path or Path(m.filename), claim.language_hint)))
             elif path and m.kind in ("audio", "video") and self.remote is not None:
                 # finale detectors: a video gets a face check and a voice check, each its own F3 signal
-                signals.extend(to_signal(self.book, r) for r in self.remote.analyse_all(path, m.kind))
+                signals.extend(to_signal(self.book, r) for r in self.remote.analyse_all(
+                    path, m.kind, language=inp.get("media_langs", {}).get(m.filename, claim.language_hint),
+                    channel=inp.get("media_channels", {}).get(m.filename)))
             elif path and m.kind in ("audio", "video"):
                 channel = inp.get("media_channels", {}).get(m.filename)
                 if channel and getattr(self.audio, "accepts_channel", False):
