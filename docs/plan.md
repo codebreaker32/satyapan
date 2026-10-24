@@ -45,10 +45,14 @@ Every detector returns the same result:
    `transformers.pipeline("antispoofing", trust_remote_code=True)` on CPU. Time one 30 s clip.
    If it takes over 15 s, score only the first 20 s.
 2. **Wrapper.** Decode with ffmpeg to 16 kHz mono. Abstain on under 3 s of speech. Set `cell` from language + codec.
-3. **Calibration.** Your own voices, recorded today with consent:
-   - about 15 real Hindi/Hinglish notes, sent through WhatsApp and saved back, so the Opus compression is real;
-   - about 15 cloned notes of the same voices from an open voice-clone tool, also sent through WhatsApp.
-   Set the thresholds from the real notes. Record the catch rate on the fakes honestly, even if it's poor.
+3. **Calibration** (public data; see the README's dataset table):
+   - real Hindi: about 30 clips from `ai4bharat/Kathbath`;
+   - fake Hindi: about 30 clips from `vdivyasharma/IndicSynth`;
+   - WhatsApp cell: forward about 10 of each through WhatsApp between our phones and save them back, so the Opus
+     compression is real;
+   - cross-check: a sample of about 50 from `mueller91/In-The-Wild`;
+   - a few genuine voice notes of our own (consented), to check real voices aren't flagged.
+   Set the thresholds from the real clips. Record the catch rate on the fakes honestly, even if it's poor.
 4. **Video audio track.** The same detector must also run on the audio extracted from a video file.
 5. **Tests:**
    - a short clip abstains;
@@ -57,8 +61,9 @@ Every detector returns the same result:
 
 ## 3. Aman: video (GenD CLIP-L/14)
 
-1. **Run it (first 2 h).** Load `yermandy/GenD_CLIP_L_14` (its `modeling_gend.py`, `trust_remote_code`). Crop faces with
-   RetinaFace (`biubug6/Pytorch_Retinaface`, MIT). Time 16 frames on CPU. If it takes over 20 s, use 8 frames.
+1. **Run it (first 2 h).** Load `yermandy/GenD_CLIP_L_14` (its `modeling_gend.py`, `trust_remote_code`). Find and align faces with
+   YuNet (OpenCV's `FaceDetectorYN`, MIT): five landmarks, aligned exactly as GenD's own `align_face` does
+   (scale 1.3). Time 16 frames on CPU. If it takes over 20 s, use 8 frames.
 2. **Wrapper.**
    - Sample N frames evenly with ffmpeg.
    - Find the largest face in each frame and score each crop.
@@ -68,9 +73,11 @@ Every detector returns the same result:
    - the face is under about 80 px (low-res WhatsApp);
    - frame scores disagree a lot;
    - the score is in the grey band.
-3. **Calibration.** Your own faces, both of you consenting:
-   - about 10 real clips, from the phone camera and WhatsApp-forwarded;
-   - about 10 face-swapped clips of each other.
+3. **Calibration** (public data; see the README's dataset table):
+   - about 40 DFDC sample videos (real and fake), which GenD never trained on;
+   - Deepfake-Eval-2024 if access is approved (request it on Day 1, first thing);
+   - WhatsApp cell: forward about 10 real and 10 fake clips through WhatsApp and save them back;
+   - a few genuine phone clips of ourselves (consented), to check real faces aren't flagged.
    Set the thresholds and record the catch rate honestly.
 4. **Tests:**
    - no face abstains;
@@ -87,8 +94,10 @@ Every detector returns the same result:
 
 ## 5. Demo beats this gives us
 
-1. **Cloned voice note** (team-made, labelled): the audio detector flags it, with its band and reason.
-2. **Face-swapped "officer" video** (team-made, labelled): GenD flags it, and the audio track is checked too.
+1. **Synthetic Hindi voice note** (from IndicSynth, labelled as a public research sample): the audio detector
+   flags it, with its band and reason.
+2. **Face-swapped video** (a public research sample, labelled): GenD flags it, and the audio track is checked too.
+   No real official's face is shown; if a sample shows a recognisable public figure, pick another.
 3. **Blurry WhatsApp forward:** the detector says "unsure", with its reason. This shows it won't guess.
 4. **Line for Q&A:** open detectors lose about half their accuracy on 2024's real deepfakes (Deepfake-Eval-2024,
    arXiv 2503.02857), so a detector here never decides on its own.
@@ -100,7 +109,7 @@ Every detector returns the same result:
 | Day 1, +15 min | Contract and `forensics/common.py` agreed | same |
 | Day 1, +2 h | GenD scores one clip on the laptop; time measured | DF Arena scores one note; time measured |
 | Day 1, +6 h | Wrapper, abstain rules and tests pass | Wrapper, abstain rules and tests pass |
-| Day 1, end | Clips recorded, thresholds set | Notes recorded, thresholds set |
+| Day 1, end | Public clips + WhatsApp cell scored, thresholds set | Public clips + WhatsApp cell scored, thresholds set |
 | Day 2, +3 h | Joined entry point, officer lines, run records | Video audio track, officer lines, run records |
 | Day 2, +5 h | Freeze; 2 full rehearsals | Freeze; 2 full rehearsals |
 
@@ -110,5 +119,7 @@ uncalibrated score as a result.
 ## 7. Housekeeping
 
 - Commit small and often. The commit log is our audit trail for the organisers.
-- Record consent for every team clip in `docs/consent.md` (who, what, date). No real official's face or voice.
+- Record consent for every clip of ourselves in `docs/consent.md` (who, what, date). No real official's face or voice.
+- Public datasets: keep them in `clips/` (never committed) and list the files used in `calibration/`.
+- Request Deepfake-Eval-2024 access first thing on Day 1; approval is manual.
 - If a model or tool changes, update `MODELS.md` in the same commit.

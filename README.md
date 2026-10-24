@@ -19,8 +19,9 @@ Track 3: Deepfake Detection for Financial Communications. Team "Team": Aman Biha
 
 ## Datasets
 
-Only synthetic and public data. No real bank, customer or platform data, and no personal data, appears anywhere.
-No external dataset is downloaded or used.
+Only synthetic, public and consented data. No real bank, customer or platform data appears anywhere.
+
+### Synthetic data in this repository
 
 | Dataset | Format | Provenance / consent | Size |
 |---|---|---|---|
@@ -30,6 +31,28 @@ No external dataset is downloaded or used.
 | `datasets/rules/rulebook.yaml` | YAML | Issuer and regulator rules drafted with AI. Each rule cites a public primary source (RBI, ED, MHA and others) with a URL and a `verified` flag; an unverified rule is demoted to a soft signal. | 23 rules |
 
 Each JSON fixture carries a `_note` field restating that its contents are invented.
+
+### Public datasets used to calibrate the detectors
+
+These sets are used only to set the detectors' thresholds and to measure how often they are right. Nothing is trained
+or fine-tuned on them. They are downloaded to a local `clips/` folder that is never committed. Only the resulting
+calibration numbers, and a list of which files were used, go into `calibration/`. None of these clips appear in the
+demo.
+
+| Dataset | Used for | Format | Licence / access | How much we use |
+|---|---|---|---|---|
+| `ai4bharat/Kathbath` (Hugging Face) | Real Hindi speech (audio detector) | Audio | CC-BY-4.0; terms accepted on Hugging Face | about 30 Hindi clips |
+| `vdivyasharma/IndicSynth` (Hugging Face) | Synthetic Hindi speech (audio detector) | Audio | CC-BY-NC-4.0 (non-commercial; this is a non-commercial hackathon prototype) | about 30 Hindi clips |
+| `mueller91/In-The-Wild` (Hugging Face) | Real and fake speech recorded in the wild, as a cross-check (audio detector) | Audio | CC-BY-SA-4.0 | a sample of about 50 clips |
+| Deepfake Detection Challenge (DFDC) sample videos (Kaggle) | Real and face-swapped video the video model never trained on (video detector) | Video | Kaggle competition data rules, accepted before download | a sample of about 40 videos |
+| `nuriachandra/Deepfake-Eval-2024` (Hugging Face) | Deepfakes circulated in 2024 (video detector) | Video | CC-BY-SA-4.0; access by manual approval, used only if approved | a sample, if approved |
+
+**WhatsApp cell.** To match what a bank officer actually receives, we forward about 10 real and 10 fake clips from
+each set through WhatsApp between our own phones and save them back. The re-encoded copies stay in `clips/`.
+
+**Our own recordings.** A few genuine clips of the two of us (voice notes and phone video, both consenting) check that
+the detectors don't flag real footage. Consent is recorded in `docs/consent.md`. We make no deepfakes of ourselves or
+anyone else.
 
 ## Responsible use
 
