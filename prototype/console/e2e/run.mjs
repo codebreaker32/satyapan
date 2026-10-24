@@ -84,7 +84,7 @@ if (!healthy) {
 await fetch(`${base}/api/demo/reset`, { method: 'POST' })
 const scenarios = await fetch(`${base}/api/scenarios`).then((r) => r.json())
 const titleById = Object.fromEntries(scenarios.map((s) => [s.id, s.title]))
-check(scenarios.length === 17, 'API lists 17 scenarios', `got ${scenarios.length}`)
+check(scenarios.length === 22, 'API lists 22 scenarios', `got ${scenarios.length}`)
 
 const browser = await chromium.launch()
 try {
@@ -246,7 +246,7 @@ try {
   await openControls(page)
   const rows = await page.locator('.scenario-row').count()
   check(beats === 5, 'Scenarios page shows the five beats unprompted', `got ${beats}`)
-  check(rows === 17, 'Scenarios page lists 17 scenario rows once the controls are open', `got ${rows}`)
+  check(rows === 22, 'Scenarios page lists 22 scenario rows once the controls are open', `got ${rows}`)
 
   // -- p50 timing line: present after the beats ran, and it matches /api/meta --
   // (no scenario runs between the page's own meta fetch and this one, so the value is stable)
