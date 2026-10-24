@@ -126,6 +126,21 @@ def require_actor(actor: str, message: str = ACTOR_REQUIRED) -> str:
     return name
 
 
+# File names are limited to 255 bytes on Linux and macOS. A Hindi news clip's name passes that at about 84
+# characters (three UTF-8 bytes each), and the upload returned HTTP 500, after the media had already been added to the
+# case at 253-255 bytes. Names are shortened to fit, with room for the "NN-" prefix the kept copy carries; the
+# extension is kept, so the file is still checked as what it is named.
+NAME_BYTES = 200
+
+
+def fit_name(name: str) -> str:
+    if len(name.encode("utf-8")) <= NAME_BYTES:
+        return name
+    stem, ext = Path(name).stem, Path(name).suffix
+    room = NAME_BYTES - len(ext.encode("utf-8"))
+    return stem.encode("utf-8")[:room].decode("utf-8", errors="ignore").rstrip() + ext
+
+
 def get_case(case_id: str) -> Case:
     case = engine.cases.get(case_id)
     if not case:
@@ -292,7 +307,7 @@ async def add_media(case_id: str, file: UploadFile = File(...), derived_text: Op
         raise HTTPException(422, "channel may only be 'live-replay' (a recording made at the counter)")
     if derived_text is not None and len(derived_text) > MAX_TEXT_CHARS:
         raise HTTPException(413, text_too_long(len(derived_text)))
-    name = Path(file.filename or "upload.bin").name
+    name = fit_name(Path(file.filename or "upload.bin").name)
     ext = Path(name).suffix.lower()
     declared = (file.content_type or "").split(";")[0].strip().lower()
     if ext not in ALLOWED_EXTENSIONS:

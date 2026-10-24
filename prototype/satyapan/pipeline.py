@@ -165,7 +165,10 @@ class Satyapan:
         inp["sender_number"] = sender_number or inp["sender_number"]
         inp["signature"] = signature or inp["signature"]
         if ref.derived_text:
-            inp["texts"].append(("transcript" if ref.kind in ("audio", "video") else "ocr", ref.derived_text))
+            # An uploaded .txt is the message as written, not text read off a scan: it was labelled "ocr", and the
+            # console said "Text read from the scanned notice" and the pack signed source "ocr" with no OCR run.
+            source = "transcript" if ref.kind in ("audio", "video") else "text" if ref.kind == "text" else "ocr"
+            inp["texts"].append((source, ref.derived_text))
         return case
 
     def add_picklist(self, case: Case, **fields) -> Case:

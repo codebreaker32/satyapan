@@ -49,6 +49,22 @@ def unreadable_message(name: str, kind: str) -> str:
     return f"We could not read '{name}'. It is named like {word}, and nothing inside it opens as {word}. {CLAIM_ONLY_HINT}"
 
 
+def locked_pdf_message(name: str) -> str:
+    return (f"'{name}' is a PDF locked with a password, so it cannot be read here. Ask for the unlocked file. If it "
+            "cannot be shown, use claim-only mode and tick what the customer says she was told.")
+
+
+def read_text_file(path: Path) -> str:
+    """A .txt as its writer meant it. Notepad's "Unicode" and a PowerShell 5 redirect write UTF-16 with a byte-order
+    mark; read as UTF-8 that came out NUL-interleaved and a scam text gave GREY."""
+    raw = path.read_bytes()
+    if raw.startswith((b"\xff\xfe", b"\xfe\xff")):
+        return raw.decode("utf-16", errors="replace")
+    if raw.startswith(b"\xef\xbb\xbf"):
+        return raw[3:].decode("utf-8", errors="replace")
+    return raw.decode("utf-8", errors="ignore")
+
+
 def empty_message(name: str) -> str:
     return f"'{name}' arrived with no content in it at all. {CLAIM_ONLY_HINT}"
 
@@ -151,12 +167,20 @@ def sha256_file(path: Path) -> str:
     return h.hexdigest()
 
 
+def upright_image(path: Path):
+    """The image the way every viewer shows it. Phone cameras store the sensor's landscape pixels plus an EXIF
+    Orientation tag; tesseract read those pixels sideways, and a portrait photo of a summons came out as gibberish
+    and GREY. An image with no orientation tag is returned unchanged."""
+    from PIL import Image, ImageOps
+    img = Image.open(path)
+    return ImageOps.exif_transpose(img) or img
+
+
 def perceptual_hash(path: Path) -> Optional[str]:
-    """pHash via imagehash (stand-in for Meta's PDQ, the production choice)."""
+    """pHash via imagehash (stand-in for Meta's PDQ, the production choice), of the upright image."""
     try:
         import imagehash
-        from PIL import Image
-        return str(imagehash.phash(Image.open(path), hash_size=16))
+        return str(imagehash.phash(upright_image(path), hash_size=16))
     except Exception:  # noqa: BLE001
         return None
 
@@ -265,12 +289,16 @@ def tesseract_cmd() -> Optional[str]:
     return cmd or next((p for p in TESSERACT_PATHS if Path(p).exists()), None)
 
 
+class OCRMissing(RuntimeError):
+    """The OCR or PDF reader is not installed (the API asks for a typed transcript). A broken file is MediaUnreadable."""
+
+
 def _pytesseract():
     """pytesseract pointed at the binary and at the vendored Hindi + English language data, or a RuntimeError."""
     try:
         import pytesseract
     except ImportError as e:
-        raise RuntimeError("no OCR available: pip install 'satyapan[ocr]' plus the tesseract binary, or pass derived_text") from e
+        raise OCRMissing("no OCR available: pip install 'satyapan[ocr]' plus the tesseract binary, or pass derived_text") from e
     cmd = tesseract_cmd()
     if cmd:
         pytesseract.pytesseract.tesseract_cmd = cmd
@@ -281,7 +309,7 @@ def _pytesseract():
     try:
         version = pytesseract.get_tesseract_version()
     except EnvironmentError as e:   # pytesseract.TesseractNotFoundError: the install is missing, not the file
-        raise RuntimeError("no OCR available: pip install 'satyapan[ocr]' plus the tesseract binary, or pass derived_text") from e
+        raise OCRMissing("no OCR available: pip install 'satyapan[ocr]' plus the tesseract binary, or pass derived_text") from e
     return pytesseract, f"tesseract {version}"
 
 
@@ -296,9 +324,11 @@ def ocr(path: Path, language: str = "hi") -> tuple[str, str]:
         try:
             import pymupdf
         except ImportError as e:
-            raise RuntimeError("no PDF reader available: pip install 'satyapan[ocr]', or pass derived_text") from e
+            raise OCRMissing("no PDF reader available: pip install 'satyapan[ocr]', or pass derived_text") from e
         try:
             doc = pymupdf.open(path)
+            if doc.needs_pass:
+                raise MediaUnreadable(locked_pdf_message(path.name))
             texts, engine = [], "pdf text layer (pymupdf)"
             for page in doc:
                 t = page.get_text().strip()
@@ -309,14 +339,15 @@ def ocr(path: Path, language: str = "hi") -> tuple[str, str]:
                     t = pytesseract.image_to_string(Image.frombytes("RGB", (pix.width, pix.height), pix.samples), lang=lang)
                 texts.append(t)
             return "\n".join(texts), engine
-        except RuntimeError:
+        except (OCRMissing, MediaUnreadable):
             raise
+        # A truncated PDF raises pymupdf.FileDataError and a page tesseract chokes on raises TesseractError; both are
+        # RuntimeErrors, and passing them on as RuntimeError told the officer that no OCR was installed on the laptop.
         except Exception as e:  # noqa: BLE001 - a PDF parse error reads the same as any unreadable file
             raise MediaUnreadable(unreadable_message(path.name, kind_of(path))) from e
     pytesseract, engine = _pytesseract()
     try:
-        from PIL import Image
-        return pytesseract.image_to_string(Image.open(path), lang=lang), engine
+        return pytesseract.image_to_string(upright_image(path), lang=lang), engine
     except Exception as e:  # noqa: BLE001 - UnidentifiedImageError and a truncated file read the same
         raise MediaUnreadable(unreadable_message(path.name, kind_of(path))) from e
 
@@ -357,5 +388,5 @@ def ingest(path: Path, derived_text: Optional[str] = None, language: str = "hi")
     elif kind in ("image", "pdf"):
         ref.derived_text, ref.derived_text_engine = ocr(path, language)
     elif kind == "text":
-        ref.derived_text = path.read_text(encoding="utf-8", errors="ignore")
+        ref.derived_text = read_text_file(path)
     return ref

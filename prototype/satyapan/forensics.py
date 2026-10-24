@@ -240,10 +240,15 @@ class DocumentForensics:
 
     def analyse(self, path: Path) -> ForensicResult:
         from PIL import Image, ImageChops
+        # The reason is shown to the officer and signed into the pack, so it is a plain sentence: never an exception's
+        # text, which carried the laptop's absolute upload path, and never "cannot open" for a PDF whose text was read.
+        if Path(path).suffix.lower() == ".pdf":
+            return ForensicResult("document", "abstain", reason="the document check reads photos and scans; a PDF's "
+                                  "pages are not checked", model="ELA")
         try:
             img = Image.open(path)
-        except Exception as e:  # noqa: BLE001
-            return ForensicResult("document", "abstain", reason=f"cannot open image: {e}", model="ELA")
+        except Exception:  # noqa: BLE001
+            return ForensicResult("document", "abstain", reason="the file did not open as an image", model="ELA")
         tool = ai_tool_label(Path(path), img)
         if tool:
             return ForensicResult("document", "synthetic", band="high", model="file label", extra={"ai_tool": tool})
