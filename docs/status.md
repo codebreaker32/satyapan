@@ -21,7 +21,8 @@ For Aman and Bhawna. What works, what was measured, how to run it, and what is l
   - the face-swap sample with an ED "digital arrest" message gives RED on the two independent checks, with
     "Signs of face manipulation (moderate)", score 0.955;
   - a genuine HD video gives GREY, with the face check finding no signs (0.116) and Whisper's transcript recorded;
-  - upload to verdict takes about 45 s.
+  - upload to verdict takes about 40-60 s for the first check of a clip; the same bytes again are reused at once
+    (cached by content hash in the running engine).
 
 ## What was measured (quote only with the sample sizes)
 
@@ -61,6 +62,11 @@ Run-sheet beat 4 is now a live face check: `../docs/finale-runsheet.md`.
     (CC-BY-NC-4.0);
   - add Deepfake-Eval-2024 only if access is approved (requested; pending);
   - Kathbath and DFDC were not used: Kathbath is gated, and DFDC's competition has closed.
+- **OCR on this laptop**: Tesseract is not installed here (it needs sudo). Before the demo:
+  `sudo apt install tesseract-ocr tesseract-ocr-hin` and `../satyapan/.venv/bin/pip install pytesseract pymupdf`,
+  then `../satyapan/.venv/bin/python -m pytest -q ../satyapan/tests/test_ocr.py`. Without it, an uploaded image notice
+  asks the officer for its text; the scripted scenarios are unaffected.
+- **Run-sheet beat 4**: build the face-swap case before the slot, after the final reset (see `../docs/finale-runsheet.md`).
 - **Optional, if time**:
   - more face-swap clips (Deepfake-Eval-2024) to turn the catch rates into measurements;
   - record your own genuine selfie clip (consented) as a live "genuine" demo moment.

@@ -28,7 +28,7 @@ flowchart LR
 | Read the instruction | OCR for notices (Tesseract). Voice/video: speech-to-text with Whisper (faster-whisper, local CPU, declared in `MODELS.md`); the officer can always correct or type it | engine |
 | Two independent checks | Issuer rules with citations; the bank's own records (labelled mocks in the demo) | engine, `datasets/rules`, `datasets/mocks` |
 | **Forensics (this repo)** | `forensics/video.py`: GenD on aligned faces (Aman). `forensics/audio.py`: DF Arena (Bhawna). Both calibrated on real clips, both abstain with a plain reason when unsure | **built live at the finale** |
-| Verdict | RED needs a cited hard rule plus a second independent check. Forensics can raise AMBER at most | engine |
+| Verdict | RED needs a cited hard rule plus a second independent check. Forensics alone raise AMBER at most; a forensic flag can be that second check, never the anchor | engine |
 | Outputs | Officer screen, Hindi customer card, signed evidence record | engine, console |
 
 ### The forensics contract (both detectors)

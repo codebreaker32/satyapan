@@ -56,8 +56,8 @@ Each JSON fixture carries a `_note` field restating that its contents are invent
 
 These sets are used only to set the detectors' thresholds and to measure how often they are right. Nothing is trained
 or fine-tuned on them. They are downloaded to a local `clips/` folder that is never committed. Only the resulting
-calibration numbers, and a list of which files were used, go into `calibration/`. None of these clips appear in the
-demo.
+calibration numbers, and a list of which files were used, go into `calibration/`. One exception in the demo: the
+live face check (run-sheet beat 4) shows one UniDataPro face-swap clip, unmodified. No other calibration clip is shown.
 
 | Dataset | Used for | Format | Licence / access | How much we use |
 |---|---|---|---|---|
@@ -72,9 +72,9 @@ demo.
 480 px, low bitrate; `scripts/whatsappify.py`, an approximation) of the calibration clips, and forward a few real clips
 through WhatsApp between our own phones as a check. All copies stay in `clips/`.
 
-**Our own recordings.** A few genuine clips of the two of us (voice notes and phone video, both consenting) check that
-the detectors don't flag real footage. Consent is recorded in `docs/consent.md`. We make no deepfakes of ourselves or
-anyone else.
+**Our own recordings.** Planned, not yet made: a few genuine clips of the two of us (voice notes and phone video, both
+consenting) to check that the detectors don't flag real footage. Consent will be recorded in `docs/consent.md` before
+any such clip is used. We make no deepfakes of ourselves or anyone else.
 
 ## Responsible use
 

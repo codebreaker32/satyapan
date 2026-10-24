@@ -26,8 +26,8 @@ echo
 
 cd "$PROTO"
 export SATYAPAN_FORENSICS_URL="http://127.0.0.1:$PORT"
-# Whisper large-v3-turbo with greedy decoding: on this laptop about 2x real time and a third of the word errors of
-# "small" on Hindi (calibration/whisper_eval_fast.md).
+# Whisper large-v3-turbo with greedy decoding: on this laptop about 2x real time and about half the word errors of
+# "small" on Hindi, 33% vs 62% (calibration/whisper_eval_fast.md).
 export SATYAPAN_WHISPER_MODEL="${SATYAPAN_WHISPER_MODEL:-large-v3-turbo}"
 export SATYAPAN_WHISPER_BEAM="${SATYAPAN_WHISPER_BEAM:-1}"
 export SATYAPAN_WHISPER_PRELOAD=1   # load speech-to-text at start-up, not on the first voice note
