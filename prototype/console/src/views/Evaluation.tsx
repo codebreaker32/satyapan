@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api, type Accuracy, type Evaluation as Result, type EvalRow } from '../lib/api'
+import { CELL_TITLES, modelWords } from '../lib/cells'
 import { Trouble } from '../ui/trouble'
 
 // The labelled evaluation, exactly as `satyapan evaluate` wrote it (data/eval/results.json). Nothing is computed
@@ -56,7 +57,8 @@ export function Evaluation({ reload = 0 }: { reload?: number }) {
             <strong>{result._note}</strong> {s.total} messages, each labelled scam or genuine by what it really is, run through
             the engine on {result.made}
             {result.commit ? ` (commit ${result.commit})` : ''}. Rulebook {result.environment.rulebook}; audio detector{' '}
-            {result.environment.audio_detector}; meaning model {result.environment.meaning_model ? 'on' : 'off'}.
+            {DETECTOR_NAMES[result.environment.audio_detector] ?? result.environment.audio_detector}; meaning model{' '}
+            {result.environment.meaning_model ? 'on' : 'off'}.
           </p>
         </div>
       </header>
@@ -92,6 +94,7 @@ export function Evaluation({ reload = 0 }: { reload?: number }) {
 
       <section className="section">
         <h2>By category</h2>
+        <div className="table-scroll">
         <table className="table">
           <thead>
             <tr>
@@ -118,6 +121,7 @@ export function Evaluation({ reload = 0 }: { reload?: number }) {
             ))}
           </tbody>
         </table>
+        </div>
       </section>
 
       <section className="section">
@@ -144,15 +148,15 @@ export function Evaluation({ reload = 0 }: { reload?: number }) {
   )
 }
 
-const CELL_WORDS: Record<string, string> = {
-  'video/hd': 'HD video',
-  'video/sd': 'WhatsApp-size video',
-  'hi/clean': 'Hindi, clean recording',
-  'hi/whatsapp-opus': 'Hindi, WhatsApp voice note',
-  'hi/phone-8k': 'Hindi, phone call (8 kHz)',
-  'en/clean': 'English, clean recording',
-  'en/whatsapp-opus': 'English, WhatsApp voice note',
-  'en/phone-8k': 'English, phone call (8 kHz)',
+// The evaluation records the in-process detector's class name; the officer reads what it is.
+const DETECTOR_NAMES: Record<string, string> = {
+  DFArenaAudioForensics: 'DF Arena 500M',
+  AASISTAudioForensics: 'AASIST-L',
+  NullAudioForensics: 'none in this process (the set is text, so no voice is checked)',
+}
+
+function revision(model: string | undefined): string {
+  return (model ?? '').split('@')[1] ?? 'unknown'
 }
 
 const SOURCE_WORDS: Record<string, string> = {
@@ -198,44 +202,56 @@ function DetectorAccuracy({ reload }: { reload: number }) {
     <section className="section">
       <h2>Face and voice checks: measured accuracy</h2>
       <p>
-        {acc._note} Face: {acc.models.face}. Voice: {acc.models.voice}. Made {acc.made}.
+        {acc._note} Face: {modelWords(acc.models.face)} (revision {revision(acc.models.face)}). Voice: {modelWords(acc.models.voice)} (revision{' '}
+        {revision(acc.models.voice)}). Made {acc.made}.
       </p>
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Check</th>
-            <th>Kind of input</th>
-            <th>Genuine clips judged</th>
-            <th>False alarms</th>
-            <th>False alarms, held out</th>
-            <th>Genuine unsure</th>
-            <th>Fakes judged</th>
-            <th>Caught</th>
-            <th>Unsure</th>
-            <th>Missed</th>
-            <th>Declined (genuine / fake)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {acc.cells.map((c) => (
-            <tr key={c.cell}>
-              <td>{c.check}</td>
-              <td>{CELL_WORDS[c.cell] ?? c.cell}</td>
-              <td>{c.genuine.judged}</td>
-              <td>{c.genuine.flagged}</td>
-              <td>{c.genuine.false_alarm_heldout_pct ?? '-'}%</td>
-              <td>{c.genuine.unsure}</td>
-              <td>{c.fake.judged}</td>
-              <td>{c.fake.flagged}</td>
-              <td>{c.fake.unsure}</td>
-              <td>{c.fake.no_signs}</td>
-              <td>
-                {c.genuine.declined} / {c.fake.declined}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {(['face', 'voice'] as const).map((check) => {
+        const rows = acc.cells.filter((c) => c.check === check)
+        if (rows.length === 0) return null
+        return (
+          <div className="acc-group" key={check}>
+            <h3>
+              {check === 'face' ? 'Face check' : 'Voice check'}, {modelWords(check === 'face' ? acc.models.face : acc.models.voice)}
+            </h3>
+            <div className="table-scroll">
+            <table className="table acc-table">
+              <thead>
+                <tr>
+                  <th>Kind of input</th>
+                  <th>False alarms on genuine clips the line never saw</th>
+                  <th>Fakes caught</th>
+                  <th>Not judged (too short or unclear)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((c) => (
+                  <tr key={c.cell}>
+                    <td>{CELL_TITLES[c.cell] ?? c.cell}</td>
+                    <td>
+                      <span className="acc-big">{c.genuine.false_alarm_heldout_pct != null ? `${c.genuine.false_alarm_heldout_pct.toFixed(1)}%` : '-'}</span>
+                      <span className="acc-small">
+                        {c.genuine.judged} genuine clips in all: {c.genuine.flagged} flagged at the line, {c.genuine.unsure} unsure
+                      </span>
+                    </td>
+                    <td>
+                      <span className="acc-big">
+                        {c.fake.flagged} of {c.fake.judged}
+                      </span>
+                      <span className="acc-small">
+                        {c.fake.unsure} unsure, {c.fake.no_signs} missed
+                      </span>
+                    </td>
+                    <td>
+                      {c.genuine.declined} genuine, {c.fake.declined} fake
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            </div>
+          </div>
+        )
+      })}
       <p className="muted small">
         Flagged counts in the score; unsure is not counted; declined means the check would not judge the clip (too short, face
         too small, frames disagree). Sources:{' '}

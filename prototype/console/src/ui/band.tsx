@@ -15,7 +15,7 @@ function withoutScoreOpening(text: string): string {
   return text.replace(/^Instruction checks \d+%, deepfake check \d+%, half each: combined [\d.]+%, (\w)/, (_m, c: string) => c.toUpperCase())
 }
 
-function humanise(text: string, titles: Record<string, string>): string {
+export function humanise(text: string, titles: Record<string, string>): string {
   return text.replace(/R-[A-Z0-9-]+/g, (id) => titles[id] ?? id)
 }
 

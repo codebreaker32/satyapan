@@ -401,7 +401,7 @@ textarea {
 }
 .grid-2 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));   /* 390 wide leaves 358px: never wider than its box */
   gap: 32px 48px;
   align-items: start;
 }
@@ -625,9 +625,11 @@ textarea {
 }
 .meter > span {
   display: block;
+  width: 100%;
   height: 100%;
   background: var(--accent);
-  transition: width 100ms linear;
+  transform-origin: left center;
+  transition: transform 100ms linear;   /* scaled, not resized: no layout work on every audio frame */
 }
 
 /* ---------- the counter pane: what she hears, and what you do ---------- */
@@ -1475,9 +1477,119 @@ mark.span:hover .callout-no {
 
 /* ---------- narrow screens ---------- */
 
+/* What the media checks found (ui/mediachecks.tsx): one row per face, voice or document check. The result word is
+   the row's only emphasis; the sentence beside it carries the numbers that make the result checkable. A tone step
+   per row, no lines. Flagged rows take the accent ink on the result, the colour the console already spends on
+   "look here"; verdict colours stay on the band. */
+.media-checks {
+  padding-top: 0;          /* the close of step 2, not a section of its own */
+}
+.mc-list {
+  display: grid;
+  gap: 8px;
+}
+.mc-row {
+  display: grid;
+  grid-template-columns: 200px 220px minmax(0, 1fr);
+  gap: 8px 24px;
+  align-items: baseline;
+  padding: 16px 20px;
+  background: var(--panel);
+  border-radius: var(--r);
+}
+.mc-what {
+  display: grid;
+  gap: 2px;
+}
+.mc-file {
+  color: var(--ink-2);
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+.mc-result {
+  font-size: 20px;
+  font-weight: 700;
+}
+.mc-result .tag {
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.mc-flag .mc-result {
+  color: var(--accent-ink);
+}
+.mc-unsure .mc-result,
+.mc-clean .mc-result {
+  color: var(--ink);
+}
+.mc-why {
+  margin: 0;
+  max-width: 72ch;
+  font-variant-numeric: tabular-nums;
+}
+/* The engine's own account of the verdict, under the record at full width (it was one word per line in the
+   Policy row's value column). */
+.record-why {
+  margin: 0;
+  max-width: 90ch;
+  color: var(--ink-2);
+}
+.record-why strong {
+  color: var(--ink);
+}
+/* Evaluation: the detectors' measured accuracy, one table per check. The two numbers a judge asks for (false alarms
+   on genuine clips the threshold never saw, fakes caught) are set one step up the ladder; the counts behind them
+   stay at small-print size on the line below. */
+.acc-group {
+  display: grid;
+  gap: 8px;
+}
+.acc-group h3 {
+  font-size: 20px;         /* the table's name, not smaller than its 24px numbers by more than a step */
+}
+.table-scroll {
+  min-width: 0;            /* a grid item grows to its content unless allowed to shrink */
+  max-width: 100%;
+  overflow-x: auto;
+}
+.acc-table td {
+  vertical-align: top;
+}
+.acc-big {
+  display: block;
+  white-space: nowrap;
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.acc-small {
+  display: block;
+  color: var(--ink-2);
+  font-size: 15px;
+}
+/* New case: what is running while the officer waits, and for how long so far. */
+.run-progress {
+  margin: 0;
+  max-width: 64ch;
+  color: var(--ink-2);
+}
+.run-progress .elapsed {
+  margin-left: 6px;
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 @media (max-width: 960px) {
   .app {
     grid-template-columns: 1fr;
+  }
+  .mc-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .acc-table th:nth-child(4),
+  .acc-table td:nth-child(4) {
+    display: none;
   }
   .rail {
     position: static;

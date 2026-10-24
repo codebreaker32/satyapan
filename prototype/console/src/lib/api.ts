@@ -40,6 +40,9 @@ export interface Claim {
   urls: Grounded[]
   language_hint: string
   extractor: string
+  // the offline helper reader (Llama 3.2 3B on this laptop) names the fields it filled; each is quoted from the message
+  read_by_llm?: string[]
+  digital_arrest_span?: Span | null
 }
 
 export interface Signal {

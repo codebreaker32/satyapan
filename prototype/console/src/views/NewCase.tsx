@@ -31,6 +31,26 @@ const CONSENT_HI = {
   memory: 'क्या हम इसकी पहचान बैंक की स्मृति में जोड़ सकते हैं, ताकि अगली बार किसी और को बचाया जा सके?',
 }
 
+const SOUND = /\.(ogg|opus|oga|mp3|wav|m4a|weba|aac|amr|flac|mp4|webm|mov|3gp|mkv)$/i
+const VIDEO = /\.(mp4|webm|mov|3gp|mkv)$/i
+
+// One sentence for what is running now. The stages follow the requests this form makes, so the words never claim
+// progress the server has not reported; the seconds beside them are the only measure, and they are real.
+function progressWords(stage: 'open' | 'read' | 'check', mode: string, file: File | null, hasTranscript: boolean): string {
+  const video = mode === 'file' && !!file && (VIDEO.test(file.name) || file.type.startsWith('video/'))
+  const sound = mode === 'file' && !!file && (SOUND.test(file.name) || file.type.startsWith('audio/') || file.type.startsWith('video/'))
+  if (stage === 'open') return 'Opening the case and recording consent.'
+  if (stage === 'read') {
+    if (!sound) return 'Reading the words on the notice, on this laptop, usually a few seconds.'
+    return hasTranscript
+      ? 'Uploading. The face and voice checks start now, on this laptop.'
+      : 'Reading the speech with Whisper on this laptop; the face and voice checks start at the same time.'
+  }
+  if (video) return 'Running the checks. A short video takes about 40-60 s here, a one-minute HD video about 2.5 minutes.'
+  if (sound) return 'Running the checks. A voice note takes about 10-30 s here.'
+  return "Checking the message against the issuer rules and the bank's records."
+}
+
 export function NewCase({ onView }: { onView: (v: CaseView) => void }) {
   const [reason, setReason] = useState('premature FD closure + RTGS to first-time payee')
   const [amount, setAmount] = useState('3800000')
@@ -52,11 +72,24 @@ export function NewCase({ onView }: { onView: (v: CaseView) => void }) {
   const [pick, setPick] = useState({ issuer: 'ED', instruction: 'TRANSFER_TO_ACCOUNT', channel: 'VIDEO_CALL', claimed_owner: 'RBI', account: '', ifsc: '', vpa: '' })
   const [cues, setCues] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
+  // What is running while she waits, and for how long: a short video's face and voice checks take 40-60 s here and
+  // a one-minute HD video about 2.5 minutes, and "Checking…" alone for that long reads as a hung screen.
+  const [stage, setStage] = useState<'open' | 'read' | 'check'>('open')
+  const [startedAt, setStartedAt] = useState(0)
+  const [tick, setTick] = useState(0)
+  useEffect(() => {
+    if (!busy) return
+    const t = window.setInterval(() => setTick(Date.now()), 1000)
+    return () => window.clearInterval(t)
+  }, [busy])
   const [error, setError] = useState<string | null>(null)
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setBusy(true)
+    setStage('open')
+    setStartedAt(Date.now())
+    setTick(Date.now())
     setError(null)
     try {
       let v = await api.openCase({ reason, amount_inr: Number(amount) || 0, customer_ref: 'cust-demo', channel, ...payeeFields(payingTo) })
@@ -70,6 +103,7 @@ export function NewCase({ onView }: { onView: (v: CaseView) => void }) {
         v = await api.addText(id, { text, sender_number: sender || null, signed, kind: 'text', filename: 'message.txt' })
       } else if (mode === 'file') {
         if (!file) throw new Blocked('Choose a file first.')
+        setStage('read')
         try {
           v = await api.addMedia(id, file, {
             derived_text: transcript || undefined,
@@ -96,6 +130,7 @@ export function NewCase({ onView }: { onView: (v: CaseView) => void }) {
           pressure: cues,
         })
       }
+      setStage('check')
       v = await api.run(id)
       onView(v)
       go({ name: 'case', id })
@@ -218,8 +253,12 @@ export function NewCase({ onView }: { onView: (v: CaseView) => void }) {
                 <input className="input" type="file" onChange={(e) => {
                     setFile(e.target.files?.[0] ?? null)
                     setRecorded(false)
-                  }} accept="audio/*,video/*,image/*,.pdf,.txt" />
+                  }} accept="audio/*,video/*,image/*,.pdf,.txt,.opus,.weba,.amr,.aac,.m4a,.3gp,.mkv,.mov" />
               </label>
+              <p className="muted small">
+                Voice notes and audio (ogg, opus, mp3, wav, m4a, aac, amr), video (mp4, mov, webm, 3gp, mkv), a photo of a notice, a PDF
+                or text, up to 100 MB. The file stays on this laptop.
+              </p>
               <Recorder
                 onDone={(f) => {
                   setFile(f)
@@ -323,6 +362,15 @@ export function NewCase({ onView }: { onView: (v: CaseView) => void }) {
         <button className="btn btn-primary" type="submit" disabled={busy}>
           {busy ? 'Checking…' : 'Run the check'}
         </button>
+        {busy && (
+          <p className="run-progress">
+            <span role="status">{progressWords(stage, mode, file, Boolean(transcript.trim()))}</span>
+            {/* the seconds tick every second; a screen reader hears the stage changes only */}
+            <span className="elapsed" aria-hidden="true">
+              {Math.max(0, Math.round((tick - startedAt) / 1000))} s
+            </span>
+          </p>
+        )}
         {error && (
           <p className="notice notice-warn" role="alert">
             {error}
@@ -508,7 +556,7 @@ function Recorder({ onDone }: { onDone: (f: File) => void }) {
         <div className="stack" style={{ gap: 4 }}>
           <span className="muted small">Microphone{mic ? `: ${mic}` : ''}</span>
           <div className="meter" role="meter" aria-label="Microphone level" aria-valuemin={0} aria-valuemax={100} aria-valuenow={meterPct(level)}>
-            <span style={{ width: `${meterPct(level)}%` }} />
+            <span style={{ transform: `scaleX(${meterPct(level) / 100})` }} />
           </div>
         </div>
       )}

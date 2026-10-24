@@ -1,5 +1,17 @@
 import type { CaseView } from '../lib/api'
 
+// The engine's enum values in the officer's words ("BANK_SELF" printed as "BANK SELF", "MOVE_FD" as "move fd").
+const ISSUER_NAMES: Record<string, string> = {
+  ED: 'ED', CBI: 'CBI', POLICE: 'the police', COURT: 'a court', RBI: 'RBI', SEBI: 'SEBI', CUSTOMS: 'customs',
+  TRAI_DOT: 'TRAI or the telecom department', TRANSPORT: 'the transport department', MUNICIPAL: 'a municipal body',
+  BANK_SELF: 'the bank itself',
+}
+const INSTRUCTION_NAMES: Record<string, string> = {
+  TRANSFER_TO_ACCOUNT: 'transfer to an account', MOVE_FD: 'break a fixed deposit', INVEST_FOR_RETURNS: 'invest for returns',
+  RETURN_EXCESS_CREDIT: 'send back money credited by mistake', PAY_FEE_TO_VERIFY: 'pay a fee to verify',
+  PAY_CHALLAN: 'pay a traffic challan', PAY_LOCAL_TAX: 'pay a local tax',
+}
+
 // What the engine could and could not read out of THIS message, on every outcome.
 //
 // The pass-5 judge pasted ten messages and five got a verdict worth arguing with. In four of the five the engine
@@ -66,11 +78,11 @@ export function Coverage({ view }: Props) {
     claim.claimed_issuer === 'OTHER'
       ? 'a government-sounding name, which is not the same as a claim of identity'
       : claim.claimed_issuer !== 'NONE'
-        ? `an authority it claims to be (${claim.claimed_issuer.replace(/_/g, ' ')})`
+        ? `an authority it claims to be (${ISSUER_NAMES[claim.claimed_issuer] ?? claim.claimed_issuer.replace(/_/g, ' ')})`
         : 'no authority it claims to be',
   )
   ;(claim.instruction !== 'NONE' ? read : missed).push(
-    claim.instruction !== 'NONE' ? `an instruction (${claim.instruction.replace(/_/g, ' ').toLowerCase()})` : 'no instruction about money',
+    claim.instruction !== 'NONE' ? `an instruction (${INSTRUCTION_NAMES[claim.instruction] ?? claim.instruction.replace(/_/g, ' ').toLowerCase()})` : 'no instruction about money',
   )
   const payee = claim.payee.account || claim.payee.ifsc || claim.payee.vpa
   ;(payee ? read : missed).push(payee ? 'a payee to send money to' : 'no payee to send money to')
@@ -113,7 +125,7 @@ export function Coverage({ view }: Props) {
       </p>
       {others.length > 0 && (
         <p className="coverage-line muted">
-          This message also names {join(others.map((o) => o.value.replace(/_/g, ' ')))}, which it does not claim to be.
+          This message also names {join(others.map((o) => ISSUER_NAMES[o.value] ?? o.value.replace(/_/g, ' ')))}, which it does not claim to be.
         </p>
       )}
       {!describes && (

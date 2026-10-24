@@ -168,7 +168,9 @@ export function sortSignals(view: CaseView): { features: Signal[]; noted: Signal
     return 9
   }
   const shown = v.signals.filter((s) => ['hard', 'soft', 'match'].includes(s.severity))
-  const rest = v.signals.filter((s) => !['hard', 'soft', 'match'].includes(s.severity))
+  // F3 media checks are shown in their own block (ui/mediachecks.tsx) with the numbers behind them; listed here a
+  // clean one sat under "never counted" while it counted 0% in the combined score.
+  const rest = v.signals.filter((s) => !['hard', 'soft', 'match'].includes(s.severity) && s.family !== 'F3')
   shown.sort((a, b) => rank(a) - rank(b))
   return { features: shown, noted: rest }
 }

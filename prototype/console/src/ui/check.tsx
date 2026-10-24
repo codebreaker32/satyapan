@@ -24,6 +24,17 @@ interface Props {
 
 type Lit = { kind: 'signal'; id: string } | { kind: 'anchor'; id: string } | null
 
+const READER_FIELDS: Record<string, string> = {
+  claimed_issuer: 'the authority it names',
+  instruction: 'what it asks about money',
+  digital_arrest_span: 'the “digital arrest” words',
+}
+
+function readerWords(fields: string[]): string {
+  const words = fields.map((f) => READER_FIELDS[f] ?? f.replaceAll('_', ' '))
+  return words.length > 1 ? `${words.slice(0, -1).join(', ')} and ${words[words.length - 1]}` : words[0]
+}
+
 export function Check({ view, titles }: Props) {
   const claim = view.case.claim
   const containerRef = useRef<HTMLDivElement>(null)
@@ -33,9 +44,6 @@ export function Check({ view, titles }: Props) {
 
   const spans = useMemo(() => (claim ? collectSpans(claim) : []), [claim])
   const { features, noted } = useMemo(() => sortSignals(view), [view])
-  // With judged media, a face or voice check that found no signs counts 0% in the combined score, so the heading
-  // says "never counted" only when that is true of every row under it.
-  const countedQuiet = noted.some((s) => s.family === 'F3' && s.detail?.status === 'clean' && !!view.case.verdict?.scores)
   const pairs = useMemo(
     () => features.flatMap((s) => targetsFor(s, spans).map((to) => ({ from: s.rule_id, to }))),
     [features, spans],
@@ -105,6 +113,13 @@ export function Check({ view, titles }: Props) {
           {' · extractor '}
           {claim.extractor}
         </p>
+        {claim.read_by_llm && claim.read_by_llm.length > 0 && (
+          // The rules-based reader came first; the offline model only filled what it left empty, each part quoted
+          // from the message, and the rules still decided. Saying which parts keeps a model's reading visible.
+          <p className="message-meta">
+            Read with the offline reader on this laptop: {readerWords(claim.read_by_llm)}. Each is quoted from the message; the rules decided.
+          </p>
+        )}
         <div className="message">
           {claim.source === 'officer_picklist' ? (
             <Picklist claim={claim} />
@@ -168,7 +183,7 @@ export function Check({ view, titles }: Props) {
         </div>
         {noted.length > 0 && (
           <div className="noted">
-            <h3>{countedQuiet ? 'Also noted' : 'Also noted, never counted'}</h3>
+            <h3>Also noted, never counted</h3>
             {noted.map((s) => (
               <div className="row" key={s.rule_id + s.evidence_key}>
                 {FAMILY_WORD[s.family]}: {s.reason_en.replace(/^Bank flag: /, '')}

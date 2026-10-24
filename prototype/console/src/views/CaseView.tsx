@@ -3,11 +3,12 @@ import { api, type CaseView as View, type Meta } from '../lib/api'
 import { clock, spellsAmount, when } from '../lib/format'
 import { Actions, statusWord } from '../ui/actions'
 import { Rupee } from '../ui/rupee'
-import { VerdictBand } from '../ui/band'
+import { VerdictBand, humanise } from '../ui/band'
 import { CustomerCard } from '../ui/card'
 import { Check } from '../ui/check'
 import { Coverage } from '../ui/coverage'
 import { EvidencePanel } from '../ui/evidence'
+import { MediaChecks } from '../ui/mediachecks'
 import { Trouble, writeTrouble } from '../ui/trouble'
 
 interface Props {
@@ -176,6 +177,8 @@ export function CaseView({ id, view, onView, meta, reload = 0 }: Props) {
 
       {c.claim && <Check view={view} titles={titles} />}
 
+      {c.verdict && <MediaChecks view={view} />}
+
       <section className="section">
         <h2 id="record" tabIndex={-1}>
           <span className="step-no">3</span> The record and the evidence
@@ -226,7 +229,7 @@ export function CaseView({ id, view, onView, meta, reload = 0 }: Props) {
                 <div className="row-item label">
                   <strong>Policy</strong>
                   <span>
-                    {c.verdict.policy_version} · rulebook {meta?.rulebook.version ?? ''} · {c.verdict.explanation}
+                    {c.verdict.policy_version} · rulebook {meta?.rulebook.version ?? ''}
                   </span>
                 </div>
               )}
@@ -264,6 +267,13 @@ export function CaseView({ id, view, onView, meta, reload = 0 }: Props) {
             )}
           </div>
         </div>
+        {c.verdict && (
+          // The engine's own account of this verdict, signed into the pack word for word. It used to sit in the Policy
+          // row's narrow value column, one word per line on a projector.
+          <p className="record-why">
+            <strong>In the engine's words:</strong> {humanise(c.verdict.explanation, titles)}
+          </p>
+        )}
       </section>
 
       {c.verdict && (
