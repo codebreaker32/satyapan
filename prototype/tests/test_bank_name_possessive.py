@@ -43,3 +43,18 @@ def test_possessive_bank_name_is_not_a_bank_claim(engine, text):
 def test_masthead_sign_off_and_self_introduction_still_claim_the_bank(engine, text):
     extractor = RulesExtractor(bank_names=(engine.book.bank_name,))
     assert extractor.extract(text).claimed_issuer is Issuer.BANK_SELF
+
+
+WRONG_TRANSFER_SCAMS = [
+    "I have paid Rs 10,000 to your Demo Bank account by mistake, please transfer it back to this account "
+    "30011223344 today. Urgent.",
+    "Sir I have transferred Rs 5,000 to your Demo Bank account wrongly. Kindly return it to account 30011223344 "
+    "immediately.",
+]
+
+
+@pytest.mark.parametrize("text", WRONG_TRANSFER_SCAMS)
+def test_a_wrong_transfer_scam_that_asks_for_money_back_stays_flagged(engine, text):
+    """Found by an independent probe of tonight's changes: with the possessive rule these went from RED / AMBER to
+    GREY. A message that asks for money keeps its bank claim, as it did before the rule existed."""
+    assert run_text(engine, text).verdict.outcome is not Outcome.GREY

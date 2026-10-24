@@ -86,3 +86,18 @@ def test_an_authority_awareness_message_is_not_a_demand(engine, text):
 def test_the_messages_own_conditional_demand_still_reads(engine):
     case = run_text(engine, "CBI: If you want to avoid arrest, transfer Rs 50,000 to account 123456789012 today.")
     assert case.claim.instruction is Instruction.TRANSFER_TO_ACCOUNT and case.verdict.outcome is Outcome.AMBER
+
+
+@pytest.mark.parametrize("text, issuer", [
+    ("यह मुंबई पुलिस है। आपके आधार से मनी लॉन्ड्रिंग हुई है। जांच के लिए 75 हज़ार रुपये इस खाते 30011223344 में तुरंत भेजें।",
+     Issuer.POLICE),
+    ("यह सीबीआई है। 2 लाख रुपये इस खाते 30011223344 में भेजें।", Issuer.CBI),
+])
+def test_the_hindi_self_introduction_anchors_the_authority(engine, text, issuer):
+    case = run_text(engine, text)
+    assert case.claim.claimed_issuer is issuer and case.verdict.outcome is Outcome.AMBER
+
+
+def test_this_is_a_police_matter_is_not_a_police_claim(engine):
+    case = run_text(engine, "यह पुलिस का मामला है, आप थाने जाकर शिकायत करें।")
+    assert case.claim.claimed_issuer is Issuer.NONE

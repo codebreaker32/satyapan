@@ -878,7 +878,17 @@ RE_MASTHEAD_LEFT = re.compile(r"(?:^|\n)[\x20\t\"'“‘*]*(?:(?:(?-i:[A-Z])[a-z
 RE_MASTHEAD_RIGHT = re.compile(r"[\x20\t]*[:：]")
 
 
+# The Hindi self-introduction "यह मुंबई पुलिस है" ("this is Mumbai Police"): the English "This is Delhi Police" frame
+# has no Devanagari twin, so the same digital-arrest opener in Hindi read no authority. Both halves are required, the
+# opener (with at most one place word) before the name and the copula straight after it, so "यह पुलिस का मामला है"
+# ("this is a police matter") is not a claim.
+RE_YAH_LEFT = re.compile(r"(?:^|[।.!?\n]\s*)(?:यह|ये|हम)\s+(?:[ऀ-ॿ]+\s+)?$")
+RE_YAH_RIGHT = re.compile(rf"\s*(?:है|हैं|हूँ|हूं)(?![{_DEVA_CONT}])")   # the danda closes it, a matra does not
+
+
 def _is_masthead(text: str, m: re.Match) -> bool:
+    if RE_YAH_RIGHT.match(text, _unit_name_end(text, m)) and RE_YAH_LEFT.search(text, max(0, m.start() - 40), m.start()):
+        return True
     return bool(RE_MASTHEAD_RIGHT.match(text, _unit_name_end(text, m))
                 and RE_MASTHEAD_LEFT.search(text, max(0, m.start() - 40), m.start()))
 
@@ -1349,6 +1359,10 @@ RE_SENT_INTO = re.compile(r"\b(?:sent|have\s+sent|has\s+sent|transferred|deposit
                           re.I)
 
 
+RE_SEND_BACK = re.compile(r"\b(?:return|refund|send\s+it\s+back|transfer\s+it\s+back|pay\s+it\s+back|wapas|vapas)\b"
+                          r"|वापस|लौटा", re.I)
+
+
 def _somebodys_account(text: str, m: re.Match) -> bool:
     if not RE_ACCOUNT_AFTER.match(text, m.end()):
         return False
@@ -1357,7 +1371,10 @@ def _somebodys_account(text: str, m: re.Match) -> bool:
         return True
     if RE_YOUR_BEFORE.search(text, before, m.start()):
         clause = text[_sentence_start(text, m.start()):_sentence_end(text, m.end())]
-        return bool(RE_SENT_INTO.search(clause))
+        # "I have paid Rs 10,000 to your Demo Bank account by mistake, please transfer it back to this account" is a
+        # stranger's wrong-transfer scam, and it was flagged before this rule existed; a message that also asks for
+        # money keeps the bank claim. The family, tenant and employer messages ask for nothing.
+        return bool(RE_SENT_INTO.search(clause)) and not (RE_DEMAND_IN_CLAUSE.search(text) or RE_SEND_BACK.search(text))
     return False
 
 

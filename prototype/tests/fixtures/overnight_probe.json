@@ -1,0 +1,521 @@
+{
+ "about": "Synthetic messages written on 25 Oct 2026 to probe the overnight extractor changes (bank transaction SMS, possessive bank names, pay verbs, authority anchors, conditional warnings). 'flagged': a scam that must stay AMBER or RED. 'not_red': a genuine message that must never be RED. 'known_gap': a scam that is GREY today (out of scope, or no rule yet), kept so the gap stays visible.",
+ "messages": [
+  {
+   "id": "m01",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Demo Bank: Rs 25,000.00 credited to your A/c XX4521 on 23-10-26 by NEFT from ACME PVT LTD. Avl Bal Rs 61,240.50."
+  },
+  {
+   "id": "m02",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Demo Bank: Rs 3,499 debited from A/c XX4521 on 24-10-26 via UPI to merchant@okaxis. Not you? Call 1800-123-4567."
+  },
+  {
+   "id": "m03",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Dear Customer, IMPS transfer of Rs 12,000 to A/c XX9087 is successful. Ref no 629812345671. - Demo Bank"
+  },
+  {
+   "id": "m04",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Your Fixed Deposit no. XX3321 has been closed and Rs 1,05,430 has been credited to your savings account XX4521. - Demo Bank"
+  },
+  {
+   "id": "m05",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Demo Bank: Your UPI transaction limit has been changed to Rs 1,00,000 per day as requested. If not done by you, call 1800-123-4567."
+  },
+  {
+   "id": "m06",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Salary of Rs 48,500 for October has been credited to your Demo Bank account XX4521. - HR, Sunrise Textiles"
+  },
+  {
+   "id": "m07",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Demo Bank: You have paid Rs 1,250 to BESCOM via UPI. UPI Ref 6298123456. Thank you."
+  },
+  {
+   "id": "m08",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Your NEFT request for Rs 50,000 to account 30011223344 has been processed. UTR DMBK2610240012. - Demo Bank"
+  },
+  {
+   "id": "m09",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Demo Bank: Rs 5,000 transferred from your A/c XX4521 to A/c 30011223344 on 24-10-26. Avl bal Rs 22,100."
+  },
+  {
+   "id": "m10",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Demo Bank: Your FD of Rs 2,00,000 has been renewed for 12 months at 7.1%. Maturity amount will be credited to A/c XX4521."
+  },
+  {
+   "id": "m11",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Dear customer, your loan EMI of Rs 8,200 has been debited from A/c XX4521. Thank you for banking with Demo Bank."
+  },
+  {
+   "id": "m12",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Demo Bank: Refund of Rs 799 from Flipkart has been credited to your account XX4521."
+  },
+  {
+   "id": "m13",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "डेमो बैंक: आपके खाते XX4521 में 15,000 रुपये जमा किए गए हैं। उपलब्ध शेष 40,200 रुपये।"
+  },
+  {
+   "id": "m14",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "डेमो बैंक: आपके खाते XX4521 से 2,000 रुपये UPI द्वारा डेबिट किए गए। यदि यह आपने नहीं किया तो 1800-123-4567 पर कॉल करें।"
+  },
+  {
+   "id": "m15",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Demo Bank: Aapke account XX4521 mein Rs 10,000 credit ho gaye hain. Avl bal Rs 31,000."
+  },
+  {
+   "id": "m16",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "आपकी सावधि जमा XX3321 बंद कर दी गई है और 1,05,430 रुपये आपके बचत खाते में जमा कर दिए गए हैं। - डेमो बैंक"
+  },
+  {
+   "id": "m17",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Beta, I have sent Rs 20,000 to your Demo Bank account for the hostel fees. Call me when you get it. - Papa"
+  },
+  {
+   "id": "m18",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Hi Ravi, rent of Rs 15,000 for November has been transferred to your Demo Bank account. Please confirm. - Anil (Flat 302)"
+  },
+  {
+   "id": "m19",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Maine aapke Demo Bank account mein 5,000 rupay bhej diye hain, Diwali ki mithai ke liye. - Sunita"
+  },
+  {
+   "id": "m20",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "मैंने आपके डेमो बैंक खाते में 10 हज़ार रुपये भेज दिए हैं। मिल जाए तो बता देना। - मम्मी"
+  },
+  {
+   "id": "m21",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "My Demo Bank account was credited with the bonus today, so I will pay you back the Rs 3,000 tomorrow. - Priya"
+  },
+  {
+   "id": "m22",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Mere Demo Bank account mein salary aa gayi hai, kal tumhe 2,000 bhej dunga. - Rohit"
+  },
+  {
+   "id": "m23",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Reimbursement of Rs 4,350 for your travel claim has been paid into your Demo Bank account. - Accounts Team, Sunrise Textiles"
+  },
+  {
+   "id": "m24",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Please share your Demo Bank account number and IFSC so I can send the advance for the wedding catering. - Meena"
+  },
+  {
+   "id": "m25",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Reminder: Your electricity bill of Rs 1,840 is due on 28-10-26. Pay via the BESCOM app or at any service counter."
+  },
+  {
+   "id": "m26",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Your Airtel postpaid bill of Rs 599 is due on 30 Oct. Pay using the Airtel Thanks app to avoid late fee."
+  },
+  {
+   "id": "m27",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Bijli ka bill Rs 1,200 hai, 30 tarikh tak bhar dena. - Papa"
+  },
+  {
+   "id": "m28",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "आपका पानी का बिल 450 रुपये है, कृपया 31 अक्टूबर तक जल बोर्ड कार्यालय में भुगतान करें।"
+  },
+  {
+   "id": "m29",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Hi, school fee of Rs 12,500 for term 2 is due. Kindly make the payment at the school office or through the school app. - St Mary's School"
+  },
+  {
+   "id": "m30",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Demo Bank: Your credit card bill of Rs 7,450 is due on 05-11-26. Pay through Demo Bank net banking or the Demo Bank app."
+  },
+  {
+   "id": "m31",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Delhi Police: Beware of digital arrest frauds. Police never ask you to transfer money on a video call. If someone asks you to pay to avoid arrest, call 1930."
+  },
+  {
+   "id": "m32",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "CBI: CBI does not conduct digital arrests. If anyone calls claiming to be from CBI and asks you to transfer money to an account, hang up and report on cybercrime.gov.in."
+  },
+  {
+   "id": "m33",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "RBI says: RBI never asks you to move money to a safe account. If someone asks you to transfer funds to a safe account, it is a fraud. Call 1930."
+  },
+  {
+   "id": "m34",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "दिल्ली पुलिस: डिजिटल अरेस्ट जैसी कोई चीज़ नहीं होती। अगर कोई आपसे खाते में पैसे भेजने को कहे तो तुरंत 1930 पर कॉल करें।"
+  },
+  {
+   "id": "m35",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Mumbai Police alert: Agar koi aapko CBI officer bankar call kare aur paisa transfer karne ko kahe, to turant 1930 par call karein."
+  },
+  {
+   "id": "m36",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "This is Delhi Police cyber cell awareness drive. Never share OTP. If anyone asks you to pay a fine over WhatsApp, report it at 1930."
+  },
+  {
+   "id": "m37",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Demo Bank never asks you to transfer money to a safe account. If someone asks you to move your savings to a new account, call us on 1800-123-4567."
+  },
+  {
+   "id": "m38",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "ED: The Enforcement Directorate does not call citizens to demand payment. If anyone asks you to pay to settle an ED case, report to 1930."
+  },
+  {
+   "id": "m39",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "अगर कोई आपसे कहे कि इस खाते में भुगतान करें वरना गिरफ्तारी होगी, तो वह धोखाधड़ी है। - साइबर सेल"
+  },
+  {
+   "id": "m40",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Hyderabad City Police: If someone says 'transfer Rs 50,000 to this account to avoid arrest', it is a scam. Disconnect and dial 1930."
+  },
+  {
+   "id": "m41",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "This is Delhi Police. A parcel in your name contains drugs. Transfer Rs 1,50,000 to account 30011223344 immediately for verification or you will be arrested."
+  },
+  {
+   "id": "m42",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "I am calling from Mumbai Police cyber crime. Your Aadhaar is linked to money laundering. Pay Rs 90,000 to this account 30011223344 today to avoid digital arrest."
+  },
+  {
+   "id": "m43",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "CBI: You are under digital arrest. Do not disconnect. Transfer your savings to the designated account 30011223344 for RBI verification within 2 hours."
+  },
+  {
+   "id": "m44",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "ED office se bol raha hoon. Aapke account mein hawala ka paisa aaya hai. Turant 2 lakh rupay is account 30011223344 mein bhejiye warna giraftari hogi."
+  },
+  {
+   "id": "m45",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "दिल्ली पुलिस: आपके नाम पर गिरफ्तारी वारंट जारी हुआ है। तुरंत 50,000 रुपये इस खाते 30011223344 में भुगतान करें।"
+  },
+  {
+   "id": "m46",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "Calling from Navi Mumbai Police. Your SIM was used in fraud. Make a payment of Rs 25,000 to account number 30011223344 now to clear your name."
+  },
+  {
+   "id": "m47",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "This is Bengaluru Police. Pay Rs 40,000 security deposit to this account 30011223344 today or a team will come to arrest you."
+  },
+  {
+   "id": "m48",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "CBI officer here. Your bank account is frozen in a money laundering case. Transfer Rs 3,00,000 to the safe account 30011223344 immediately."
+  },
+  {
+   "id": "m49",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "Main CBI se bol raha hoon. Aap digital arrest mein hain. 1 lakh rupay is account 30011223344 mein abhi bharo."
+  },
+  {
+   "id": "m50",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "यह मुंबई पुलिस है। आपके आधार से मनी लॉन्ड्रिंग हुई है। जांच के लिए 75 हज़ार रुपये इस खाते 30011223344 में तुरंत भेजें।"
+  },
+  {
+   "id": "m51",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "ED: Your PAN is linked to a hawala case. Pay Rs 60,000 penalty to account 30011223344 today to avoid arrest."
+  },
+  {
+   "id": "m52",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "This is Delhi Police. Your son is in custody. If you want him released, pay Rs 50,000 to this account 30011223344 immediately."
+  },
+  {
+   "id": "m53",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "Your Demo Bank account will be blocked today. Transfer Rs 49,000 to safe account 30011223344 to keep it safe."
+  },
+  {
+   "id": "m54",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "Demo Bank: Rs 49,999 has been debited from your account. To reverse it, transfer Rs 1 to account 30011223344 now."
+  },
+  {
+   "id": "m55",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "Demo Bank: Rs 25,000 has been debited, transfer Rs 10 to account 30011223344 immediately to cancel the transaction."
+  },
+  {
+   "id": "m56",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "Rs 15,000 has been credited to your Demo Bank account by mistake. Please return it to account 30011223344 today."
+  },
+  {
+   "id": "m57",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "Dear customer, your Demo Bank account has been compromised. Kindly transfer all funds to the safe account 30011223344 immediately."
+  },
+  {
+   "id": "m58",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "Aapke Demo Bank account se Rs 30,000 debit ho gaye hain. Wapas paane ke liye turant Rs 1 is account 30011223344 mein bhejiye."
+  },
+  {
+   "id": "m59",
+   "label": "scam",
+   "floor": "known_gap",
+   "text": "आपके डेमो बैंक खाते से 40,000 रुपये कट गए हैं। रिफंड के लिए तुरंत इस खाते 30011223344 में 1 रुपया भेजें।"
+  },
+  {
+   "id": "m60",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "Demo Bank fraud team: we have sent Rs 20,000 to your Demo Bank account in error. Please send it back to account 30011223344 now."
+  },
+  {
+   "id": "m61",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "Your FD has been closed due to suspicious activity. Move the amount to the safe account 30011223344 today to protect it. - Demo Bank"
+  },
+  {
+   "id": "m62",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "Demo Bank: Transaction of Rs 75,000 is successful, if not done by you transfer your balance to safe account 30011223344 immediately."
+  },
+  {
+   "id": "m63",
+   "label": "scam",
+   "floor": "known_gap",
+   "text": "Demo Bank: Your account is under RBI review. Pay Rs 5,000 refundable fee to this account 30011223344 today."
+  },
+  {
+   "id": "m64",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "Demo Bank security: Aapka account hack ho gaya hai. Saara paisa safe account 30011223344 mein turant transfer karein."
+  },
+  {
+   "id": "m65",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "Your Demo Bank account has been debited Rs 9,999 for a fraud charge. Please make a payment of Rs 1 to account number 30011223344 to stop further debits."
+  },
+  {
+   "id": "m66",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "I have paid Rs 10,000 to your Demo Bank account by mistake, please transfer it back to this account 30011223344 today. Urgent."
+  },
+  {
+   "id": "m67",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "Your Demo Bank account KYC expired. Pay Rs 10 at demobank-kyc.com to avoid blocking."
+  },
+  {
+   "id": "m68",
+   "label": "scam",
+   "floor": "known_gap",
+   "text": "Dear customer, your income tax refund of Rs 15,490 is approved. Pay Rs 99 processing fee to account 30011223344 to receive it."
+  },
+  {
+   "id": "m69",
+   "label": "scam",
+   "floor": "known_gap",
+   "text": "Electricity connection will be disconnected tonight at 9:30 pm. Pay Rs 1,500 immediately to this account 30011223344. Call officer 9876543210."
+  },
+  {
+   "id": "m70",
+   "label": "scam",
+   "floor": "known_gap",
+   "text": "Aapka bijli connection aaj raat kat jayega. Turant Rs 2,000 is account 30011223344 mein payment karo."
+  },
+  {
+   "id": "m71",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "आपका केवाईसी अपडेट नहीं है। खाता बंद होने से बचाने के लिए इस खाते 30011223344 में 500 रुपये भरें।"
+  },
+  {
+   "id": "m72",
+   "label": "scam",
+   "floor": "known_gap",
+   "text": "Your parcel is held at customs. Pay Rs 4,999 clearance fee to account 30011223344 today or it will be returned."
+  },
+  {
+   "id": "m73",
+   "label": "scam",
+   "floor": "known_gap",
+   "text": "Congratulations! You won Rs 25 lakh in KBC lottery. Pay Rs 12,500 tax to this account 30011223344 to claim your prize."
+  },
+  {
+   "id": "m74",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "Demo Bank: Your reward points worth Rs 7,500 expire today. Update KYC at demobank-rewards.in now."
+  },
+  {
+   "id": "m75",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "इस यूपीआई पर 5,000 रुपये भुगतान करें वरना आपका खाता आज बंद हो जाएगा। - डेमो बैंक"
+  },
+  {
+   "id": "m76",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "Sir, your Demo Bank credit card limit has been increased. To activate, pay Rs 2,999 to this account 30011223344 now."
+  },
+  {
+   "id": "m77",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Demo Bank: Rs 2,000 credited to A/c XX4521. If someone calls asking you to transfer this money to another account, do not do it."
+  },
+  {
+   "id": "m78",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "Agar koi aur call kare to mat sunna. Main Demo Bank se hoon, aapka account block hai, turant Rs 10,000 safe account 30011223344 mein bhejiye."
+  },
+  {
+   "id": "m79",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "If someone from the bank calls, ignore them. This is CBI. Transfer Rs 2,00,000 to account 30011223344 immediately for verification."
+  },
+  {
+   "id": "m80",
+   "label": "genuine",
+   "floor": "not_red",
+   "text": "Hi Ravi, I have paid the Rs 500 for the cricket kit into your Demo Bank account. If anyone else asks you to pay for it, tell them it's done. - Coach Ajay"
+  },
+  {
+   "id": "v1",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "I have paid Rs 10,000 to your Demo Bank account by mistake, please transfer it back to this account 30011223344 today. Urgent."
+  },
+  {
+   "id": "v2",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "I have sent Rs 10,000 to your Demo Bank account by mistake. Please transfer it back to this account 30011223344 today."
+  },
+  {
+   "id": "v3",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "Rs 10,000 has been credited to your Demo Bank account by mistake, please transfer it back to account 30011223344 now."
+  },
+  {
+   "id": "v4",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "Maine galti se aapke Demo Bank account mein Rs 10,000 bhej diye hain, turant is account 30011223344 mein wapas transfer karein."
+  },
+  {
+   "id": "v5",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "Sir I have transferred Rs 5,000 to your Demo Bank account wrongly. Kindly return it to account 30011223344 immediately."
+  },
+  {
+   "id": "v6",
+   "label": "scam",
+   "floor": "flagged",
+   "text": "We have sent Rs 20,000 to your Demo Bank account in error, transfer it back to the safe account 30011223344 now. - Demo Bank"
+  }
+ ]
+}
