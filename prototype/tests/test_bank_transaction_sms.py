@@ -25,6 +25,7 @@ REPORTS = [
     "savings account.",
     "Demo Bank: Your IMPS limit has been increased to Rs 5,00,000 as requested.",
     "Dear Customer, Rs 85,000 salary credited to your Demo Bank account XX4411 through NEFT on 01-10-2026.",
+    "Dear Customer, you have paid Rs 2,000 to account XX7788 via IMPS. - Demo Bank",
 ]
 
 DEMANDS = [

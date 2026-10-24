@@ -1278,7 +1278,9 @@ def _matched_passive(m: re.Match) -> bool:
 RE_COMPLETED_TXN = re.compile(
     r"\b(?:credited|debited|is\s+successful|was\s+successful|successful(?:ly)?"
     r"|(?:has|have|had|been)\s+(?:closed|increased|decreased|reduced|processed|reversed|deducted|withdrawn"
-    r"|disbursed|settled|liquidated|completed))\b"
+    r"|disbursed|settled|liquidated|completed)"
+    # "you have paid Rs 2,000 to account XX7788 via IMPS": a payment that already went, reported back to the payer
+    r"|(?:has|have|had|was|were|been)\s+(?:paid|sent|transferred|made))\b"
     r"|क्रेडिट|डेबिट|सफल\w*", re.I)
 
 
@@ -1307,27 +1309,43 @@ def _first_demand(patterns: list[str], text: str) -> Optional[re.Match]:
 
 
 # The bank's bare name is a claim to BE the bank only when it is not somebody's account. "Please transfer 5000 to my
-# Demo Bank account" (a mother), "your salary ... to your Demo Bank account" (an employer) and "maine aapke Demo
-# Bank account me ... bhej diye" (a relative) name the customer's or the sender's own account, the same bare
-# possessive the BANK_SELF table above already refuses for "your bank account". Read as BANK_SELF they gave RED and
-# the card told the customer that Demo Bank had sent them. Both halves are required, a possessive before the name and
-# an account word after it: the bank itself writes "your Demo Bank debit card ... has been despatched", and that
-# signed message must stay MATCHES. A masthead, a sign-off, "from Demo Bank" and "Demo Bank se bol raha hoon" still
-# count.
-RE_POSSESSIVE_BEFORE = re.compile(
-    r"(?:\b(?:your|ur|yr|my|his|her|their|aapk[aei]|apk[aei]|aapk|mer[aei]|tumhar[aei]|tumhe|ter[aei]|apn[aei])"
-    r"|आपके|आपका|आपकी|मेरे|मेरा|मेरी|अपने|अपना|अपनी|तुम्हारे|तुम्हारा|तुम्हारी)\s+$", re.I)
-
-
+# Demo Bank account" (a mother), "your salary ... has been transferred to your Demo Bank account" (an employer) and
+# "maine aapke Demo Bank account me ... bhej diye" (a relative) name the customer's or the sender's own account, the
+# same bare possessive the BANK_SELF table above already refuses for "your bank account". Read as BANK_SELF they gave
+# RED and the card told the customer that Demo Bank had sent them.
+# Narrow on purpose, because a scam that poses as the bank also says "your Demo Bank account" ("Aapke Demo Bank
+# account par fraud hua hai ... bhejiye", "your Demo Bank account KYC expired") and must keep its bank claim:
+#   - a first-person possessive before the name and an account word after it is never the bank ("my Demo Bank
+#     account", "mere Demo Bank khate");
+#   - a second-person one is skipped only when the same clause says somebody SENT money INTO it ("I have sent ... to
+#     your Demo Bank account", "aapke Demo Bank account me ... bhej diye", "transferred ... to your Demo Bank account").
+# The bank itself writes "your Demo Bank debit card ... has been despatched", and that signed message stays MATCHES.
+RE_MY_BEFORE = re.compile(r"(?:\b(?:my|mere|mera|meri|hamare|hamara|our)|मेरे|मेरा|मेरी|हमारे|हमारा)\s+$", re.I)
+RE_YOUR_BEFORE = re.compile(r"(?:\b(?:to|into|in)\s+)?(?:\b(?:your|ur|yr|aapk[aei]|apk[aei]|aapk|tumhar[aei]|ter[aei])"
+                            r"|आपके|आपका|आपकी|तुम्हारे|तुम्हारा|तुम्हारी)\s+$", re.I)
 RE_ACCOUNT_AFTER = re.compile(r"\s*(?:savings\s+|current\s+|salary\s+)?(?:a/?c\b|acc(?:ou)?n?t\b|accounts?\b|khat[aei]\b"
                               r"|खात[ाे])", re.I)
+RE_SENT_INTO = re.compile(r"\b(?:sent|have\s+sent|has\s+sent|transferred|deposited|paid)\b"
+                          r"|\b(?:bhej|daal|dal|jama\s+kar)\s*di(?:ye|ya|e|a)\b|भेज\s*दि(?:ए|या)|डाल\s*दि(?:ए|या)|जमा\s*कर\s*दि(?:ए|या)",
+                          re.I)
+
+
+def _somebodys_account(text: str, m: re.Match) -> bool:
+    if not RE_ACCOUNT_AFTER.match(text, m.end()):
+        return False
+    before = max(0, m.start() - 24)
+    if RE_MY_BEFORE.search(text, before, m.start()):
+        return True
+    if RE_YOUR_BEFORE.search(text, before, m.start()):
+        clause = text[_sentence_start(text, m.start()):_sentence_end(text, m.end())]
+        return bool(RE_SENT_INTO.search(clause))
+    return False
 
 
 def _bank_name_claim(patterns: list[str], text: str) -> Optional[re.Match]:
-    """The earliest mention of the bank's own name that is not somebody's account ("my Demo Bank account")."""
+    """The earliest mention of the bank's own name that is not somebody's account (see _somebodys_account)."""
     found = sorted((m for p in patterns for m in re.finditer(p, text, re.I)), key=lambda m: m.start())
-    return next((m for m in found if not (RE_POSSESSIVE_BEFORE.search(text, max(0, m.start() - 24), m.start())
-                                          and RE_ACCOUNT_AFTER.match(text, m.end()))), None)
+    return next((m for m in found if not _somebodys_account(text, m)), None)
 
 
 def _span(norm: Normalised, m: re.Match, group: int = 0) -> Span:

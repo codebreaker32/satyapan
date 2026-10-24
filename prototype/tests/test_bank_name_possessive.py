@@ -23,6 +23,10 @@ THE_BANK = [
     "Demo Bank: your account is blocked. Transfer Rs 49,000 to safe account 30011223344 today.",
     "Main Demo Bank se bol raha hoon. Apna FD tod kar paisa safe account 30011223344 mein bhejiye.",
     "Your KYC is pending. Update now or your account will be frozen. - Demo Bank",
+    # a scam posing as the bank says "your Demo Bank account" too, and must keep its bank claim
+    "Aapke Demo Bank account par fraud hua hai. Apna paisa is safe account 30011223344 mein turant bhejiye.",
+    "Your Demo Bank account KYC expired. Pay Rs 10 at demobank-kyc.com to avoid blocking.",
+    "Your Demo Bank account has been credited with Rs 25,000 by mistake. Please return it to account 30011223344 today.",
 ]
 
 
