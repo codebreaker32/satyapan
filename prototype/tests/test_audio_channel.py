@@ -41,8 +41,9 @@ def test_a_counter_recording_reaches_the_detector_as_a_replay(tmp_path):
     engine.add_media(case, tone_wav(tmp_path / "rec.wav"), derived_text="hello", channel="live-replay")
     engine.add_media(case, tone_wav(tmp_path / "note.wav"), derived_text="hello")
     engine.run(case)
-    assert ("rec.wav", case.claim.language_hint, "live-replay") in det.calls
-    assert ("note.wav", case.claim.language_hint, None) in det.calls
+    # the language the officer chose for the recording (add_media's default, Hindi), not the message's script
+    assert ("rec.wav", "hi", "live-replay") in det.calls
+    assert ("note.wav", "hi", None) in det.calls
 
 
 def test_the_api_accepts_only_the_replay_channel(tmp_path):
@@ -65,3 +66,15 @@ def test_the_dfarena_adapter_maps_the_team_result(tmp_path):
     r = adapter.analyse(tone_wav(tmp_path / "v.wav", 6), language="mixed", channel="live-replay")
     assert r.kind == "audio" and r.status in ("synthetic", "abstain", "clean") and r.cell.startswith("hi/")
     assert adapter.label.mock is False and "non-commercial" in adapter.label.production_source
+
+
+def test_the_voice_check_uses_the_recordings_language_not_the_messages_script(tmp_path):
+    det = RecordingDetector()
+    engine = Satyapan(audio=det)
+    case = engine.open_case(Flag(reason="counter", amount_inr=0))
+    engine.add_media(case, tone_wav(tmp_path / "hindi.wav"), derived_text="Beta, mujhe abhi paise chahiye", language="hi")
+    engine.add_media(case, tone_wav(tmp_path / "english.wav"), derived_text="hello", language="en")
+    engine.run(case)
+    assert case.claim.language_hint == "en"                 # Latin letters read as English...
+    assert ("hindi.wav", "hi", None) in det.calls           # ...but the voice is judged as the Hindi it is
+    assert ("english.wav", "en", None) in det.calls

@@ -124,11 +124,14 @@ def sha256_of(path: Path) -> str:
 
 
 def channel_for(codec: str, source_rate: int) -> str:
-    """How the audio reached us. WhatsApp voice notes and browser recordings are Opus; phone calls are 8 kHz."""
+    """How the audio reached us. WhatsApp voice notes and browser recordings are Opus; the sound of a phone or
+    WhatsApp video (and an iPhone voice memo) is AAC; phone calls are 8 kHz."""
     if source_rate and source_rate <= 8000 or codec in ("amr_nb", "amrnb", "gsm", "pcm_mulaw", "pcm_alaw"):
         return "phone-8k"
     if codec == "opus":
         return "whatsapp-opus"
+    if codec == "aac":
+        return "aac"
     return "clean"
 
 

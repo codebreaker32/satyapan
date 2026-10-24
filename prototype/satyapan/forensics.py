@@ -166,6 +166,102 @@ class DFArenaAudioForensics:
                               cell=r.cell, extra={k: v for k, v in keep.items() if v is not None})
 
 
+def _from_team(r) -> ForensicResult:
+    """A team-repository result (object or its JSON dict from the forensics service) as this engine's ForensicResult."""
+    g = r.get if isinstance(r, dict) else (lambda k, d=None: getattr(r, k, d))
+    extra = g("extra") or {}
+    keep = ("speech_s", "duration_s", "window_scores", "codec", "source_rate", "seconds", "from_video", "faces_scored",
+            "frames_tried", "spread", "short_side")
+    return ForensicResult(kind=g("kind"), status=g("status"), band=g("band") or "", score=g("score"), reason=g("reason") or "",
+                          model=g("model") or "", cell=g("cell") or "", extra={k: extra[k] for k in keep if extra.get(k) is not None})
+
+
+class _FaceCheckMissing:
+    """Stands in for the face check when it cannot load here (no OpenCV, no GenD weights): it abstains with the reason,
+    and the voice check on the same video still runs."""
+    def __init__(self, reason: str):
+        self.reason = reason
+
+    def analyse(self, path):
+        from forensics.common import ForensicResult as TeamResult
+        return TeamResult(kind="video", status="abstain", reason=self.reason, model="none")
+
+
+class TeamVideoForensics:
+    """A video gets both checks of the team repository's joined entry point (forensics/analyse.py): the face check
+    (GenD CLIP-L/14, Aman's, on YuNet faces) on its frames, and the voice check (DF Arena) on its sound track, judged
+    by the sound's own codec. An audio file never comes here; it goes to the voice check alone.
+
+    With SATYAPAN_FORENSICS_URL set, it asks the team's forensics service (scripts/demo_up.sh), which keeps both models
+    loaded in their own process. Otherwise it runs the same entry point in this process, loading GenD on the first
+    video (about 25 s on the team laptop) and sharing the voice model with the audio check."""
+    label = Label("Video forensics", "GenD CLIP-L/14 face check (yermandy/GenD, MIT) on YuNet faces, plus the DF Arena "
+                  "voice check on the sound track; both calibrated", "Model risk",
+                  "in-process models, or the team's forensics service", mock=False)
+
+    def __init__(self, repo: Path, audio, url: Optional[str] = None):
+        import sys
+        if str(repo) not in sys.path:
+            sys.path.insert(0, str(repo))
+        self.repo, self.url = repo, (url or "").rstrip("/")
+        # the voice half: the team detector inside the DF Arena adapter, else whatever audio check this engine has
+        self.audio = getattr(audio, "detector", audio)
+        self._video = None
+
+    @property
+    def video(self):
+        if self._video is None:
+            try:
+                from forensics.common import Calibration
+                from forensics.video import GenDVideoForensics
+                cal = self.repo / "calibration" / "video.json"
+                self._video = GenDVideoForensics(calibration=Calibration.load(cal) if cal.exists() else None)
+                _ = self._video.detector, self._video.scorer             # load now, so a failure is caught here
+            except Exception as e:  # noqa: BLE001 - no OpenCV or no weights: the face half abstains, the voice half runs
+                self._video = _FaceCheckMissing(f"the face check is not installed on this machine ({type(e).__name__})")
+        return self._video
+
+    def analyse(self, path: Path, language: str = "hi", channel: Optional[str] = None) -> list[ForensicResult]:
+        language = language if language in ("hi", "en") else "hi"
+        if self.url:
+            import json
+            import urllib.request
+            body = json.dumps({"path": str(Path(path).resolve()), "language": language, "channel": channel}).encode()
+            req = urllib.request.Request(self.url + "/analyse", data=body, headers={"Content-Type": "application/json"})
+            try:
+                with urllib.request.urlopen(req, timeout=600) as r:
+                    return [_from_team(x) for x in json.load(r)["results"]]
+            except Exception as e:  # noqa: BLE001 - the service is down: say so, never crash the case
+                why = f"the forensics service could not be reached ({type(e).__name__})"
+                return [ForensicResult(kind=k, status="abstain", reason=why, model="service") for k in ("video", "audio")]
+        from forensics.analyse import analyse as joined
+        return [_from_team(r) for r in joined(path, video=self.video, audio=self.audio, language=language, channel=channel)]
+
+
+class AudioOnlyVideoForensics:
+    """No team repository here: a video's sound still gets the engine's voice check; the face check says it is absent."""
+    label = Label("Video forensics", "voice check on the sound track only; no face check installed", "Model risk",
+                  "the audio check, run on the video's sound", mock=False)
+
+    def __init__(self, audio):
+        self.audio = audio
+
+    def analyse(self, path: Path, language: str = "hi", channel: Optional[str] = None) -> list[ForensicResult]:
+        voice = (self.audio.analyse(path, language, channel=channel) if channel and getattr(self.audio, "accepts_channel", False)
+                 else self.audio.analyse(path, language))
+        return [ForensicResult(kind="video", status="abstain", reason="no face check is installed", model="none"), voice]
+
+
+def default_video_forensics(audio):
+    """Both checks for a video when the team repository has the face check, else the voice check alone."""
+    if (TEAM_REPO / "forensics" / "analyse.py").exists() and os.environ.get("SATYAPAN_VIDEO", "").lower() != "none":
+        try:
+            return TeamVideoForensics(TEAM_REPO, audio, url=os.environ.get("SATYAPAN_FORENSICS_URL"))
+        except Exception:  # noqa: BLE001
+            pass
+    return AudioOnlyVideoForensics(audio)
+
+
 # The voice detector's repository: this engine's parent when it sits in prototype/ of the team repository, else a
 # sibling checkout named satyapan-team (the laptop layout). SATYAPAN_TEAM_REPO overrides both.
 TEAM_REPO = Path(os.environ.get("SATYAPAN_TEAM_REPO")
@@ -283,7 +379,7 @@ def to_signal(book, res: ForensicResult):
     from .models import Family, Severity, Signal
     from .rulebook import make_signal
     tag = " (SIMULATED)" if res.simulated else ""
-    rule_id = "R-AUDIO-SYNTH" if res.kind in ("audio", "video") else ("R-DOC-AI" if res.status == "synthetic" else "R-DOC-TAMPER")
+    rule_id = {"audio": "R-AUDIO-SYNTH", "video": "R-VIDEO-SYNTH"}.get(res.kind) or ("R-DOC-AI" if res.status == "synthetic" else "R-DOC-TAMPER")
     if res.status in ("synthetic", "edited"):
         return make_signal(book, rule_id, {"evidence_key": f"media:{res.kind}", "band": res.band + tag, "band_hi": BAND_HI.get(res.band, res.band) + tag,
                                            "score": res.score, "model": res.model, "cell": res.cell, "simulated": res.simulated,

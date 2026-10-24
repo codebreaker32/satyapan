@@ -133,7 +133,9 @@ const META_TARGETS: Record<string, string> = {
   'R-BANK-RM-PHONE': 'sender',
   'R-OWN-SIGNATURE': 'signature',
   'R-AUDIO-SYNTH': 'media',
+  'R-VIDEO-SYNTH': 'media',
   'R-DOC-TAMPER': 'media',
+  'R-DOC-AI': 'media',
   'R-CAMPAIGN-MATCH': 'text',
   'R-BANK-FLAG': 'flag',
   // the receiver comes from the bank's own transfer record, which the flag row shows, never from the message

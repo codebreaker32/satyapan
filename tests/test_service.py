@@ -54,3 +54,13 @@ def test_missing_path_key_rejected(server):
     with pytest.raises(urllib.error.HTTPError) as e:
         post(server + "/analyse", {"file": "/x.mp4"})
     assert e.value.code == 400
+
+
+def test_language_and_channel_are_checked(server, tmp_path):
+    t = tmp_path / "x.txt"
+    t.write_text("hi")
+    assert post(server + "/analyse", {"path": str(t), "language": "en", "channel": "live-replay"})["results"] == []
+    for bad in ({"language": "fr"}, {"channel": "clean"}):
+        with pytest.raises(urllib.error.HTTPError) as e:
+            post(server + "/analyse", {"path": str(t)} | bad)
+        assert e.value.code == 400

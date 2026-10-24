@@ -126,6 +126,40 @@ class YuNetDetector:
         return out
 
 
+def load_gend_explicitly():
+    """GenD at the pinned revision, built without `from_pretrained`.
+
+    Transformers 5 builds a model on the meta device and then loads its weights, but GenD's own __init__ calls
+    CLIPModel.from_pretrained, which refuses to run on the meta device. So GenD is built plainly, with its CLIP
+    backbone made from CLIP's config alone (GenD's file carries every vision weight it uses, so the 1.7 GB CLIP
+    download is not needed), and then GenD's model.safetensors is loaded. Any parameter the file does not cover is an
+    error, so this is the same model `from_pretrained` gives under transformers 4.56."""
+    from huggingface_hub import hf_hub_download
+    from safetensors.torch import load_file
+    from transformers import CLIPConfig, CLIPModel
+
+    from ._gend_model import GenD, GenDConfig
+
+    cfg = GenDConfig.from_pretrained(GEND_MODEL_ID, revision=GEND_REVISION)
+    had = "from_pretrained" in CLIPModel.__dict__
+    saved = CLIPModel.__dict__.get("from_pretrained")
+    CLIPModel.from_pretrained = classmethod(lambda cls, name, *a, **kw: cls(CLIPConfig.from_pretrained(name)))
+    try:
+        model = GenD(cfg)
+    finally:
+        if had:
+            CLIPModel.from_pretrained = saved
+        else:
+            del CLIPModel.from_pretrained
+    state = load_file(hf_hub_download(GEND_MODEL_ID, "model.safetensors", revision=GEND_REVISION))
+    missing, unexpected = model.load_state_dict(state, strict=False)
+    params = {n for n, _ in model.named_parameters()}
+    uncovered = [k for k in missing if k in params and not k.startswith("feature_extractor.text_model")]
+    if uncovered or unexpected:
+        raise RuntimeError(f"GenD weights do not match its code: missing {uncovered[:3]}, unexpected {unexpected[:3]}")
+    return model.eval()
+
+
 class GenDScorer:
     """Loads the published GenD weights once (pinned revision) and returns P(fake) per aligned RGB face."""
 
@@ -136,7 +170,12 @@ class GenDScorer:
         from ._gend_model import GenD
 
         self.torch, self.Image = torch, Image
-        self.model = GenD.from_pretrained(GEND_MODEL_ID, revision=GEND_REVISION).eval()
+        try:
+            self.model = GenD.from_pretrained(GEND_MODEL_ID, revision=GEND_REVISION).eval()
+        except RuntimeError as e:
+            if "meta" not in str(e):
+                raise
+            self.model = load_gend_explicitly()      # transformers 5 builds models on the meta device first
         self.batch_size = batch_size
 
     def __call__(self, faces_rgb: list[np.ndarray]) -> list[float]:

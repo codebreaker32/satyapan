@@ -103,3 +103,61 @@ def test_a_failing_voice_check_keeps_the_face_result(tmp_path):
     rs = analyse(withsound, video=Fixed("video", "synthetic"), audio=Boom())
     assert rs[0].kind == "video" and rs[0].status == "synthetic"
     assert rs[1].kind == "audio" and rs[1].status == "abstain" and "voice check failed" in rs[1].reason
+
+
+class Heard:
+    """An audio detector that accepts language and channel, and remembers what it was told."""
+
+    def __init__(self):
+        self.calls = []
+
+    def analyse(self, path, language="hi", channel=None):
+        self.calls.append((Path(path).suffix, language, channel))
+        return ForensicResult(kind="audio", status="clean", model="stub-audio")
+
+
+def _with_aac_sound(tmp_path):
+    import subprocess
+
+    import imageio_ffmpeg
+    src = make_video(tmp_path / "v.mp4", n=50)
+    out = tmp_path / "vs.mp4"
+    subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), "-y", "-loglevel", "error", "-i", str(src), "-f", "lavfi", "-i",
+                    "sine=frequency=440:duration=2", "-shortest", "-c:v", "copy", "-c:a", "aac", "-b:a", "64k", str(out)],
+                   check=True)
+    return out
+
+
+def test_a_videos_sound_is_judged_by_its_own_codec_and_the_claims_language(tmp_path):
+    """The track is cut out to WAV, which no longer says it was AAC; the detector is told before that happens."""
+    a = Heard()
+    rs = analyse(_with_aac_sound(tmp_path), video=Fixed("video"), audio=a, language="en")
+    assert [r.kind for r in rs] == ["video", "audio"] and a.calls == [(".wav", "en", "aac")]
+
+
+def test_a_replay_channel_overrides_the_codec_and_reaches_an_audio_file(tmp_path):
+    a = Heard()
+    analyse(_with_aac_sound(tmp_path), video=Fixed("video"), audio=a, channel="live-replay")
+    o = tmp_path / "note.ogg"
+    o.write_bytes(b"OggS" + b"\x00" * 60)
+    analyse(o, video=Fixed("video"), audio=a, channel="live-replay")
+    assert [c[2] for c in a.calls] == ["live-replay", "live-replay"]
+
+
+def test_a_webm_with_no_picture_is_a_voice_recording(tmp_path):
+    """The console's "Record voice" uploads WebM holding only sound; it must not go to the face check."""
+    import av
+    p = tmp_path / "voice.webm"
+    with av.open(str(p), "w", format="webm") as c:
+        s = c.add_stream("libopus", rate=48000, layout="mono")
+        f = av.AudioFrame.from_ndarray((0.1 * np.sin(np.arange(48000) / 8)).astype(np.float32).reshape(1, -1),
+                                       format="flt", layout="mono")
+        f.sample_rate = 48000
+        for pkt in s.encode(f):
+            c.mux(pkt)
+        for pkt in s.encode(None):
+            c.mux(pkt)
+    v, a = Fixed("video"), Heard()
+    rs = analyse(p, video=v, audio=a)
+    assert kind_of(p) == "audio" and [r.kind for r in rs] == ["audio"] and not v.seen
+    assert a.calls == [(".webm", "hi", None)]

@@ -36,7 +36,7 @@ from forensics.common import Calibration, CellCalibration, threshold_at_fpr  # n
 
 ROOT = Path(__file__).resolve().parent.parent
 MIN_REAL_FOR_CELL = 10
-SIMULATED = ("whatsapp-opus", "phone-8k")
+SIMULATED = ("whatsapp-opus", "phone-8k", "aac")
 
 
 def auc(real: list[float], fake: list[float]) -> float | None:
@@ -48,7 +48,8 @@ def auc(real: list[float], fake: list[float]) -> float | None:
 
 
 def through_channel(wav: np.ndarray, channel: str) -> np.ndarray:
-    """The clip as it sounds after a WhatsApp voice note (Opus 16 kbit/s) or an 8 kHz phone line, back at 16 kHz."""
+    """The clip as it sounds after a WhatsApp voice note (Opus 16 kbit/s), an 8 kHz phone line, or the sound track of a
+    WhatsApp-like video (AAC 64 kbit/s, as scripts/whatsappify.py makes them), back at 16 kHz."""
     import av
     if channel == "phone-8k":
         down = av.AudioResampler(format="flt", layout="mono", rate=8000)
@@ -76,6 +77,20 @@ def through_channel(wav: np.ndarray, channel: str) -> np.ndarray:
         tmp = ROOT / "clips" / ".channel_tmp.ogg"
         tmp.write_bytes(buf.getvalue())
         return decode_audio(tmp)[0]
+    if channel == "aac":
+        buf = io.BytesIO()
+        with av.open(buf, "w", format="adts") as c:
+            s = c.add_stream("aac", rate=44100, layout="mono")
+            s.bit_rate = 64000
+            frame = av.AudioFrame.from_ndarray(wav.reshape(1, -1), format="flt", layout="mono")
+            frame.sample_rate = SAMPLE_RATE
+            for p in s.encode(frame):
+                c.mux(p)
+            for p in s.encode(None):
+                c.mux(p)
+        tmp = ROOT / "clips" / ".channel_tmp.aac"
+        tmp.write_bytes(buf.getvalue())
+        return decode_audio(tmp)[0]
     raise ValueError(channel)
 
 
@@ -84,6 +99,8 @@ def main() -> int:
     ap.add_argument("--manifest", type=Path, required=True)
     ap.add_argument("--size", choices=["500M", "1B"], default="500M")
     ap.add_argument("--max-per-source", type=int, default=150, help="cap clips per source (fixed seed)")
+    ap.add_argument("--cap", action="append", default=[], metavar="SOURCE=N",
+                    help="a different cap for one source, e.g. gramvaani=600 (repeatable)")
     ap.add_argument("--no-simulate", action="store_true", help="score clips only as they are")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", type=Path, default=None)
@@ -99,6 +116,7 @@ def main() -> int:
     by_source: dict[str, list[dict]] = defaultdict(list)
     for r in rows:
         by_source[r.get("source", "").split(":")[0]].append(r)
+    caps = {k: int(v) for k, v in (c.split("=", 1) for c in a.cap)}
     rng = random.Random(a.seed)
     picked = []
     for src, rs in sorted(by_source.items()):
@@ -106,7 +124,7 @@ def main() -> int:
         rng.shuffle(rs)
         # keep both labels when a source has both (In-the-Wild)
         for label in ("real", "fake"):
-            picked += [r for r in rs if r["label"] == label][: a.max_per_source]
+            picked += [r for r in rs if r["label"] == label][: caps.get(src, a.max_per_source)]
 
     det = DFArenaAudioForensics(calibration=None, size=a.size)
     runs = []
@@ -157,11 +175,19 @@ def main() -> int:
     lines = ["# Voice detector calibration report", "",
              f"Model: `{det.model_name}`. Manifest: `{a.manifest.name}`, {len(picked)} clips, {len(runs)} scored versions.", "",
              "Thresholds are set on real clips only. Catch rate = share of fake clips at or above the threshold.",
-             "Channels marked simulated were made from clean clips in memory (Opus 16 kbit/s; 8 kHz phone band).", "",
+             "Channels marked simulated were made from clean clips in memory (Opus 16 kbit/s; 8 kHz phone band; AAC 64 kbit/s, "
+             "the sound of a WhatsApp-like video).", "",
              "| Cell | Usable real | Usable fake | t_fpr20 | t_fpr5 | t_fpr1 | Catch at 5% FPR | Catch at 20% FPR | AUC | Real sources | Fake sources |",
              "|---|---|---|---|---|---|---|---|---|---|---|"]
     per_source = []
     for cell, d in sorted(by_cell.items()):
+        # Where real clips came through the real channel (Gram Vaani phone calls), the line is set on those alone: a
+        # clean clip pushed through a simulated 8 kHz band scores far lower than a real Indian phone call (median raw
+        # score 0.008 against 0.998), so a mixed pool put the 5% line where it flagged about 11% of unseen real calls
+        # (calibration/smoke_genuine.md). Simulated copies set the line only where no real-channel clips exist.
+        native = [x for x in d["real"] if not x["simulated"]]
+        if not cell.endswith("/any") and len(native) >= MIN_REAL_FOR_CELL and len(native) < len(d["real"]):
+            d = {"real": native, "fake": d["fake"]}
         real, fake = [x["median"] for x in d["real"]], [x["median"] for x in d["fake"]]
         srcs = lambda xs: ", ".join(sorted({x["source"].split(":")[0] + (" (sim)" if x["simulated"] else "") for x in xs})) or "-"
         if len(real) < MIN_REAL_FOR_CELL:
@@ -187,7 +213,9 @@ def main() -> int:
     secs = [r["seconds"] for r in runs if r["seconds"]]
     if secs:
         lines += ["", f"Scoring time per clip on this machine: median {np.median(secs):.1f} s, max {max(secs):.1f} s."]
-    lines += ["", "With few real clips these thresholds are coarse; the counts above say how much to trust them.",
+    lines += ["", "Where real clips came through the real channel (Gram Vaani phone calls), that cell's thresholds are set "
+                  "on them alone; simulated copies set a line only where no real-channel clips exist.",
+              "", "With few real clips these thresholds are coarse; the counts above say how much to trust them.",
               "In-the-Wild is English celebrity speech; IndicSynth is lab-made Hindi; no public Indian scam-call audio exists."]
     cal.save(out)
     report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")

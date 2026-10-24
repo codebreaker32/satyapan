@@ -122,7 +122,8 @@ def meta():
                 {"id": m.id, "family": m.family.value, "severity": m.severity.value, "title": m.title, "citation": m.citation.source,
                  "citation_url": m.citation.url, "verified": m.citation.verified, "checked": m.citation.checked} for m in engine.book.rules.values()]},
             "adapters": engine.adapters.labels(),
-            "forensics": {"audio": engine.audio.label.as_dict(), "document": engine.document.label.as_dict()},
+            "forensics": {"audio": engine.audio.label.as_dict(), "video": engine.video.label.as_dict(),
+                          "document": engine.document.label.as_dict()},
             "signer": engine.signer.label.as_dict(),
             # honest scope: wall time to verdict in this serve session on this laptop, not a benchmark
             "session_timing": {"count": len(_verdict_ms),

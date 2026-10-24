@@ -187,7 +187,7 @@ export interface Meta {
   bank_name: string
   rulebook: { version: string; sha256: string; rules: RuleMeta[] }
   adapters: Label[]
-  forensics: { audio: Label; document: Label }
+  forensics: { audio: Label; video?: Label; document: Label }
   signer: Label
   session_timing: SessionTiming
 }

@@ -2,10 +2,11 @@ import type { Label, Meta } from '../lib/api'
 import { FAMILY_WORD, SEVERITY_WORD } from '../lib/spans'
 import { Trouble } from '../ui/trouble'
 
-// The rows of the integrations table, in the order the page shows them: outside lookups, the two forensics
-// components, then the evidence signer.
+// The rows of the integrations table, in the order the page shows them: outside lookups, the forensics
+// components (voice, video when the engine reports one, document), then the evidence signer.
 export function integrationRows(meta: Meta): Label[] {
-  return [...meta.adapters, meta.forensics.audio, meta.forensics.document, meta.signer]
+  const video = meta.forensics.video ? [meta.forensics.video] : []
+  return [...meta.adapters, meta.forensics.audio, ...video, meta.forensics.document, meta.signer]
 }
 
 // One sentence about what is mocked, counted from the same labels the table prints, so the rail and the
@@ -18,7 +19,17 @@ export function integrationRows(meta: Meta): Label[] {
 export function integrationHonesty(meta: Meta): string {
   const mocked = meta.adapters.filter((a) => a.mock).length
   const lookups = `${mocked} of ${meta.adapters.length} outside lookups${meta.signer.mock ? ' and the evidence signer' : ''} are mocks`
-  return `${lookups}; the document detector runs here, no calibrated audio detector is loaded, so audio forensics abstain and the rehearsal scenarios script a result marked SIMULATED.`
+  // Read off the labels the engine sends, so the sentence follows what is actually loaded on this machine.
+  const voice = /DF Arena|AASIST/.test(meta.forensics.audio.production_source)
+    ? 'the voice check runs here'
+    : 'no calibrated voice detector is loaded, so voice checks abstain'
+  const video = meta.forensics.video
+  const face = !video
+    ? ''
+    : /GenD/.test(video.production_source)
+      ? ', videos also get the face check'
+      : ', videos get the voice check on their sound only'
+  return `${lookups}; the document detector runs here, ${voice}${face}, and the rehearsal scenarios script a result marked SIMULATED.`
 }
 
 // Every rule with its citation, and every outside lookup with the label that says what it mocks.

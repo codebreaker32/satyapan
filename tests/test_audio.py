@@ -14,6 +14,7 @@ from forensics.common import Calibration, CellCalibration
 CAL = Calibration(model="stub", cells={
     "hi/clean": CellCalibration(t_fpr5=0.8, t_fpr20=0.5, t_fpr1=0.95, n_real=100, n_fake=50),
     "hi/whatsapp-opus": CellCalibration(t_fpr5=0.7, t_fpr20=0.4, n_real=30, n_fake=30),
+    "hi/aac": CellCalibration(t_fpr5=0.75, t_fpr20=0.45, n_real=30, n_fake=30),
 })
 
 
@@ -125,7 +126,7 @@ def test_the_voice_in_a_video_is_checked(tmp_path):
             for pk in s.encode(None):
                 c.mux(pk)
     r = detector([0.9]).analyse(path)
-    assert r.status == "synthetic" and r.extra["speech_s"] >= 2
+    assert r.status == "synthetic" and r.extra["speech_s"] >= 2 and r.cell == "hi/aac"
 
 
 def test_a_missing_or_broken_file_abstains(tmp_path):
@@ -165,3 +166,7 @@ def test_the_joined_entry_point_finds_the_voice_detector(tmp_path):
     det._scorer = stub([0.0, 0.0, 0.0])
     out = joined.analyse(write_wav(tmp_path / "note.wav", voice(6.0)), audio=det)
     assert [r.kind for r in out] == ["audio"] and out[0].status in ("clean", "abstain")
+
+
+def test_aac_sound_has_its_own_channel():
+    assert channel_for("aac", 44100) == "aac" and channel_for("aac", 8000) == "phone-8k"

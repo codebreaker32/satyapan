@@ -13,7 +13,7 @@ from .adapters import Adapters
 from .card import Card, build_card
 from .evidence import LocalSigner, make_pack
 from .extract import RulesExtractor, claim_from_picklist, ground
-from .forensics import DocumentForensics, SimulatedForensics, default_audio_forensics, to_signal
+from .forensics import DocumentForensics, SimulatedForensics, default_audio_forensics, default_video_forensics, to_signal
 from .fusion import fuse
 from .media import ingest, sha256_file
 from .memory import CampaignMemory
@@ -50,13 +50,15 @@ def _memory_also(hit: dict) -> tuple[str, str]:
 
 class Satyapan:
     def __init__(self, data_dir: Path = DATA_DIR, *, adapters: Optional[Adapters] = None, extractor=None, audio=None,
-                 document=None, memory: Optional[CampaignMemory] = None, signer=None,
+                 video=None, document=None, memory: Optional[CampaignMemory] = None, signer=None,
                  now: Optional[datetime | Callable[[], datetime]] = None, state_dir: Path = STATE_DIR):
         self.data_dir = Path(data_dir)
         self.book = load_rulebook(self.data_dir / "rules" / "rulebook.yaml")
         self.adapters = adapters or Adapters.mocks(self.data_dir / "mocks")
         self.extractor = extractor or RulesExtractor(bank_names=(self.book.bank_name,))
         self.audio = audio or default_audio_forensics()
+        # a video gets the face check and the voice check on its sound; an audio file gets the voice check alone
+        self.video = video or default_video_forensics(self.audio)
         self.document = document or DocumentForensics()
         self._now = now
         self.memory = memory or CampaignMemory(self.data_dir / "mocks" / "campaign_memory.json", now=self.clock())
@@ -114,6 +116,9 @@ class Satyapan:
         case.media.append(ref)
         inp = self._inputs[case.id]
         inp["media_paths"][ref.filename] = Path(path)
+        # the language the recording is in, as the officer chose it for speech-to-text; the voice check uses it too,
+        # because the message's script says nothing about the voice ("Beta, paise bhej do" is Hindi in Latin letters)
+        inp.setdefault("media_languages", {})[ref.filename] = language
         if channel:
             inp.setdefault("media_channels", {})[ref.filename] = channel
         inp["sender_number"] = sender_number or inp["sender_number"]
@@ -165,12 +170,17 @@ class Satyapan:
             path = inp["media_paths"].get(m.filename)
             if inp["forensics_sim"] and m.kind in ("audio", "video", "image", "pdf"):
                 signals.append(to_signal(self.book, SimulatedForensics(inp["forensics_sim"]).analyse(path or Path(m.filename), claim.language_hint)))
-            elif path and m.kind in ("audio", "video"):
+            elif path and m.kind == "video":
                 channel = inp.get("media_channels", {}).get(m.filename)
+                spoken = inp.get("media_languages", {}).get(m.filename, claim.language_hint)
+                signals += [to_signal(self.book, r) for r in self.video.analyse(path, spoken, channel=channel)]
+            elif path and m.kind == "audio":
+                channel = inp.get("media_channels", {}).get(m.filename)
+                spoken = inp.get("media_languages", {}).get(m.filename, claim.language_hint)
                 if channel and getattr(self.audio, "accepts_channel", False):
-                    signals.append(to_signal(self.book, self.audio.analyse(path, claim.language_hint, channel=channel)))
+                    signals.append(to_signal(self.book, self.audio.analyse(path, spoken, channel=channel)))
                 else:
-                    signals.append(to_signal(self.book, self.audio.analyse(path, claim.language_hint)))
+                    signals.append(to_signal(self.book, self.audio.analyse(path, spoken)))
             elif path and m.kind in ("image", "pdf"):
                 signals.append(to_signal(self.book, self.document.analyse(path)))
 
@@ -266,7 +276,8 @@ class Satyapan:
             "rulebook": {"version": self.book.version, "sha256": self.book.sha256, "path": Path(self.book.path).name},
             "policy_version": POLICY_VERSION,
             "extractor": getattr(self.extractor, "name", type(self.extractor).__name__),
-            "forensics": {"audio": self.audio.label.as_dict(), "document": self.document.label.as_dict()},
+            "forensics": {"audio": self.audio.label.as_dict(), "video": self.video.label.as_dict(),
+                          "document": self.document.label.as_dict()},
             "adapters": self.adapters.labels(),
             "inputs": {"sender_number": inp.get("sender_number"), "bank_signature_present": bool(inp.get("signature")),
                        "forensics_simulated": bool(inp.get("forensics_sim"))},

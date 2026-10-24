@@ -458,6 +458,21 @@ rules:
     sign_off: [model-risk]
     test: tests/test_fusion.py::test_forensics_alone_is_amber
 
+  - id: R-VIDEO-SYNTH
+    family: F3
+    severity: soft
+    title: Signs of face manipulation
+    reason_en: "The face in this video shows signs of manipulation ({band}). This is supporting information only."
+    reason_hi: "इस वीडियो के चेहरे में छेड़छाड़ के संकेत मिले हैं ({band_hi})। यह सिर्फ़ सहायक जानकारी है।"
+    citation:
+      source: "Calibrated face-manipulation model (GenD CLIP-L/14 on YuNet faces, per video size); never decides alone"
+      url: "internal://forensics/video"
+      quote: "corroboration only"
+      checked: "2026-10-24"
+      verified: true
+    sign_off: [model-risk]
+    test: tests/test_video_media.py::test_a_video_gets_the_face_check_and_the_voice_check
+
   - id: R-DOC-TAMPER
     family: F3
     severity: soft
