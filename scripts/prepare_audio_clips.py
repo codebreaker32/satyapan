@@ -1,6 +1,6 @@
 """Labelled Hindi audio for calibrating the audio detector (for Bhawna; same manifest format as the video side).
 
-Real speech: Kathbath (ai4bharat, CC-BY-4.0), read Hindi speech.
+Real speech: Google FLEURS (CC-BY-4.0), read Hindi speech (Kathbath is gated; FLEURS is open).
 Synthetic speech: IndicSynth (vdivyasharma, CC-BY-NC-4.0), Hindi text-to-speech / voice-cloned speech.
 For each clip it also makes a WhatsApp-like voice note (Opus, 16 kHz mono, 16 kbps), so the "hi/whatsapp-opus" cell can
 be calibrated as well as "hi/wav".
@@ -24,7 +24,7 @@ import soundfile as sf
 ROOT = Path(__file__).resolve().parent.parent
 A = ROOT / "clips" / "audio"
 SOURCES = {
-    "real": (A / "kathbath" / "hindi" / "valid-00000-of-00002.parquet", "kathbath-hi"),
+    "real": (A / "fleurs" / "parquet-data" / "hi_in" / "validation-00000-of-00001.parquet", "fleurs-hi"),
     "fake": (A / "indicsynth" / "Hindi" / "train-00000-of-00107.parquet", "indicsynth-hi"),
 }
 FF = imageio_ffmpeg.get_ffmpeg_exe()

@@ -61,7 +61,7 @@ demo.
 
 | Dataset | Used for | Format | Licence / access | How much we use |
 |---|---|---|---|---|
-| `ai4bharat/Kathbath` (Hugging Face) | Real Hindi speech (audio detector; also to measure Whisper's Hindi accuracy) | Audio | CC-BY-4.0; terms accepted on Hugging Face | about 30 Hindi clips |
+| `google/fleurs`, Hindi (Hugging Face) | Real Hindi speech (audio detector; also to measure Whisper's Hindi accuracy). Kathbath was planned but is gated, so it is not used | Audio | CC-BY-4.0, open | 239 clips available; about 60 used |
 | `vdivyasharma/IndicSynth` (Hugging Face) | Synthetic Hindi speech (audio detector) | Audio | CC-BY-NC-4.0 (non-commercial; this is a non-commercial hackathon prototype) | about 30 Hindi clips |
 | `mueller91/In-The-Wild` (Hugging Face) | Real and fake speech recorded in the wild, as a cross-check (audio detector) | Audio | CC-BY-SA-4.0 | a sample of about 50 clips |
 | Wikimedia Commons: interviews, talks and vlogs (incl. Indian speakers) | Genuine face video for setting the video thresholds | Video | Each file's own open licence (CC BY, CC BY-SA, CC0 or public domain), uploaded before 2021; title, author, licence and link for every clip in `calibration/sources_commons.csv` | about 60 clips, first 60 s of each |

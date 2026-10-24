@@ -46,7 +46,7 @@ Every detector returns the same result:
    If it takes over 15 s, score only the first 20 s.
 2. **Wrapper.** Decode with ffmpeg to 16 kHz mono. Abstain on under 3 s of speech. Set `cell` from language + codec.
 3. **Calibration** (public data; see the README's dataset table):
-   - real Hindi: about 30 clips from `ai4bharat/Kathbath`;
+   - real Hindi: about 60 clips from `google/fleurs` (Hindi; Kathbath is gated);
    - fake Hindi: about 30 clips from `vdivyasharma/IndicSynth`;
    - WhatsApp cell: forward about 10 of each through WhatsApp between our phones and save them back, so the Opus
      compression is real;

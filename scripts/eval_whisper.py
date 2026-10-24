@@ -1,6 +1,6 @@
-"""Which Whisper model should read Hindi voice notes? Word error rate and speed on real Hindi speech (Kathbath).
+"""Which Whisper model should read Hindi voice notes? Word error rate and speed on real Hindi speech (FLEURS).
 
-Kathbath (ai4bharat, CC-BY-4.0) ships read Hindi speech with reference transcripts. We take N clips, transcribe each
+Google FLEURS (CC-BY-4.0) ships read Hindi speech with reference transcripts. We take N clips, transcribe each
 with every candidate model on this laptop's CPU, and report word error rate (WER, lower is better) and seconds per
 clip. Optionally re-encodes the clips the way WhatsApp sends voice notes (Opus, 16 kHz, mono) to see the effect.
 
@@ -23,7 +23,7 @@ import pyarrow.parquet as pq
 import soundfile as sf
 
 ROOT = Path(__file__).resolve().parent.parent
-PARQUET = ROOT / "clips" / "audio" / "kathbath" / "hindi" / "valid-00000-of-00002.parquet"
+PARQUET = ROOT / "clips" / "audio" / "fleurs" / "parquet-data" / "hi_in" / "validation-00000-of-00001.parquet"
 MODELS = ["small", "large-v3-turbo"]
 
 
@@ -63,7 +63,7 @@ def main() -> int:
 
     t = pq.read_table(PARQUET)
     cols = t.column_names
-    text_col = next(c for c in cols if c.lower() in ("text", "transcript", "sentence", "transcription"))
+    text_col = next(c for c in ("raw_transcription", "transcription", "text", "sentence") if c in cols)
     audio_col = next(c for c in cols if "audio" in c.lower())
     rows = t.slice(0, a.n).to_pylist()
     tmp = Path(tempfile.mkdtemp())
@@ -80,8 +80,8 @@ def main() -> int:
         variants.append(("whatsapp-like opus 16 kbps", [(to_opus_wav(p, p.with_name(p.stem + "_opus.wav")), ref, d) for p, ref, d in clips]))
 
     lines = ["# Whisper on Hindi voice notes: accuracy and speed", "",
-             f"{len(clips)} Kathbath Hindi clips (read speech, CC-BY-4.0), average {sum(c[2] for c in clips)/len(clips):.1f} s each. "
-             "CPU only (this laptop), int8. WER = word error rate against Kathbath's reference text (lower is better).", "",
+             f"{len(clips)} FLEURS Hindi clips (read speech, google/fleurs, CC-BY-4.0), average {sum(c[2] for c in clips)/len(clips):.1f} s each. "
+             "CPU only (this laptop), int8. WER = word error rate against FLEURS's reference text (lower is better).", "",
              "| Model | Audio | WER | Seconds per clip | Real-time factor |", "|---|---|---|---|---|"]
     for name in a.models:
         t0 = time.perf_counter()
