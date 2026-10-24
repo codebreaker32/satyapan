@@ -1,0 +1,76 @@
+{
+  "_note": "AASIST-L thresholds at 20%, 5% and 1% false-synthetic rate, measured on GENUINE speech only (FLEURS dev, google/fleurs, CC-BY-4.0) re-encoded per channel. 'amr-8k' is 8 kHz phone-band audio, not AMR-coded. Detection of modern Indian-language voice clones is not measured here.",
+  "_made": "2026-10-23",
+  "_model": "AASIST-L (clovaai/aasist, MIT)",
+  "en/amr-8k": {
+    "t_fpr20": 1.639,
+    "t_fpr5": 8.899,
+    "t_fpr1": 13.605,
+    "n": 150,
+    "mean": 0.661,
+    "max": 15.167
+  },
+  "en/clean-16k": {
+    "t_fpr20": -0.458,
+    "t_fpr5": 6.939,
+    "t_fpr1": 12.152,
+    "n": 150,
+    "mean": -0.281,
+    "max": 14.067
+  },
+  "en/whatsapp-opus": {
+    "t_fpr20": -0.102,
+    "t_fpr5": 8.731,
+    "t_fpr1": 12.886,
+    "n": 150,
+    "mean": 0.211,
+    "max": 14.632
+  },
+  "hi/amr-8k": {
+    "t_fpr20": 8.622,
+    "t_fpr5": 12.19,
+    "t_fpr1": 14.377,
+    "n": 150,
+    "mean": 3.699,
+    "max": 15.891
+  },
+  "hi/clean-16k": {
+    "t_fpr20": 5.82,
+    "t_fpr5": 10.042,
+    "t_fpr1": 12.141,
+    "n": 150,
+    "mean": 1.776,
+    "max": 13.364
+  },
+  "hi/whatsapp-opus": {
+    "t_fpr20": 7.264,
+    "t_fpr5": 11.894,
+    "t_fpr1": 13.577,
+    "n": 150,
+    "mean": 2.948,
+    "max": 14.304
+  },
+  "_probe_windows_tts": {
+    "en/clean-16k": {
+      "n": 6,
+      "flagged_at_fpr5": 6,
+      "voices": [
+        "Microsoft Zira Desktop"
+      ]
+    },
+    "en/amr-8k": {
+      "n": 6,
+      "flagged_at_fpr5": 6,
+      "voices": [
+        "Microsoft Zira Desktop"
+      ]
+    },
+    "en/whatsapp-opus": {
+      "n": 6,
+      "flagged_at_fpr5": 6,
+      "voices": [
+        "Microsoft Zira Desktop"
+      ]
+    }
+  }
+}

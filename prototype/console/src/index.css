@@ -1,0 +1,1621 @@
+/* Satyapan officer console. Tokens first; everything below references them. */
+:root {
+  color-scheme: light;
+
+  --shell: #2f3a47;
+  --shell-2: #26303b;
+  --shell-ink: #ffffff;
+  --shell-dim: #b8c2ce;
+
+  --ground: #ffffff;
+  --panel: #eef1f4;
+  --panel-2: #e1e6eb;
+  --panel-3: #cfd7df;
+
+  --ink: #15181c;
+  --ink-2: #3f4956;
+
+  --accent: #b5509c;
+  --accent-ink: #6b2359;
+  --accent-wash: #f4e3ef;
+  --accent-wash-2: #ebc9e0;
+
+  --red: #c8102e;
+  --red-ink: #ffffff;
+  --amber: #d98e04;
+  --amber-ink: #15181c;
+  --grey: #8a94a0;
+  --grey-ink: #15181c;
+  --green: #1b7f4b;
+  --green-ink: #ffffff;
+
+  --text: 'Hind', 'Noto Sans Devanagari Variable', system-ui, sans-serif;
+  --display: 'Khand', 'Hind', 'Noto Sans Devanagari Variable', system-ui, sans-serif;
+
+  --r: 4px;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --t: 220ms;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 18px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--panel-3) transparent;
+}
+
+/* The body size IS the default, so an element that sets no size lands on the ladder instead of beside it. The
+   root stays 18px because that is what the browser's own form controls and the user's zoom are measured against;
+   before this, any element that simply inherited (the "No decision yet" line on every undecided case) rendered at
+   18px, a step nothing else on the screen used. Measured with `node e2e/type-scale.mjs`. */
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--text);
+  font-size: 17px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  caret-color: var(--accent);
+  text-underline-offset: 3px;
+}
+
+::selection {
+  background: var(--accent-wash-2);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol {
+  margin: 0;
+}
+
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: var(--accent-ink);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* ---------- controls ---------- */
+
+.btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: var(--r);
+  background: var(--panel-2);
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background-color var(--t) var(--ease);
+}
+.btn:hover {
+  background: var(--panel-3);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--ink);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: #000;
+}
+.btn-accent {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-accent:hover {
+  background: var(--accent-ink);
+}
+.btn-ghost {
+  background: var(--ground);
+}
+.btn-ghost:hover {
+  background: var(--panel-2);
+}
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 15px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.field > span {
+  font-size: 17px;
+  font-weight: 600;
+}
+.input,
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: var(--r);
+  background: var(--panel);
+  font-size: 17px;
+  line-height: 1.4;
+}
+.input:focus,
+select:focus,
+textarea:focus {
+  background: #fff;
+  outline: 3px solid var(--accent);
+  outline-offset: 0;
+}
+textarea {
+  resize: vertical;
+  min-height: 140px;
+}
+.check-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  background: var(--panel);
+  border-radius: var(--r);
+  font-size: 17px;
+}
+.check-row input {
+  width: 22px;
+  height: 22px;
+  margin: 2px 0 0;
+  accent-color: var(--accent);
+  flex: none;
+}
+
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--r);
+  background: var(--panel-2);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.tag-accent {
+  background: var(--accent-wash);
+  color: var(--accent-ink);
+}
+.tag-sim {
+  background: var(--accent-ink);
+  color: #fff;
+}
+.tag-ink {
+  background: var(--ink);
+  color: #fff;
+}
+.tag-RED {
+  background: var(--red);
+  color: var(--red-ink);
+}
+.tag-AMBER {
+  background: var(--amber);
+  color: var(--amber-ink);
+}
+.tag-GREY {
+  background: var(--grey);
+  color: var(--grey-ink);
+}
+.tag-MATCHES {
+  background: var(--green);
+  color: var(--green-ink);
+}
+
+/* ---------- shell ---------- */
+
+.app {
+  display: grid;
+  grid-template-columns: 224px minmax(0, 1fr);
+  min-height: 100dvh;
+}
+
+.rail {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 28px 20px 24px;
+  background: var(--shell);
+  color: var(--shell-ink);
+}
+.wordmark {
+  display: grid;
+  gap: 2px;
+  color: inherit;
+  text-decoration: none;
+}
+.wordmark .hi {
+  font-family: var(--display);
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1;
+}
+.wordmark .en {
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--shell-dim);
+}
+.nav {
+  display: grid;
+  gap: 4px;
+}
+/* The active item was a filled magenta pill. Two things were wrong with it. It is the admin-template signature,
+   one of the two generic tells the judge has named on the main path every pass; and the accent has a recorded job
+   in this product — the one callout colour, for span highlights, leader lines and callout numbers — so spending
+   it on chrome made the nav the most saturated object on a GREY screen, competing with the verdict band for the
+   eye. The mark is now a thread down the left edge of the item, which is the direction's own motif (the security
+   thread in a banknote), with the weight and the full ink carrying the state beside it. */
+.nav a {
+  display: block;
+  padding: 8px 12px;
+  border-left: 3px solid transparent;
+  color: var(--shell-dim);
+  font-size: 17px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color var(--t) var(--ease), border-color var(--t) var(--ease);
+}
+.nav a:hover {
+  color: var(--shell-ink);
+  border-left-color: var(--shell-dim);
+}
+/* The thread alone is only 2.53:1 against the rail, so at five metres "which section am I in" got harder than
+   the filled pill it replaced. The ink and the weight already carry the state above 4.5:1; this adds the rail's
+   own hover step, held. It is a dark-on-dark shelf rather than a saturated chip, so the accent is still spent
+   only on the thread and the verdict band is still the one saturated object on the screen. */
+.nav a[aria-current='page'] {
+  background: var(--shell-2);
+  color: var(--shell-ink);
+  border-left-color: var(--accent);
+  font-weight: 700;
+}
+/* The product's sentence, directly under its name, where the rail had a column of empty dark. */
+.rail-top {
+  display: grid;
+  gap: 10px;
+}
+.rail-line {
+  max-width: 24ch;
+  color: var(--shell-dim);
+  font-size: 15px;
+  line-height: 1.4;
+}
+.rail-foot {
+  margin-top: auto;
+  display: grid;
+  gap: 10px;
+  color: var(--shell-dim);
+  font-size: 15px;
+  line-height: 1.4;
+}
+.rail-foot strong {
+  color: var(--shell-ink);
+  font-weight: 600;
+}
+.rail-disclose > summary {
+  color: var(--shell-ink);
+  font-weight: 600;
+  cursor: pointer;
+}
+.rail-disclose > p {
+  margin-top: 8px;
+}
+
+.main {
+  min-width: 0;
+}
+
+.banner {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 40px;
+  background: var(--amber);
+  color: var(--amber-ink);
+  font-weight: 600;
+}
+
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 36px 40px 8px;
+}
+.page-head h1 {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+.page-head p {
+  max-width: 70ch;
+  color: var(--ink-2);
+  font-size: 17px;
+}
+
+.section {
+  display: grid;
+  gap: 16px;
+  padding: 32px 40px;
+}
+.section h2 {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.section h3 {
+  font-size: 17px;
+  font-weight: 700;
+}
+.section-alt {
+  background: var(--panel);
+}
+.section-alt .row-item,
+.section-alt .feat,
+.section-alt .check-row,
+.section-alt .input,
+.section-alt select,
+.section-alt textarea {
+  background: var(--ground);
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 32px 48px;
+  align-items: start;
+}
+.muted {
+  color: var(--ink-2);
+}
+.small {
+  font-size: 15px;
+}
+.lede {
+  font-size: 20px;
+  line-height: 1.5;
+  max-width: 68ch;
+}
+.stack {
+  display: grid;
+  gap: 8px;
+}
+.inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.rows {
+  display: grid;
+  gap: 6px;
+}
+.row-item {
+  display: grid;
+  gap: 4px 20px;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--panel);
+  border-radius: var(--r);
+  font-size: 17px;
+}
+.row-item strong {
+  font-weight: 600;
+}
+/* 26px was its own step on the ladder for one element. Display numerals at the lede size read as a distinct
+   family through the face, not through a size nobody else uses. */
+.rupee {
+  font-family: var(--display);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.hash {
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+.num {
+  font-family: var(--display);
+  font-size: 1.2em;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.case-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.section h3.case-head {
+  font-size: 20px;
+}
+/* The case id sat at 23px, its own step for one element on the whole screen. Same argument as `.rupee` above:
+   display numerals read as a distinct family through the face, not through a size nobody else uses. */
+.case-head .num {
+  font-size: 1em;
+}
+.row-item > *,
+.pack > *,
+.also .row > *,
+.band-rests li > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.picklist-row {
+  grid-template-columns: 220px minmax(0, 1fr);
+}
+
+/* ---------- verdict band ---------- */
+
+.band {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 36%);
+  gap: 40px;
+  align-items: center;
+  min-height: 176px;
+  padding: 32px 40px;
+  transition:
+    background-color var(--t) var(--ease),
+    color var(--t) var(--ease);
+}
+.band-RED {
+  background: var(--red);
+  color: var(--red-ink);
+}
+.band-AMBER {
+  background: var(--amber);
+  color: var(--amber-ink);
+}
+.band-GREY {
+  background: var(--grey);
+  color: var(--grey-ink);
+}
+.band-MATCHES {
+  background: var(--green);
+  color: var(--green-ink);
+}
+.band-verdict {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.band-words {
+  display: grid;
+}
+.band-word {
+  font-family: var(--display);
+  font-size: 88px;
+  font-weight: 600;
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+}
+.band-word-hi {
+  font-family: var(--display);
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1.1;
+}
+.band-head {
+  display: grid;
+  gap: 6px;
+}
+.band-head .hi {
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.band-head .en {
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.band-rests {
+  display: grid;
+  gap: 8px;
+  font-size: 17px;
+  line-height: 1.4;
+}
+.band-rests h3 {
+  font-size: 17px;
+  font-weight: 700;
+}
+.band-rests li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: baseline;
+}
+.band-rests li b {
+  font-weight: 700;
+}
+.band .tag {
+  background: rgba(255, 255, 255, 0.22);
+  color: inherit;
+}
+.band-AMBER .tag,
+.band-GREY .tag {
+  background: rgba(21, 24, 28, 0.14);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  align-items: center;
+  padding: 16px 40px;
+  background: var(--panel);
+}
+.actions .input {
+  width: 170px;
+  background: var(--ground);
+}
+.actions label.inline {
+  gap: 8px;
+  font-weight: 600;
+}
+.actions .spacer {
+  flex: 1;
+}
+.notice {
+  padding: 12px 16px;
+  border-radius: var(--r);
+  background: var(--accent-wash);
+  color: var(--accent-ink);
+  font-size: 17px;
+  font-weight: 600;
+}
+.notice-warn {
+  background: var(--ink);
+  color: #fff;
+}
+
+/* The recorder's microphone level: a bar that moves while sound reaches the microphone, so a muted one is seen
+   during the recording rather than after the check comes back with no text. */
+.meter {
+  height: 8px;
+  background: var(--panel-2);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.meter > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 100ms linear;
+}
+
+/* ---------- the counter pane: what she hears, and what you do ---------- */
+
+/* Both halves of the officer's next two minutes, directly under the verdict and above the fold at 1280x720. The
+   card sits on the panel at ground white, the way the message is held up in the check below. */
+.counter {
+  display: grid;
+  grid-template-columns: minmax(0, 56fr) minmax(0, 44fr);
+  gap: 20px 48px;
+  align-items: start;
+  padding: 24px 40px 28px;
+  background: var(--panel);
+}
+.counter-col {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+.counter-col > h2 {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.counter .card {
+  max-width: none;
+}
+.counter-act .actions {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 0;
+  background: transparent;
+}
+.counter-act .actions label.inline {
+  flex-direction: row;
+  align-items: center;
+}
+.counter-act .actions .input {
+  width: 100%;
+}
+.counter-act .btn {
+  justify-content: flex-start;
+}
+.act-note {
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+/* Projector sizes (1280x720 is the common venue size). The card's three reasons and the officer's actions have to
+   clear the fold together, so the card steps down one notch here; 18px at 1280 is still the deck's reading size. */
+@media (max-width: 1366px) {
+  .counter {
+    grid-template-columns: minmax(0, 62fr) minmax(0, 38fr);
+    /* the bottom padding is tight on purpose: it lets the step strip's first row show above 720 even on the
+       longest card, so a judge can see there is more of the case below the counter pane */
+    padding: 16px 40px 10px;
+    gap: 14px 36px;
+  }
+  .counter-col {
+    gap: 8px;
+  }
+  .counter-col > h2 {
+    font-size: 20px;
+  }
+  .counter .card {
+    gap: 8px;
+    padding: 16px 20px;
+  }
+  .counter .card-stop {
+    font-size: 24px;
+  }
+  .counter .card-head,
+  .counter .card ol,
+  .counter .card-do {
+    font-size: 17px;
+  }
+  .counter .card ol {
+    gap: 7px;
+  }
+  .counter .card-coach {
+    font-size: 15px;
+  }
+  .counter-act .actions {
+    gap: 6px;
+  }
+  .counter-act .btn {
+    padding: 8px 14px;
+  }
+  .steps {
+    padding: 4px 32px;
+  }
+  .step {
+    font-size: 15px;
+    padding: 7px 10px;
+    gap: 8px;
+  }
+}
+
+/* Between the phone breakpoint and the desktop one the strip must stay one row: wrapped, it was 101px of sticky
+   furniture over a 720px screen, and it covered the very heading it had just jumped to. */
+@media (min-width: 961px) and (max-width: 1366px) {
+  .steps {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+  .step {
+    white-space: nowrap;
+  }
+}
+
+/* ---------- the officer's pane: one decision, two routes, a way back, a correction ---------- */
+
+/* These five controls are not five peers, so they stopped reading as five identical pills. The decision about the
+   money is the one full-width row; the two routes to other people are a pair of halves; the release is a quiet
+   chip, because on RED it is gated by a manager's co-sign; the correction to the extraction is a separate group
+   that says what pressing it will do. Emphasis itself is still carried only by the dark fill (btn-primary), and
+   only the engine's outcome ever puts it on the hold. */
+
+/* The acknowledgement: what the service recorded, sitting where the advice was. White on the panel, like the
+   customer card, because it is the other artefact that leaves this screen. */
+.act-done {
+  display: grid;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: var(--r);
+  background: var(--ground);
+}
+.act-done-head {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.act-done-sub {
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The mandatory-review line. It was a full 17px notice block; at 15px it says the same thing and leaves the
+   officer's buttons above the fold at 1280x720. */
+.act-req {
+  padding: 6px 10px;
+  border-radius: var(--r);
+  background: var(--accent-wash);
+  color: var(--accent-ink);
+  font-size: 15px;
+  line-height: 1.35;
+}
+.act-req b {
+  font-weight: 700;
+}
+
+/* Attribution for the signed pack, not step one: a signature line above the decision, at small print size. */
+.counter-act .actions label.act-by {
+  gap: 8px;
+  color: var(--ink-2);
+  font-size: 15px;
+  font-weight: 600;
+}
+.counter-act .actions .act-by .input {
+  width: auto;
+  flex: 0 1 190px;
+  min-width: 0;
+  padding: 4px 10px;
+  font-size: 15px;
+}
+
+/* The two routes to other people: a pair of halves, so they read as one choice between two desks. */
+.act-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.counter-act .act-pair .btn {
+  justify-content: center;
+  padding: 7px 10px;
+  text-align: center;
+}
+/* the quiet ones: content width, left aligned, small print */
+.counter-act .act-quiet {
+  align-self: start;
+  padding: 6px 12px;
+}
+
+/* The correction is not a decision, so it sits apart and states its effect before it is pressed. */
+.counter-act .act-fix {
+  gap: 4px;
+  margin-top: 8px;
+}
+.act-fix-note {
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+/* Confirmations open where their own button is, so nothing the officer typed can scroll out of sight. */
+.counter-act .act-confirm {
+  display: grid;
+  gap: 6px;
+  margin-top: 2px;
+  padding: 10px 12px;
+  border-radius: var(--r);
+  background: var(--ground);
+}
+.act-confirm-lead {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.counter-act .act-confirm .input,
+.counter-act .act-confirm select {
+  width: 100%;
+  padding: 6px 10px;
+  background: var(--panel);
+  font-size: 15px;
+}
+.act-confirm-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.counter-act .act-confirm .btn {
+  padding: 6px 12px;
+}
+
+/* ---------- what the check could read ---------- */
+
+/* Sits between the step strip and the detail, on the panel tint, because it is about the check rather than about
+   the message. One paragraph, no chrome: it reports what was read and what was not, and never judges. */
+.coverage {
+  display: grid;
+  gap: 6px;
+  padding: 18px 40px 20px;
+  background: var(--panel);
+}
+.coverage-h {
+  font-size: 17px;
+  font-weight: 700;
+}
+/* 92ch measured at about 100 characters a line on the rendered page. 78 is still a dense officer-console measure
+   and well short of the 45-75 a marketing page would take, but the strip is the longest prose on the screen and
+   it was the one paragraph a reader's eye lost its place in. */
+.coverage-line {
+  max-width: 78ch;
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+/* ---------- the three steps of a case ---------- */
+
+.steps {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  align-items: center;
+  padding: 6px 36px;
+  background: var(--panel-2);
+}
+/* margin-left rather than a flexible spacer: a spacer eats the free space on the first line and pushes the way out
+   onto a second row at 1280 */
+.step-out {
+  margin-left: auto;
+  color: var(--accent-ink);
+}
+.step {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: var(--r);
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--t) var(--ease);
+}
+.step:hover {
+  background: var(--panel-3);
+}
+.step b {
+  font-family: var(--display);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 24px;
+  min-width: 24px;
+  border-radius: var(--r);
+  background: var(--accent);
+  color: #fff;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+/* the strip is sticky, so a step's own heading must not land under it */
+#claims,
+#checked,
+#record {
+  scroll-margin-top: 72px;
+}
+#claims:focus-visible,
+#checked:focus-visible,
+#record:focus-visible {
+  outline-offset: 4px;
+}
+.step-no {
+  display: inline-block;
+  min-width: 26px;
+  margin-right: 8px;
+  border-radius: var(--r);
+  background: var(--accent);
+  color: #fff;
+  font-size: 20px;
+  line-height: 26px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  vertical-align: 0.08em;
+}
+
+/* ---------- the check: message, features, leaders ---------- */
+
+.check {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 62fr) minmax(0, 38fr);
+  gap: 56px;
+  padding: 36px 40px 28px;
+}
+.check h2 {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 14px;
+}
+.message {
+  max-width: 72ch;
+  font-size: 20px;
+  line-height: 1.65;
+}
+.message p {
+  white-space: pre-wrap;
+}
+.message-meta {
+  margin-bottom: 12px;
+  color: var(--ink-2);
+  font-size: 17px;
+}
+mark.span {
+  padding: 1px 1px;
+  border-radius: 2px;
+  background: var(--accent-wash);
+  color: inherit;
+  text-decoration: underline 3px var(--accent);
+  text-underline-offset: 4px;
+  cursor: pointer;
+  transition:
+    background-color var(--t) var(--ease),
+    color var(--t) var(--ease);
+}
+mark.span:hover,
+mark.span.lit {
+  background: var(--accent);
+  color: #fff;
+  text-decoration-color: #fff;
+}
+.also {
+  display: grid;
+  gap: 6px;
+  margin-top: 24px;
+}
+.also .row {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+  padding: 8px 12px;
+  background: var(--panel);
+  border-radius: var(--r);
+  font-size: 17px;
+  transition: background-color var(--t) var(--ease);
+}
+.also .row.lit {
+  background: var(--accent-wash-2);
+}
+.also .row b {
+  font-weight: 700;
+}
+
+.features {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+.feat {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 4px 12px;
+  padding: 10px 14px 10px 10px;
+  background: var(--panel);
+  border-radius: var(--r);
+  cursor: pointer;
+  outline: 2px solid transparent;
+  transition:
+    background-color var(--t) var(--ease),
+    outline-color var(--t) var(--ease);
+}
+.feat-empty {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  cursor: default;
+  font-size: 17px;
+  line-height: 1.45;
+}
+.feat:hover,
+.feat.lit {
+  background: var(--accent-wash);
+}
+.feat.lit {
+  outline-color: var(--accent);
+}
+/* the empty state is not a feature: it does not light up, because there is nothing to point at */
+.feat-empty:hover {
+  background: var(--panel);
+}
+.feat-no,
+.callout-no {
+  font-family: var(--display);
+  font-weight: 600;
+  background: var(--accent);
+  color: #fff;
+  border-radius: var(--r);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.feat-no {
+  width: 34px;
+  height: 34px;
+  font-size: 24px;
+  line-height: 34px;
+  align-self: start;
+}
+.callout-no {
+  user-select: none;
+  display: inline-block;
+  min-width: 22px;
+  padding: 0 4px;
+  margin-right: 4px;
+  font-size: 15px;
+  line-height: 22px;
+  vertical-align: 0.2em;
+}
+mark.span.lit .callout-no,
+mark.span:hover .callout-no {
+  background: #fff;
+  color: var(--accent-ink);
+}
+.feat-body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.feat-title {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.feat-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.feat-fam {
+  font-size: 17px;
+  font-weight: 700;
+}
+/* How strong the check is and what it counts for, as a phrase rather than two or three pills. Same size as the
+   family word beside it, in the secondary ink, so the row reads as one line instead of a tray of chips. */
+.feat-grade {
+  color: var(--ink-2);
+  font-size: 17px;
+}
+.feat-reason {
+  font-size: 17px;
+  line-height: 1.45;
+}
+.feat-ev {
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.4;
+}
+/* Collapsed soft signals sit tight so the features column stays level with the message beside it. */
+.feat-brief {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.noted {
+  margin-top: 20px;
+  display: grid;
+  gap: 6px;
+}
+.noted h3 {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.noted .row {
+  padding: 6px 12px;
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.4;
+  background: var(--panel);
+  border-radius: var(--r);
+}
+
+.leaders {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.leader {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  opacity: 0.9;
+  transition:
+    opacity var(--t) var(--ease),
+    stroke-width var(--t) var(--ease);
+}
+.leader.lit {
+  opacity: 1;
+  stroke-width: 4;
+}
+.leader-dot {
+  fill: var(--accent);
+  opacity: 0.9;
+  transition: opacity var(--t) var(--ease);
+}
+.leader-dot.lit {
+  opacity: 1;
+}
+
+.leader.draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: leader-draw 640ms var(--ease) forwards;
+}
+@keyframes leader-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .leader.draw {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  .band,
+  .btn,
+  .feat,
+  .leader,
+  .leader-dot,
+  mark.span,
+  .also .row {
+    transition: none;
+  }
+}
+
+/* ---------- customer card ---------- */
+
+.card {
+  display: grid;
+  gap: 14px;
+  max-width: 720px;
+  padding: 28px 32px;
+  border-radius: var(--r);
+  background: var(--ground);
+}
+.card-stop {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.card-RED .card-stop {
+  color: var(--red);
+}
+.card-AMBER .card-stop {
+  color: #8a5a00;
+}
+.card-GREY .card-stop {
+  color: var(--ink-2);
+}
+.card-MATCHES .card-stop {
+  color: var(--green);
+}
+.card-head {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.card ol {
+  display: grid;
+  gap: 10px;
+  padding-left: 1.4em;
+  font-size: 20px;
+  line-height: 1.5;
+}
+.card ol li::marker {
+  font-weight: 700;
+  color: var(--accent-ink);
+}
+.card-do {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+.card-coach {
+  color: var(--ink-2);
+  font-size: 17px;
+  line-height: 1.45;
+}
+.lang-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+/* ---------- scenarios ---------- */
+
+/* The landing earns its first frame: one headline, one lede, then the beats. Each section's note sits beside its
+   heading rather than under it, so the prose never pushes the rows off a 720px screen. */
+.home-head {
+  padding: 28px 40px 4px;
+}
+.home-sec {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+/* The section note is the credibility sentence ("Nothing is pre-computed..."), which the taste skill's rendered-page
+   audit caught set at the small-print size: the dominant body size on the whole landing measured 15px. It reads at
+   the page's body size now. The row metadata below stays 15px, because it is metadata and the fold is tight. */
+.home-sec p {
+  max-width: 52ch;
+  font-size: 17px;
+}
+.home-foot {
+  padding-top: 8px;
+}
+/* Rehearsal fine print, measured at 151 characters per line before this cap. */
+.home-foot .small {
+  max-width: 88ch;
+}
+
+/* A worklist row IS the control. Seventeen repeated black pills were the loudest generic tell in the product and
+   they made the first frame a list of buttons rather than a list of cases. The row carries the whole hit area;
+   the outcome edge appears only after the engine has returned one. */
+.scenario-row {
+  border-radius: var(--r);
+  background: var(--panel);
+  border-left: 4px solid transparent;
+  transition: background-color var(--t) var(--ease);
+}
+.scenario-hit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 20px;
+  align-items: center;
+  width: 100%;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: var(--r);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.scenario-hit:hover {
+  background: var(--panel-2);
+}
+.scenario-hit:disabled {
+  cursor: progress;
+}
+.beats {
+  gap: 8px;
+}
+.beat .scenario-hit {
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  padding: 14px 16px;
+}
+/* The sequence number stays — it is what made the beats read as five steps rather than five rectangles — but at
+   the title's size in the display face, so it does not add a step to the type ladder. */
+.beat-no {
+  font-family: var(--display);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--accent-ink);
+  font-variant-numeric: tabular-nums;
+  align-self: center;
+}
+.scenario-row .title {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.scenario-row .flag,
+.scenario-row .expect {
+  color: var(--ink-2);
+  font-size: 15px;
+}
+.scenario-row .expect {
+  white-space: nowrap;
+}
+/* Only a row the engine has actually answered carries a verdict colour, and it carries the engine's answer, not
+   the regression's expectation. An unrun row is deliberately colourless. */
+.scenario-row.ran {
+  background: var(--ground);
+}
+.scenario-row.ran .expect {
+  color: var(--ink);
+  font-weight: 700;
+}
+.edge-RED {
+  border-left-color: var(--red);
+}
+.edge-AMBER {
+  border-left-color: var(--amber);
+}
+.edge-GREY {
+  border-left-color: var(--grey);
+}
+.edge-MATCHES {
+  border-left-color: var(--green);
+}
+
+.home-list {
+  padding-top: 16px;
+}
+.home-more {
+  margin-top: 18px;
+}
+.home-more > summary {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: var(--r);
+  background: var(--panel);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--t) var(--ease);
+}
+.home-more > summary:hover {
+  background: var(--panel-2);
+}
+.home-more > p {
+  margin: 10px 0;
+  max-width: 88ch;
+}
+.home-more > .rows {
+  margin-top: 10px;
+}
+
+/* ---------- decisions / evidence ---------- */
+
+.decision {
+  grid-template-columns: 90px minmax(0, 1fr);
+}
+.decision time {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+}
+.verify {
+  padding: 14px 16px;
+  border-radius: var(--r);
+  font-size: 20px;
+  font-weight: 700;
+}
+.verify-ok {
+  background: var(--green);
+  color: var(--green-ink);
+}
+.verify-bad {
+  background: var(--red);
+  color: var(--red-ink);
+}
+.pack {
+  display: grid;
+  gap: 6px 16px;
+  grid-template-columns: 160px minmax(0, 1fr);
+  font-size: 17px;
+}
+.pack b {
+  font-weight: 700;
+}
+
+/* ---------- rulebook / memory tables ---------- */
+
+/* A worklist, not five identical text rectangles: the outcome is a fixed first column so the eye reads a column
+   of verdicts down the page, and the chip carries the verdict word at the weight it has everywhere else. */
+.case-row {
+  grid-template-columns: 112px minmax(0, 1fr) auto auto;
+}
+.case-row > .tag {
+  justify-self: start;
+  padding: 4px 10px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.rule {
+  grid-template-columns: 220px minmax(0, 1fr) auto;
+}
+.rule .cite {
+  color: var(--ink-2);
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+.label {
+  grid-template-columns: 240px minmax(0, 1fr);
+}
+.memory {
+  grid-template-columns: 200px minmax(0, 1fr) auto;
+}
+.row-item .tag {
+  justify-self: start;
+}
+.memory .template {
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+/* ---------- narrow screens ---------- */
+
+@media (max-width: 960px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+  .rail {
+    position: static;
+    height: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 20px;
+    padding: 14px 16px;
+  }
+  .wordmark .hi {
+    font-size: 30px;
+  }
+  .wordmark .en {
+    font-size: 15px;
+  }
+  /* 40px put the landing's seven-word headline on three lines at 390. 30px is a step the scale already has, so
+     this costs no new size, and the headline reads as a title rather than a paragraph. */
+  .page-head h1 {
+    font-size: 30px;
+  }
+  .nav {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .nav a {
+    padding: 8px 10px;
+  }
+  .rail-foot,
+  .rail-line {
+    display: none;
+  }
+  .nav a {
+    border-left: 0;
+    border-bottom: 3px solid transparent;
+  }
+  .nav a:hover {
+    border-bottom-color: var(--shell-dim);
+  }
+  .nav a[aria-current='page'] {
+    border-bottom-color: var(--accent);
+  }
+  .band {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    min-height: 0;
+    padding: 24px 16px;
+  }
+  .band-word {
+    font-size: 64px;
+  }
+  .check {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 24px 16px;
+  }
+  .leaders {
+    display: none;
+  }
+  .section,
+  .actions,
+  .page-head,
+  .banner,
+  .counter {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .counter {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  /* the rail is a top bar on a phone, so a sticky step strip would cover the case; it scrolls with the page */
+  .steps {
+    position: static;
+    padding: 6px 12px;
+  }
+  .step {
+    font-size: 16px;
+    padding: 8px 10px;
+  }
+  .message {
+    font-size: 17px;
+  }
+  .card {
+    padding: 20px 16px;
+  }
+  .scenario,
+  .scenario-hit,
+  .beat .scenario-hit,
+  .case-row,
+  .rule,
+  .memory,
+  .label,
+  .pack {
+    grid-template-columns: 1fr;
+  }
+  .scenario-row .expect {
+    white-space: normal;
+  }
+  .home-head,
+  .coverage {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .also .row {
+    grid-template-columns: 1fr;
+  }
+  .actions .input {
+    width: 100%;
+  }
+  /* on a phone the two routes stack: half of 358px wraps every label onto two lines */
+  .act-pair {
+    grid-template-columns: 1fr;
+  }
+  .picklist-row {
+    grid-template-columns: 1fr;
+  }
+  .callout-no {
+    font-size: 14px;
+    min-width: 20px;
+    line-height: 20px;
+  }
+}
+
+/* The evaluation's category table: plain rows on the page's own tokens, numbers right-aligned so they read down. */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.table th,
+.table td {
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--panel-3);
+}
+.table th {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+.table td:nth-child(n + 3),
+.table th:nth-child(n + 3) {
+  text-align: right;
+}

@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.egg-info/
+*.pyc
+.pytest_cache/
+evidence/
+*.pem
+*.key
+
+# Models and data fetched by `satyapan setup-models` and `calibrate-audio` (hundreds of MB; re-fetchable)
+vendor/
+data/forensics/fleurs/

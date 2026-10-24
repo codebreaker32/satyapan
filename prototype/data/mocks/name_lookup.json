@@ -1,0 +1,35 @@
+{
+  "_note": "Mock bank directory: the registered name and kind of holder the bank's own systems return for an account number (core banking / NPCI name look-up) or a UPI ID (the name a UPI app shows before paying). Every name and number is synthetic; 9354209849@slc was added at Bhawna's request as her own test ID. An ID not listed here comes back UNKNOWN and is never guessed. official_allow_list holds the government collection accounts the bank knows.",
+  "accounts": {
+    "30011223344556": {"holder_name": "Shiv Shakti Traders", "holder_type": "PRIVATE_FIRM"},
+    "20098765432109": {"holder_name": "Rajesh Kumar", "holder_type": "INDIVIDUAL"},
+    "50100234567891": {"holder_name": "Mohit Enterprises", "holder_type": "PRIVATE_FIRM"},
+    "11110000222233": {"holder_name": "Registrar, Supreme Court of India", "holder_type": "GOVT"},
+    "40920011558866": {"holder_name": "Sunil Yadav", "holder_type": "INDIVIDUAL"},
+    "11220033445566": {"holder_name": "Municipal Corporation of Delhi, Property Tax Collection", "holder_type": "GOVT"},
+    "60210045678912": {"holder_name": "Priya Sharma", "holder_type": "INDIVIDUAL"},
+    "60210098765431": {"holder_name": "Arjun Mehta", "holder_type": "INDIVIDUAL"},
+    "70120033445511": {"holder_name": "Kavita Singh", "holder_type": "INDIVIDUAL"},
+    "70120066778822": {"holder_name": "Sai Krishna Electronics", "holder_type": "PRIVATE_FIRM"},
+    "80330011224466": {"holder_name": "Green Leaf Traders", "holder_type": "PRIVATE_FIRM"},
+    "80330099887744": {"holder_name": "Transport Department, Govt of NCT of Delhi, e-Challan Collection", "holder_type": "GOVT"},
+    "90440055660002": {"holder_name": "Brihanmumbai Municipal Corporation, Property Tax Collection", "holder_type": "GOVT"},
+    "26830077112233": {"holder_name": "Demo Bank Ltd, Loan Collections", "holder_type": "BANK"}
+  },
+  "vpas": {
+    "challan.clear@okicici": {"holder_name": "Vikram Singh", "holder_type": "INDIVIDUAL"},
+    "mcd.propertytax@sbi": {"holder_name": "Municipal Corporation of Delhi", "holder_type": "GOVT"},
+    "9354209849@slc": {"holder_name": "Bhawna", "holder_type": "INDIVIDUAL"},
+    "priya.sharma@okhdfcbank": {"holder_name": "Priya Sharma", "holder_type": "INDIVIDUAL"},
+    "arjun.mehta@oksbi": {"holder_name": "Arjun Mehta", "holder_type": "INDIVIDUAL"},
+    "kavita.singh21@okaxis": {"holder_name": "Kavita Singh", "holder_type": "INDIVIDUAL"},
+    "saikrishna.electronics@ybl": {"holder_name": "Sai Krishna Electronics", "holder_type": "PRIVATE_FIRM"},
+    "greenleaf.traders@ibl": {"holder_name": "Green Leaf Traders", "holder_type": "PRIVATE_FIRM"},
+    "echallan.delhi@sbi": {"holder_name": "Transport Department, Govt of NCT of Delhi, e-Challan Collection", "holder_type": "GOVT"},
+    "bmc.propertytax@hdfcbank": {"holder_name": "Brihanmumbai Municipal Corporation, Property Tax Collection", "holder_type": "GOVT"},
+    "traffic.fine.helpdesk@ybl": {"holder_name": "Manoj Kumar", "holder_type": "INDIVIDUAL"},
+    "rto.payment@paytm": {"holder_name": "Ravi Enterprises", "holder_type": "PRIVATE_FIRM"}
+  },
+  "official_allow_list": ["11110000222233", "11220033445566", "80330099887744", "90440055660002",
+                          "mcd.propertytax@sbi", "echallan.delhi@sbi", "bmc.propertytax@hdfcbank"]
+}

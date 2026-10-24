@@ -36,6 +36,7 @@ days: `docs/plan.md`.
 | `calibration/` | Thresholds, calibration reports and dataset attribution (numbers only, never clips) |
 | `tests/` | Fast tests with stub models; slow real-model tests behind `RUN_SLOW=1` |
 | `datasets/` | The synthetic datasets and the rulebook, described below |
+| `prototype/` | The demo engine and officer console (Python + React), with the combined score. Bhawna's laptop copy, added 24 Oct for merging with Aman's copy |
 | `LICENSE` | GPL-3.0 |
 
 ## Datasets
@@ -89,4 +90,5 @@ any such clip is used. We make no deepfakes of ourselves or anyone else.
 - Synthetic, clearly labelled data only. No real official's name or likeness.
 - No automatic blocking: Satyapan advises and the bank officer decides. Releasing a held transfer needs a second person.
 - No scores shown to the customer: she gets plain reasons she can check herself.
-- Forensic signals only corroborate. A RED needs two independent checks, never one weak signal.
+- No detector decides alone. With judged media, the instruction checks and the deepfake check count half each, and 40%
+  or more is RED (`fusion.py` in `prototype/satyapan`). The officer decides, and releasing a held transfer needs a second person.
