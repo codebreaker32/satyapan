@@ -96,7 +96,10 @@ class KMSSigner:
 
 def make_pack(manifest: dict, signer) -> dict:
     digest = sha256_hex(canonical(manifest))
-    return {"format": FORMAT, "signed_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    # The signing time shown on the pack is the manifest's own generated_at when it has one, so it is covered by the
+    # signature; verify_pack refuses a pack whose shown time or signer label differs from the signed one.
+    signed_at = manifest.get("generated_at") or datetime.now(timezone.utc).isoformat(timespec="seconds")
+    return {"format": FORMAT, "signed_at": signed_at,
             "manifest": manifest, "manifest_sha256": digest, "signature": signer.sign(digest.encode())}
 
 
@@ -124,6 +127,13 @@ def verify_pack(pack: dict, trusted_public_key: str | None = None) -> tuple[bool
     sig = pack.get("signature")
     if not isinstance(sig, dict) or not sig.get("value"):
         return False, "This pack has no signature in it, so nothing shows who wrote it or that it is unchanged."
+    m = pack["manifest"]
+    if "generated_at" in m and pack.get("signed_at") != m["generated_at"]:
+        return False, ("The signing time shown on this pack was changed. It no longer matches the time inside the "
+                       "signed manifest.")
+    if "signer" in m and sig.get("signer") != m["signer"]:
+        return False, ("The signer shown on this pack was changed. It no longer matches the signer named inside the "
+                       "signed manifest.")
     if trusted_public_key is not None and not _same_key(sig.get("public_key"), trusted_public_key):
         return False, ("This pack was signed with a key that is not this bank's evidence key, so it cannot be "
                        "trusted, even though its manifest and signature agree with each other.")

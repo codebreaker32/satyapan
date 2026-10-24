@@ -357,5 +357,8 @@ class Satyapan:
             "inputs": {"sender_number": inp.get("sender_number"), "bank_signature_present": bool(inp.get("signature")),
                        "forensics_simulated": bool(inp.get("forensics_sim"))},
             "review_triggers": self.review_triggers(case),
+            # Inside the signed manifest, so the signer label and the signing time shown on the pack are signed too
+            # (verify_pack compares them); outside it, either could be changed and the pack still verified.
+            "signer": self.signer.label.as_dict(),
         }
         return make_pack(manifest, self.signer)

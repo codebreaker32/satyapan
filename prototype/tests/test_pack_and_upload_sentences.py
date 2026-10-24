@@ -44,3 +44,20 @@ def test_txt_size_refusal_counts_bytes_as_bytes():
     r = client.post(f"/api/cases/{cid}/media", files={"file": ("long.txt", data, "text/plain")})
     assert r.status_code == 413
     assert "bytes" in r.json()["detail"] and "characters, the limit" not in r.json()["detail"]
+
+
+@pytest.mark.parametrize("field, value", [("signed_at", "2020-01-01T00:00:00+00:00"),
+                                          ("signer", {"name": "Evidence signer", "mock": False, "route": "AWS KMS"})])
+def test_the_shown_signing_time_and_signer_are_signed_too(engine, field, value):
+    """Raw finding 21, second half: signed_at and the signer label sat outside the signature, so a pack with a
+    back-dated signing time or a signer relabelled 'not a mock' still verified."""
+    pack = engine.evidence_pack(run_scenario_id(engine, "S3-ed-summons"))
+    key = engine.signer.public_key_b64()
+    assert pack["signed_at"] == pack["manifest"]["generated_at"]
+    bad = copy.deepcopy(pack)
+    if field == "signed_at":
+        bad["signed_at"] = value
+    else:
+        bad["signature"]["signer"] = value
+    ok, reason = verify_pack(bad, key)
+    assert not ok and "was changed" in reason
