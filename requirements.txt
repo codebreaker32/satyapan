@@ -1,0 +1,11 @@
+# CPU wheels: pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+huggingface_hub==0.36.2
+numpy==2.5.2
+opencv-python-headless==5.0.0.93
+pillow==12.3.0
+pytest==9.1.1
+safetensors==0.8.0
+tokenizers==0.22.2
+torch==2.8.0+cpu
+torchvision==0.23.0+cpu
+transformers==4.56.2
