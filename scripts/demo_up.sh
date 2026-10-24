@@ -27,5 +27,6 @@ echo
 cd "$PROTO"
 export SATYAPAN_FORENSICS_URL="http://127.0.0.1:$PORT"
 export SATYAPAN_WHISPER_MODEL="${SATYAPAN_WHISPER_MODEL:-small}"
+export SATYAPAN_WHISPER_PRELOAD=1   # load speech-to-text at start-up, not on the first voice note
 echo "engine: forensics at $SATYAPAN_FORENSICS_URL, speech-to-text: Whisper $SATYAPAN_WHISPER_MODEL"
 exec .venv/bin/satyapan serve
