@@ -501,11 +501,27 @@ def build_card(verdict: Verdict, claim: Claim, lang: str = "hi") -> Card:
              + [do_now] + ([coaching] if coaching else []))
     card = Card(lang=lang, outcome=verdict.outcome, headline=headline, stop_line=stop, reasons=reasons, do_now=do_now,
                 say_next=say_next, coaching=coaching, read_aloud="\n".join(lines))
-    lint_card(card)
+    lint_card(card, quoted_from=claim.text)
     return card
 
 
-def lint_card(card: Card) -> None:
+# A reason may quote an identifier the sender chose: a link, a host, a UPI ID, a summons number, a caller's number.
+# The scammer picks those, so a link like demobank-fraud-check.com put a banned word on the card, lint_card raised,
+# and the case could no longer be opened (HTTP 500 on run and on every later GET). Quoting the sender's own link is
+# not the card labelling the message, so such a token is masked before the patterns run, but only when it appears
+# verbatim in the message and looks like an identifier (it has a dot, @, slash or digit). A plain word is never masked.
+_QUOTED_TOKEN = re.compile(r"[^\s()“”\"'‘’«»,;]+")
+_IDENTIFIER = re.compile(r"[./@:\d]")
+
+
+def _mask_quoted(text: str, source: str) -> str:
+    def mask(m: re.Match) -> str:
+        token = m.group().rstrip(".:!?।")          # a sentence's own full stop does not make a word an identifier
+        return " " if token and _IDENTIFIER.search(token) and token in source else m.group()
+    return _QUOTED_TOKEN.sub(mask, text)
+
+
+def lint_card(card: Card, quoted_from: str = "") -> None:
     """Customer-facing text must never label the message itself. Raise if a forbidden word slips in.
 
     Every field, including `coaching` and `read_aloud`. Those two were exempt until 19 Oct, which is how the
@@ -519,13 +535,15 @@ def lint_card(card: Card) -> None:
     ALLOWED_PHRASES is the one exception, and it is a phrase mask rather than a field exemption. The phrase is
     removed from the text and everything left around it is still checked, so the recorded "इस धोखे का हिस्सा"
     carve-out cannot be stretched into a licence to call the message a deception.
+
+    `quoted_from` is the message text; identifiers quoted from it verbatim are masked too (see _mask_quoted).
     """
     fields = [("headline", card.headline), ("stop_line", card.stop_line), ("do_now", card.do_now)]
     fields += [(f"reasons[{i}]", r.text) for i, r in enumerate(card.reasons)]
     fields += [(f"say_next[{i}]", line) for i, line in enumerate(card.say_next)]
     fields += [("coaching", card.coaching or ""), ("read_aloud", card.read_aloud)]
     for field, text in fields:
-        probe = text
+        probe = _mask_quoted(text, quoted_from) if quoted_from else text
         if field in ALLOWED_PHRASE_FIELDS:
             for phrase in ALLOWED_PHRASES:
                 probe = probe.replace(phrase, " ")
