@@ -135,7 +135,7 @@ export function Check({ view, titles }: Props) {
         <div className="also">
           {view.case.media.map((m) => (
             <MetaRow key={m.sha256} {...rowProps('meta:media')} label="Media">
-              {m.filename} · {m.kind} · {m.bytes.toLocaleString('en-IN')} bytes · sha256 <span className="hash">{shortHash(m.sha256)}</span>
+              <strong className="media-name">{m.filename}</strong> · {m.kind} · {m.bytes.toLocaleString('en-IN')} bytes · sha256 <span className="hash">{shortHash(m.sha256)}</span>
               {m.derived_text_engine &&
                 ((m.kind === 'audio' || m.kind === 'video')
                   ? ` · transcribed by ${m.derived_text_engine}`

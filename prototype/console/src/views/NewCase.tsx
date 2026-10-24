@@ -31,6 +31,18 @@ const CONSENT_HI = {
   memory: 'क्या हम इसकी पहचान बैंक की स्मृति में जोड़ सकते हैं, ताकि अगली बार किसी और को बचाया जा सके?',
 }
 
+function fileKindWords(f: File): string {
+  if (VIDEO.test(f.name) || f.type.startsWith('video/')) return 'a video'
+  if (SOUND.test(f.name) || f.type.startsWith('audio/')) return 'a voice note or audio file'
+  if (/\.pdf$/i.test(f.name) || f.type === 'application/pdf') return 'a PDF'
+  if (/\.txt$/i.test(f.name) || f.type === 'text/plain') return 'a text file'
+  return 'an image'
+}
+
+function sizeWords(bytes: number): string {
+  return bytes >= 1024 * 1024 ? `${(bytes / (1024 * 1024)).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`
+}
+
 const SOUND = /\.(ogg|opus|oga|mp3|wav|m4a|weba|aac|amr|flac|mp4|webm|mov|3gp|mkv)$/i
 const VIDEO = /\.(mp4|webm|mov|3gp|mkv)$/i
 
@@ -265,7 +277,18 @@ export function NewCase({ onView }: { onView: (v: CaseView) => void }) {
                   setRecorded(true)
                 }}
               />
-              {file && <p className="muted small">Will upload: {file.name}</p>}
+              {file && (
+                // The officer's own check that the right file is going in: the name at reading size, what kind of file
+                // it is and how big, and whether it was recorded here (a replay, judged by its own rules).
+                <p className="chosen-file" role="status">
+                  {recorded ? 'Recorded here, ready to check: ' : 'Ready to check: '}
+                  <strong>{file.name}</strong>
+                  <span className="chosen-meta">
+                    {' · '}
+                    {fileKindWords(file)}, {sizeWords(file.size)}
+                  </span>
+                </p>
+              )}
               <div className="inline">
                 <span style={{ fontWeight: 600 }}>Notice language</span>
                 <div className="lang-tabs">

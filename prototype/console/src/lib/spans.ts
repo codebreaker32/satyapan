@@ -18,6 +18,7 @@ export function collectSpans(claim: Claim): SpanRef[] {
   }
   push('issuer', 'Claimed issuer', claim.issuer_span)
   push('instruction', 'Instruction', claim.instruction_span)
+  push('digital_arrest', 'Digital arrest words', claim.digital_arrest_span)
   push('channel', 'Channel', claim.channel_span)
   push('account', 'Payee account', claim.payee.account?.span)
   push('ifsc', 'IFSC', claim.payee.ifsc?.span)
@@ -102,6 +103,8 @@ export const OUTCOME_WORD: Record<Outcome, { en: string; hi: string }> = {
 // Anchors a signal points at. "span:<key>" is a highlighted phrase; "meta:<name>" is a row under the message.
 const SPAN_TARGETS: Record<string, string[]> = {
   'R-AGENCY-PAY': ['issuer', 'instruction'],
+  // the words telling her she is under "digital arrest", and the demand for money the rule also needs
+  'R-DIGITAL-ARREST-PAY': ['digital_arrest', 'instruction'],
   // The open-set half of R-AGENCY-PAY, split off on 19 Oct so its sentence could say what was read rather than
   // assert what the sender claims to be. It points at the same two spans; without this entry `targetsFor` falls
   // back to meta:text and the leader line aims at the whole message instead of the name and the demand.

@@ -1566,6 +1566,32 @@ mark.span:hover .callout-no {
   color: var(--ink-2);
   font-size: 15px;
 }
+/* New case: the file she chose, as a selection (the accent's job), so the officer sees at a glance that the right
+   one is going in. */
+.chosen-file {
+  margin: 0;
+  padding: 12px 16px;
+  background: var(--accent-wash);
+  color: var(--accent-ink);
+  border-radius: var(--r);
+  font-weight: 600;
+}
+.chosen-file strong {
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.chosen-meta {
+  color: var(--ink-2);
+  font-weight: 400;
+}
+/* the uploaded file's name leads its media row on the case screen */
+.media-name {
+  color: var(--ink);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
 /* New case: what is running while the officer waits, and for how long so far. */
 .run-progress {
   margin: 0;
