@@ -320,3 +320,17 @@ def test_the_detectors_measured_accuracy_is_served_as_written():
     cells = {c["cell"]: c for c in r.json()["cells"]}
     assert {"video/hd", "video/sd", "hi/whatsapp-opus"} <= set(cells)
     assert all("false_alarm_heldout_pct" in c["genuine"] for c in cells.values())
+
+
+def test_reset_removes_uploads_left_from_before_a_restart():
+    """Raw finding 23: reset only removed the folders of cases still in memory, so every upload from before a server
+    restart stayed on the laptop."""
+    orphan = api.UPLOADS / "SP-ORPHAN01"
+    orphan.mkdir(parents=True, exist_ok=True)
+    (orphan / "00-voice.ogg").write_bytes(b"OggS")
+    other = api.UPLOADS / "not-a-case.txt"          # only case folders are removed
+    other.write_text("x", encoding="utf-8")
+    assert client.post("/api/demo/reset").status_code == 200
+    assert not orphan.exists()
+    assert other.exists()
+    other.unlink()

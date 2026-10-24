@@ -53,15 +53,18 @@ def test_preflight_server_checks_match_and_catch_a_stale_rulebook(capsys):
     import threading
     from http.server import BaseHTTPRequestHandler, HTTPServer
 
+    from satyapan.codehash import code_sha256
     from satyapan.rulebook import load_rulebook
     sha = {"value": load_rulebook().sha256}
+    code = {"value": code_sha256()}
 
     class Stub(BaseHTTPRequestHandler):
         def do_GET(self):
             ready = {"service": {"route": "x", "health": {"ok": True, "video": {"model": "GenD", "calibrated_cells": ["video/sd"]},
                                                           "audio": {"installed": False}}}}
             body = {"/api/health": {"ok": True, "version": "test"},
-                    "/api/meta": {"rulebook": {"sha256": sha["value"]}, "forensics": ready}}[self.path]
+                    "/api/meta": {"rulebook": {"sha256": sha["value"]}, "forensics": ready,
+                                  "code": {"sha256": code["value"]}}}[self.path]
             data = json.dumps(body).encode()
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
@@ -82,6 +85,11 @@ def test_preflight_server_checks_match_and_catch_a_stale_rulebook(capsys):
         assert main(["preflight", "--server", url]) != 0
         out = capsys.readouterr().out
         assert any(l.startswith("FAIL  server meta:") and "restart" in l for l in out.splitlines())
+        sha["value"] = load_rulebook().sha256
+        code["value"] = "0" * 64  # same rulebook, older engine code: the server was not restarted after a fix
+        assert main(["preflight", "--server", url]) != 0
+        out = capsys.readouterr().out
+        assert any(l.startswith("FAIL  server meta:") and "engine code" in l for l in out.splitlines())
     finally:
         srv.shutdown()
 

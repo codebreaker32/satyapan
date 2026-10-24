@@ -176,11 +176,12 @@ export function Scenarios({ onRun, reload = 0 }: { onRun: (v: CaseView) => void;
             interchangeable rows in the first frame is what made this read as a harness rather than a product. */}
         <details className="home-more">
           <summary>
-            Controls: {controls.length} more cases that show it is not trigger-happy
+            {controls.length} more cases: controls that should not fire, and further attacks
           </summary>
           <p className="muted small">
-            A genuine signed bank SMS, a real RBI advisory, a valid ED summons, a prompt-injection line, and cases
-            that stop at AMBER.
+            Controls: a genuine signed bank SMS, a real RBI advisory, a valid ED summons, and cases that stop at AMBER.
+            Further attacks that should give RED: a copied house-tax notice, an e-challan paid to a person, and a
+            prompt-injection line.
           </p>
           <ul className="rows">
             {controls.map((s) => (

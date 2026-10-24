@@ -28,6 +28,7 @@ from pydantic import BaseModel
 from . import POLICY_VERSION, __version__
 from .adapters import Adapters
 from .cli import MAX_TEXT_CHARS, load_scenarios, run_scenario, text_too_long
+from .codehash import code_sha256
 from .evidence import verify_pack
 from .media import MediaUnreadable, contents_contradict_name, empty_message, kind_of, unreadable_message
 from .models import Case, Consent, Flag, Issuer, visible_name
@@ -155,9 +156,14 @@ def health():
     return {"ok": True, "version": __version__}
 
 
+# The code this server started with: preflight compares it with the checkout to catch a server that was not restarted.
+CODE_SHA256 = code_sha256()
+
+
 @app.get("/api/meta")
 def meta():
     return {"version": __version__, "policy_version": POLICY_VERSION, "bank_name": engine.book.bank_name,
+            "code": {"sha256": CODE_SHA256},
             "rulebook": {"version": engine.book.version, "sha256": engine.book.sha256, "rules": [
                 {"id": m.id, "family": m.family.value, "severity": m.severity.value, "title": m.title, "citation": m.citation.source,
                  "citation_url": m.citation.url, "verified": m.citation.verified, "checked": m.citation.checked} for m in engine.book.rules.values()]},
@@ -490,6 +496,11 @@ def demo_reset():
     for cid in list(engine.cases):   # snapshot: a threadpool-concurrent run must not break the iteration
         shutil.rmtree(UPLOADS / cid, ignore_errors=True)
     engine.cases.clear()
+    # Uploads of cases from before a restart are no longer in memory, so the loop above never reached them: a judge's
+    # own voice note stayed on the laptop. Every case folder left is an orphan now that no case is open.
+    if UPLOADS.is_dir():
+        for orphan in UPLOADS.glob("SP-*"):
+            shutil.rmtree(orphan, ignore_errors=True)
     engine._inputs.clear()
     memory_removed = max(len(engine.memory.entries) - len(_memory_at_start), 0)
     if engine.memory.entries != _memory_at_start:

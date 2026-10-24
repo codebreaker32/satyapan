@@ -217,7 +217,13 @@ def cmd_preflight(args) -> int:
         if remote != local.sha256:
             return False, (f"/api/meta rulebook sha {str(remote)[:12]} != local {local.sha256[:12]} — "
                            "the server loaded an older rulebook; restart `satyapan serve`")
-        return True, f"/api/meta 200; rulebook sha matches local ({local.sha256[:12]})"
+        from .codehash import code_sha256
+        code = (get_json(base + "/api/meta").get("code") or {}).get("sha256")
+        here = code_sha256()
+        if code != here:
+            return False, (f"the server runs engine code {str(code)[:12]} and this checkout is {here[:12]}: it was "
+                           "started before the last change; restart it (scripts/stop_demo.sh, then scripts/demo_up.sh)")
+        return True, f"/api/meta 200; rulebook sha matches local ({local.sha256[:12]}), and so does the engine code ({here[:12]})"
 
     def chk_forensics():
         """The finale detectors (satyapan-finale forensics service), as the running server sees them."""

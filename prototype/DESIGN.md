@@ -212,6 +212,8 @@ No new look; the same components say what the engine actually did.
 - The evidence panel reloads whenever the verdict changes (a re-encode or a strike), not only on a new decision, and
   "Download JSON" saves the pack on screen, so the downloaded file carries the hash the officer just verified
   (e2e-guarded).
+- The Scenarios page's disclosure says what it holds: controls that should not fire and further attacks that should
+  give RED, instead of calling all of them proof that it is not trigger-happy.
 
 ## Memorable moment
 
