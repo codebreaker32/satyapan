@@ -87,6 +87,12 @@ class KMSSigner:
         return {"alg": self.alg, "value": base64.b64encode(r["Signature"]).decode(), "public_key": base64.b64encode(pub).decode(),
                 "signer": self.label.as_dict(), "kms_key_id": self.key_id}
 
+    def public_key_b64(self) -> str:
+        """The key's DER public key, the one verification trusts (fetched once)."""
+        if not hasattr(self, "_pub_b64"):
+            self._pub_b64 = base64.b64encode(self.kms.get_public_key(KeyId=self.key_id)["PublicKey"]).decode()
+        return self._pub_b64
+
 
 def make_pack(manifest: dict, signer) -> dict:
     digest = sha256_hex(canonical(manifest))
@@ -94,8 +100,13 @@ def make_pack(manifest: dict, signer) -> dict:
             "manifest": manifest, "manifest_sha256": digest, "signature": signer.sign(digest.encode())}
 
 
-def verify_pack(pack: dict) -> tuple[bool, str]:
+def verify_pack(pack: dict, trusted_public_key: str | None = None) -> tuple[bool, str]:
     """Return (ok, reason): the manifest hash must match, then the signature over that hash must verify.
+
+    `trusted_public_key` is the bank's own evidence key (base64, as the signer writes it). A pack carries its signer's
+    public key, so without this check anyone could alter a pack, re-sign it with a key of their own and have it
+    verify; the API and the command line always pass the bank's key. It is optional only for callers that check a
+    pack's internal consistency and nothing more.
 
     The reason is read by an officer, on screen, after the words "Verifies." or "Does not verify.", so every one
     of them is a plain sentence that says what was checked or what is wrong with the file in hand.
@@ -110,7 +121,12 @@ def verify_pack(pack: dict) -> tuple[bool, str]:
     digest = sha256_hex(canonical(pack["manifest"]))
     if digest != pack.get("manifest_sha256"):
         return False, "The manifest was altered after signing. What is in the pack no longer matches the hash that was signed."
-    sig = pack.get("signature", {})
+    sig = pack.get("signature")
+    if not isinstance(sig, dict) or not sig.get("value"):
+        return False, "This pack has no signature in it, so nothing shows who wrote it or that it is unchanged."
+    if trusted_public_key is not None and not _same_key(sig.get("public_key"), trusted_public_key):
+        return False, ("This pack was signed with a key that is not this bank's evidence key, so it cannot be "
+                       "trusted, even though its manifest and signature agree with each other.")
     try:
         if sig.get("alg") == "Ed25519":
             Ed25519PublicKey.from_public_bytes(base64.b64decode(sig["public_key"])).verify(base64.b64decode(sig["value"]), digest.encode())
@@ -123,8 +139,17 @@ def verify_pack(pack: dict) -> tuple[bool, str]:
             return True, "The manifest matches its hash, and the ECDSA signature over that hash is good."
     except (InvalidSignature, ValueError, KeyError, TypeError):
         return False, "The signature does not match this manifest. The pack was signed by a different key, or it was changed after signing."
+    if not sig.get("alg"):
+        return False, "This pack's signature does not say how it was made, so this build cannot check it."
     return False, (f"This pack is signed with {sig.get('alg')!r}, which this build cannot check. "
                    "Satyapan signs with Ed25519 on the demo laptop and ECDSA P-256 through AWS KMS in the bank.")
+
+
+def _same_key(given, trusted: str) -> bool:
+    try:
+        return isinstance(given, str) and base64.b64decode(given, validate=True) == base64.b64decode(trusted)
+    except (ValueError, TypeError):
+        return False
 
 
 def load_pack(path: Path) -> dict:

@@ -396,7 +396,7 @@ def evidence(case_id: str, download: bool = False):
 
 @app.post("/api/evidence/verify")
 def verify(pack: dict = Body(...)):
-    ok, reason = verify_pack(pack)
+    ok, reason = verify_pack(pack, engine.signer.public_key_b64())
     return {"ok": ok, "reason": reason}
 
 

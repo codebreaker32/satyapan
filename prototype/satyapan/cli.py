@@ -116,8 +116,10 @@ def cmd_check(args) -> int:
 
 
 def cmd_verify(args) -> int:
+    from .evidence import LocalSigner
+    from .pipeline import STATE_DIR
     pack = load_pack(Path(args.pack))
-    ok, reason = verify_pack(pack)
+    ok, reason = verify_pack(pack, LocalSigner(STATE_DIR / "keys").public_key_b64())   # the bank's own key
     print(("VALID   " if ok else "INVALID ") + reason)
     return 0 if ok else 2
 
@@ -138,8 +140,9 @@ def check_evidence(sc: dict, tamper=None) -> tuple[bool, str]:
     pack = engine.evidence_pack(case)
     if tamper:
         pack = tamper(pack)
-    ok_fresh, why_fresh = verify_pack(pack)
-    ok_flipped, why_flipped = verify_pack(flip_manifest_byte(pack))
+    key = engine.signer.public_key_b64()
+    ok_fresh, why_fresh = verify_pack(pack, key)
+    ok_flipped, why_flipped = verify_pack(flip_manifest_byte(pack), key)
     fresh = "fresh pack verifies" if ok_fresh else f"fresh pack does not verify ({why_fresh})"
     flipped = "one flipped manifest byte is rejected" if not ok_flipped else f"one flipped manifest byte still verifies ({why_flipped})"
     return ok_fresh and not ok_flipped, f"{fresh}; {flipped} ({sc['id']})"
