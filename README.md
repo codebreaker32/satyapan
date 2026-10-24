@@ -9,11 +9,31 @@ hears three reasons she can check herself before the money leaves.
 Amazon AI Cyber Security Hackathon (RAKSHAM, IIT Delhi), finale 24–25 Oct 2026.
 Track 3: Deepfake Detection for Financial Communications. Team "Team": Aman Bihari, Bhawna.
 
+## Run it
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+.venv/bin/pip install imageio-ffmpeg faster-whisper pyarrow soundfile
+scripts/fetch_models.sh                       # YuNet + GenD (about 3 GB, once); then everything runs offline
+.venv/bin/python -m pytest -q                 # fast tests use stubs, no model needed
+
+.venv/bin/python scripts/score_video.py clip.mp4          # what the officer would see for one video
+scripts/demo_up.sh                                        # forensics service + engine + console, offline
+```
+
+How it fits together, and where the deepfake check sits in a case: `docs/architecture.md`. The plan for the two
+days: `docs/plan.md`.
+
 ## What is in this repository
 
 | Path | What it is |
 |---|---|
 | `MODELS.md` | Declaration of every pre-trained model and third-party API, with checkpoint state and licence |
+| `forensics/` | The detectors (built at the finale): shared contract, GenD video check, joined entry point, local service |
+| `scripts/` | Model fetch, scoring, calibration, dataset download, WhatsApp-like re-encoding, demo start-up |
+| `calibration/` | Thresholds, calibration reports and dataset attribution (numbers only, never clips) |
+| `tests/` | Fast tests with stub models; slow real-model tests behind `RUN_SLOW=1` |
 | `datasets/` | The synthetic datasets and the rulebook, described below |
 | `LICENSE` | GPL-3.0 |
 
@@ -41,7 +61,7 @@ demo.
 
 | Dataset | Used for | Format | Licence / access | How much we use |
 |---|---|---|---|---|
-| `ai4bharat/Kathbath` (Hugging Face) | Real Hindi speech (audio detector) | Audio | CC-BY-4.0; terms accepted on Hugging Face | about 30 Hindi clips |
+| `ai4bharat/Kathbath` (Hugging Face) | Real Hindi speech (audio detector; also to measure Whisper's Hindi accuracy) | Audio | CC-BY-4.0; terms accepted on Hugging Face | about 30 Hindi clips |
 | `vdivyasharma/IndicSynth` (Hugging Face) | Synthetic Hindi speech (audio detector) | Audio | CC-BY-NC-4.0 (non-commercial; this is a non-commercial hackathon prototype) | about 30 Hindi clips |
 | `mueller91/In-The-Wild` (Hugging Face) | Real and fake speech recorded in the wild, as a cross-check (audio detector) | Audio | CC-BY-SA-4.0 | a sample of about 50 clips |
 | Wikimedia Commons: interviews, talks and vlogs (incl. Indian speakers) | Genuine face video for setting the video thresholds | Video | Each file's own open licence (CC BY, CC BY-SA, CC0 or public domain), uploaded before 2021; title, author, licence and link for every clip in `calibration/sources_commons.csv` | about 60 clips, first 60 s of each |
