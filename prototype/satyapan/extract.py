@@ -98,11 +98,11 @@ ISSUER_KEYWORDS: list[tuple[Issuer, list[str]]] = [
 _GAP_CH = r"[^.;!?।\n\r  ]"
 _GAP = rf"(?:{_GAP_CH}|\n(?:[\x20\t]*\n)?[\x20\t]*(?=(?-i:[a-z0-9])))" + r"{0,60}?"
 _MONEY = (r"(?:₹|(?<![a-z])(?:rs\.?|inr|rupees?|lakhs?|lac|crores?|cr|amount|funds?|money|cash|balance"
-          r"|holdings?|savings?|pais[ae]|poora|pura|sara|entire|liquid)(?![a-z])"
-          r"|पैस[ेा]|राशि|रकम|रुपय|पूरा|सारा)")
+          r"|holdings?|savings?|pais[ae]|poora|pura|sara|entire|liquid|rupa?y[ae]?|rupaiye|rupiya|hazaa?r)(?![a-z])"
+          r"|पैस[ेा]|राशि|रकम|रुपय|पूरा|सारा|हज़?ार|लाख)")
 # "akount" / "acount": the variant corpus is deliberately misspelt, because a WhatsApp forward is.
 _DEST = (r"(?:(?<![a-z])(?:a[ckq]{1,2}[ao]?u?nts?|a/?c|acct|wallet|khaat[aey]|khat[aey]|upi|vpa|beneficiary|payee|ifsc)(?![a-z])"
-         r"|खात|वॉलेट)")
+         r"|खात|वॉलेट|यूपीआई)")
 # "wire" is the one verb in this family that is also a common NOUN, and the noun runs the other way: "the
 # incoming wire of Rs 4,20,000 has been credited to this account" is an inward-remittance advice carrying a money
 # word, a pointed destination and the word itself. A determiner or an arrival adjective in front of it makes it a
@@ -116,6 +116,11 @@ _MOVE_VERB = (r"(?<![\w])(?:park|parks|parking|place|places|placing|move|moves|m
               r"|deposits?|depositing|remits?|remitting|route|routes|routing|consolidates?|consolidating"
               rf"|{_WIRE}|wire kar\w{{0,3}}"
               r"|tra?nsfe?rs?|tra?nsfe?rring|tra?nsfe?r kar\w{0,3}|bhej\w{0,3}|daal\w{0,2}|dalo|jama ?kar\w{0,3}"
+              # "pay Rs 2,00,000 to account ...", "payment karo is account me", "bharo", "भुगतान करें": the plainest
+              # demand an agency script makes, and it was not in the family, so CBI and customs demands worded
+              # with "pay" came out GREY. Still behind the money + pointed-destination gate like every verb here.
+              r"|pay|pays|paying|make\s+(?:a\s+|the\s+)?payment|payment\s+kar\w{0,3}|bhar(?:o|na|en|ein|iye|do|dein)?"
+              r"|भुगतान\s?कर\w{0,3}|भर(?:ें|ो|िए|\s?दें|\s?दो)(?![ऀ-ॿ])"
               r"|भेज\w{0,3}|डाल\w{0,3}|जमा ?कर\w{0,3}|ट्रांसफ़?र\w{0,3})(?![a-z])")
 # The euphemism family needs the destination to be POINTED AT, not merely mentioned. "You can move funds between
 # your own accounts in the app" and "please move the balance out first" carry a money word and the word "account"
@@ -453,6 +458,8 @@ _RANK = (r"(?:inspector|sub-?inspector|dy\.?\s?inspector|insp\.?|asi|a\.s\.i\.?|
 _PERSON = r"(?:(?-i:[A-Z])[\w'’]*\.?[\x20\t]*){1,4}"
 _RANK_NAME = rf"{_RANK}\b\.?[\x20\t]*(?:{_PERSON})?[,:—–-][\x20\t]*"
 
+_PLACE = r"(?:(?-i:[A-Z])[a-z]+[\x20\t]+){1,2}"
+
 # Each left frame is matched so that it ENDS where the authority token begins.
 ANCHOR_LEFT = [
     # "This is Inspector R. Mehra, CBI Cyber Crime Branch" / "I am Officer Khan, Narcotics Control Bureau"
@@ -460,6 +467,12 @@ ANCHOR_LEFT = [
     rf"\b(?:i\s?am|i'?m|we\s+are|we'?re)\s+(?:an?\s+|the\s+)?{_RANK_NAME}{_THE}$",
     rf"\b(?:main|mai|hum)\s+{_THE}{_RANK_NAME}{_THE}$",
     rf"(?:मैं|हम)\s+{_RANK_NAME}$",
+    # A city or state in front of the body ("This is Delhi Police", "calling from Mumbai Police"): up to two
+    # capitalised words, and only after the self-claim openers. Before this, each opener had to end exactly at the
+    # token, so "This is Delhi Police. Transfer Rs 2 lakh ..." read no authority and came out GREY.
+    rf"{_NOT_REPORTED}\b(?:this|that|it)\s+is\s+{_THE}{_PLACE}$",
+    rf"\b(?:speaking|calling|writing)\s+(?:from|on behalf of)\s+{_THE}{_PLACE}$",
+    rf"\b(?:i\s?am|i'?m|we\s+are|we'?re)\s+(?:from\s+)?{_THE}{_PLACE}$",
     rf"{_NOT_REPORTED}\b(?:from|frm)\s+{_THE}$",                           # "a notice from the CBI"
     rf"{_NOT_REPORTED}\b(?:this|that|it)\s+is\s+{_THE}$",                  # "This is the CBI cyber cell"
     r"\b(?:i\s?am|i'?m|we\s+are|we'?re)\s+(?:an?\s+|the\s+)?$",            # "I am RBI"
@@ -554,6 +567,9 @@ ANCHOR_RIGHT = [
                             r"|director|team|desk|विभाग)" + _UNIT_END),
     _SEP + r"(?:here|speaking|calling|this side)\b",                       # "CBI cyber cell here"
     _SEP + r"(?:se|से)\s+[^.?!।\n]{0,24}?(?:bol|baat|call|बोल|बात|कॉल)",   # "सीबीआई से बोल रहा हूँ"
+    # "ED office se bol raha hoon": the body's own office word may sit between the name and "se"
+    _SEP + r"(?:office|offices|daftar|headquarters|hq|department|vibhag|विभाग|कार्यालय|दफ़?्तर)\s+(?:se|से)\s+"
+           r"[^.?!।\n]{0,24}?(?:bol|baat|call|बोल|बात|कॉल)",
     # speech attributed to the body: "RBI cautions the public", "सीबीआई ने कहा"
     _SEP + (r"(?:ne\s+|ने\s+)?(?:says?|said|cautions?|warns?|states?|informs?|directs?|directed"
             r"|has\s+(?:issued|directed|ordered)|kaha|bola|कहा|बोला)\b"),
@@ -837,6 +853,8 @@ def anchor_tier(text: str, m: re.Match) -> int:
     for pat in RE_ANCHOR_LEFT:
         if pat.search(text, max(0, m.start() - _ANCHOR_LOOKBACK), m.start()):
             return TIER_CLAIM
+    if _is_masthead(text, m):
+        return TIER_CLAIM
     if _unit_name(text, m):
         return TIER_CLAIM
     for pat in RE_ANCHOR_RIGHT:
@@ -850,6 +868,19 @@ def anchor_tier(text: str, m: re.Match) -> int:
     if _anchored_on_account(text, m):
         return TIER_ACCOUNT
     return TIER_NONE
+
+
+# A masthead: the body's name opens the message or a line and a colon follows it ("CBI: Transfer ...", "Mumbai
+# Police: ...", "सीबीआई: ...", "दिल्ली पुलिस: ..."). That is how an SMS sender line reads, and it anchored nothing:
+# a law-enforcement money demand with the body as its first word came out GREY with "no authority was read".
+# Up to two capitalised place words (one Devanagari word) may stand before the name; nothing else may.
+RE_MASTHEAD_LEFT = re.compile(r"(?:^|\n)[\x20\t\"'“‘*]*(?:(?:(?-i:[A-Z])[a-z]+[\x20\t]+){0,2}|[ऀ-ॿ]+[\x20\t]+)$")
+RE_MASTHEAD_RIGHT = re.compile(r"[\x20\t]*[:：]")
+
+
+def _is_masthead(text: str, m: re.Match) -> bool:
+    return bool(RE_MASTHEAD_RIGHT.match(text, _unit_name_end(text, m))
+                and RE_MASTHEAD_LEFT.search(text, max(0, m.start() - 40), m.start()))
 
 
 def _anchored_on_account(text: str, m: re.Match) -> bool:
