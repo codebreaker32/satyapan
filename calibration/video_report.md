@@ -37,3 +37,12 @@ With few real clips these thresholds are coarse; the counts above say how much t
   instruction first.
 - **Sample sizes:** genuine 38 (HD) and 26 (SD); fakes 2 and 6, from one vendor sample. More fakes (Deepfake-Eval-2024,
   if access is approved) would turn the catch rates into measurements.
+
+## Are the false alarms just small faces? No.
+
+Checked through the running service on 24 Oct: the genuine clips that score highest have large faces. One WhatsApp-
+size interview scores 0.971 with a 161 px face, an HD interview 0.924 with 131 px, and another 0.915 with 231 px,
+while a correctly cleared genuine clip has a 124 px face. A stricter face-size gate would therefore not remove these
+false alarms; they depend on the footage itself (webcam lighting, heavy compression), the in-the-wild weakness that
+Deepfake-Eval-2024 documents. The 5% thresholds mean about one genuine clip in twenty is flagged by design, which is
+why a face flag can only add weight and never decides.
