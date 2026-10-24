@@ -1,0 +1,139 @@
+path,sha256,label,source,cell,median,spread,faces_scored,frames_tried,usable,why_not,seconds
+clips/commons/c001.mp4,24e4f0cb5e5216ebd14f258da2f991ee7108d987726209b35f90e9d33298a0c2,real,wikimedia-commons,video/sd,,,0,48,False,the face is too small to judge (about 60 px; needs 80),6.65
+clips/commons/c002.mp4,08635174ac9920f90a023ae24ae74f40278448b90a3db1fc4bf47c2f27d5c4df,real,wikimedia-commons,video/hd,0.1111,0.041,16,39,False,a usable face was visible in only 16 of 39 frames checked,100.39
+clips/commons/c003.mp4,c645ed3ad97edc3fae9498ca3df0e811d0ad86bb3c1d6af387e8e1252d8830d6,real,wikimedia-commons,video/hd,0.0786,0.0624,16,23,True,,60.84
+clips/commons/c004.mp4,d796e50200c044afe4cc0cfe906fafdf2a6a5031e9e7048d21d88c7c4fc1df49,real,wikimedia-commons,video/hd,0.2572,0.1904,16,19,True,,73.45
+clips/commons/c005.mp4,494ada750b96f9ce06c8f03d7369c5c62ece54d51b87d3e26bd0366e0116de0d,real,wikimedia-commons,video/sd,0.5534,0.1268,16,29,True,,40.92
+clips/commons/c006.mp4,be74ab5e16ef70f6da002280e2849a7d7b4c48bfbfeb59635c77400401794367,real,wikimedia-commons,video/hd,0.9145,0.2136,16,18,True,,54.57
+clips/commons/c007.mp4,a8538f3f7d8573d3cc21ec20f8cf6983372664c73a357bf2fdaa7630194c52b2,real,wikimedia-commons,video/sd,0.2111,0.7592,16,19,False,the frames disagree with each other,46.12
+clips/commons/c008.mp4,3f0dd6349eeb432db5efb65180f17589fc882c48ba5f4b4c2f4f53bdb7759493,real,wikimedia-commons,video/hd,0.693,0.4314,16,17,False,the frames disagree with each other,54.03
+clips/commons/c009.mp4,037c78678b5a9dc5d4f01f4fcbf8ab5dd8c46d092ef843136c95ab737605d259,real,wikimedia-commons,video/sd,0.0999,0.1628,16,27,True,,36.87
+clips/commons/c010.mp4,b19d136b6f6522683f2c8d1ab262bf8b93ce4438b9ffb6718d7921e3db5cbaca,real,wikimedia-commons,video/hd,0.2641,0.2374,8,48,False,a usable face was visible in only 8 of 48 frames checked,20.76
+clips/commons/c011.mp4,921bd59d926c3987799cde5968a00ae7d2b322e041ffb766bcc4df12285bc616,real,wikimedia-commons,video/sd,0.0747,0.0378,16,16,True,,36.81
+clips/commons/c012.mp4,7d91cfa2f193f38cd169a5013e287af1ef447dcc134eedea849109bd3efcc8be,real,wikimedia-commons,video/sd,0.0583,0.0277,16,17,True,,37.34
+clips/commons/c013.mp4,d188bcf3d6dab111e45fda9b8997c7f9ea7242572a20d9b372b49224ea3891e1,real,wikimedia-commons,video/sd,0.1762,0.3531,16,46,False,a usable face was visible in only 16 of 46 frames checked,36.51
+clips/commons/c014.mp4,98faa47ee00293f01ea09bfdb6804aef55900f5a232b3f583e4e589b51977b11,real,wikimedia-commons,video/sd,0.9419,0.3965,16,31,True,,44.36
+clips/commons/c015.mp4,1bb974b25c01067b7c881fbea6b29602df99d5e2d5be055208cf9f613b54af2c,real,wikimedia-commons,video/sd,0.8443,0.5328,14,48,False,a usable face was visible in only 14 of 48 frames checked,43.46
+clips/commons/c016.mp4,7daf877526cdea281276326f8ad4716ffc7f5fc5b632ce8ebe386c92e5aee597,real,wikimedia-commons,video/hd,0.758,0.3405,16,16,True,,44.66
+clips/commons/c017.mp4,96607a1f00d3622535c16662fb99f6313ec8417a589f26ec3a46a7e6549ad4b5,real,wikimedia-commons,video/hd,0.3484,0.3274,16,16,True,,43.74
+clips/commons/c018.mp4,65113d8d82eea943e4e1cc468fefa0d2762fc8f9b54d3658c3a33840d2cf120b,real,wikimedia-commons,video/hd,0.1224,0.0837,16,16,True,,41.34
+clips/commons/c019.mp4,8718b34632837dfeb6bcf35b4809b4b16668bb7e19a0726416e2c2938db70be3,real,wikimedia-commons,video/hd,0.307,0.5389,16,16,False,the frames disagree with each other,41.52
+clips/commons/c020.mp4,3595da35cfefa37679d2323f3bcf5dbf98bf27d0619cf0e29987ab70ce36a696,real,wikimedia-commons,video/hd,0.593,0.4854,16,16,False,the frames disagree with each other,44.87
+clips/commons/c021.mp4,c8769ef4a135e7a6d8a4a31703f021600df244b67dc0fcd6526f0aa526586aed,real,wikimedia-commons,video/hd,0.9235,0.1877,16,16,True,,63.45
+clips/commons/c022.mp4,1c8b4078c53b37a579680e9bef63805d5889a4138dedd637bebf50b57c2759e9,real,wikimedia-commons,video/hd,0.2838,0.2364,16,16,True,,78.86
+clips/commons/c023.mp4,6dbf50e4bf68f68908bd73d8c1e9ee381cf52c1bbf51d1a2d9cfb60e05435a5c,real,wikimedia-commons,video/hd,0.2647,0.4473,16,16,False,the frames disagree with each other,49.33
+clips/commons/c024.mp4,07a86283d4867637e8e0174c39e8dee8319b8c074cb181a6ac5838321638cfc9,real,wikimedia-commons,video/hd,0.2577,0.1294,16,25,True,,44.46
+clips/commons/c025.mp4,d6f6f40b0ff7c2030fd5ac3561d44553103d2beccc7e0b1328d3c3a1d3e9f6a7,real,wikimedia-commons,video/sd,0.3396,0.4136,4,48,False,a usable face was visible in only 4 of 48 frames checked,14.07
+clips/commons/c026.mp4,f7b83a4a7b8964a2a8ee5c86ce71b3dfb0adc5b5f38fa3004346511ca367e842,real,wikimedia-commons,video/hd,0.1168,0.0658,16,17,True,,42.27
+clips/commons/c027.mp4,570f378ae6eddfbbb54cfe58f0d050ef83438c66d24e87b82d45a5e272490ff7,real,wikimedia-commons,video/hd,0.1611,0.0899,16,18,True,,42.0
+clips/commons/c028.mp4,a3f52f3c7f0ae5357d539ebf3bf9ac134c342f03850713fd500c209d7d9df752,real,wikimedia-commons,video/hd,0.8483,0.0,1,48,False,a usable face was visible in only 1 of 48 frames checked,7.06
+clips/commons/c029.mp4,763b05146ef53c4d19ade711e320e503be9db3dac4e83fdfae5a917690703a63,real,wikimedia-commons,video/hd,0.5307,0.3858,16,22,True,,40.79
+clips/commons/c030.mp4,d8e3c5009ee2bc48611cebe0f9ef983b26f1e21cd065d0a8be7267ac439e59c7,real,wikimedia-commons,video/hd,,,0,48,False,the face is too small to judge (about 32 px; needs 80),4.24
+clips/commons/c031.mp4,7a30583e727ed9b2844a75b11c43287d24cebdc90700182da0c96e8f2430148c,real,wikimedia-commons,video/sd,,,0,48,False,the face is too small to judge (about 36 px; needs 80),1.4
+clips/commons/c032.mp4,2f42e2839f8a193764d2bcdf602eaa58b4fdcd022356cdedd6c2d8556499a46f,real,wikimedia-commons,video/hd,0.5594,0.2868,16,31,True,,46.13
+clips/commons/c033.mp4,7d80f48090d7882fd23b15f5bd7e2eb9c18b7421b895f72a1036d88401c5525c,real,wikimedia-commons,video/hd,0.3982,0.3463,16,20,True,,51.68
+clips/commons/c034.mp4,5e67d272e239a99232ebdacd0acbb5cffd4725c9d7b7dadee2c009b60895dcd3,real,wikimedia-commons,video/sd,,,0,48,False,the face is too small to judge (about 46 px; needs 80),5.95
+clips/commons/c035.mp4,197218839b99153c54e6c92c4cc3b07d761afe936918e6fc2c79cc83e79a69c5,real,wikimedia-commons,video/sd,,,0,48,False,the face is too small to judge (about 73 px; needs 80),2.59
+clips/commons/c036.mp4,3798548025909eafb256533b27520b744ab32b02f926cbee876faeeed8be2e54,real,wikimedia-commons,video/hd,0.0907,0.0983,16,16,True,,83.7
+clips/commons/c037.mp4,e25294827a32c95da7bacdf75cca50989c391f1a810ad6685f4b21638e17a383,real,wikimedia-commons,video/hd,0.1416,0.1863,16,17,True,,65.97
+clips/commons/c038.mp4,e448d4f354c1b8583690cfabf349dd08ea337fe670122584f3937b75d9babdad,real,wikimedia-commons,video/hd,0.0898,0.0527,16,32,True,,85.7
+clips/commons/c039.mp4,ae6edf6737e64c51d68647e88903bfa8f90f98bc7922a6143795a5ef283efd38,real,wikimedia-commons,video/hd,0.322,0.12,16,25,True,,122.55
+clips/commons/c040.mp4,7a4c5b302ae8e198fb978a37f0089cf33357db87af287e17ad5ffe21e26d7b63,real,wikimedia-commons,video/hd,0.1214,0.0541,16,35,False,a usable face was visible in only 16 of 35 frames checked,94.59
+clips/commons/c041.mp4,5f5d88dcea124f4fddbd2aaf10a57d125bfbf5cd16e61deeb46492adee39674c,real,wikimedia-commons,video/hd,0.0838,0.3439,16,20,True,,77.51
+clips/commons/c042.mp4,f3e1c4a5b748e0b7b6c752c7ec5ebc35f456855269b2598f225c950ebd54c677,real,wikimedia-commons,video/hd,0.1011,0.2082,16,17,True,,82.54
+clips/commons/c043.mp4,57a636bff4c81c1d6940a3a712b50b2d70a368ee40d73465a891fc32fc4e4cff,real,wikimedia-commons,video/hd,0.112,0.0882,16,18,True,,83.03
+clips/commons/c044.mp4,29338b61f311dcf7b4b2ca907320e4dfd86b2192a198bbc85c14234fa89815cc,real,wikimedia-commons,video/hd,0.1139,0.1219,16,23,True,,85.24
+clips/commons/c045.mp4,2708b80107b9ff08890f527c70d72daed5c8020c6e20dbb46bb0721277fdbe4b,real,wikimedia-commons,video/hd,0.5249,0.4532,4,48,False,a usable face was visible in only 4 of 48 frames checked,34.8
+clips/commons/c046.mp4,58fb792a4858772802aeda060285f803ddb1cf4970b3c4e1285101e5c76462dd,real,wikimedia-commons,video/hd,0.1579,0.1679,16,25,True,,111.72
+clips/commons/c047.mp4,13e4d9771ad6cf4fdc08168dccf1e16e72bfc2b083140eb99d5f415c8181b973,real,wikimedia-commons,video/hd,0.1713,0.2321,16,25,True,,106.84
+clips/commons/c048.mp4,d1dbe885625395e15046aacc28e2287232fa6632f3feef2a47684c3238180455,real,wikimedia-commons,video/hd,0.0827,0.2003,16,25,True,,86.3
+clips/commons/c049.mp4,680c4b8d92d4c838a5d1ade614f152074e96765029d90631f57f564586d8b39f,real,wikimedia-commons,video/hd,0.3426,0.2772,16,24,True,,90.76
+clips/commons/c050.mp4,503b45ac32f351296eae3cc5f3bc6eb21e0649a5cfb9a393d05395d3daca7ac9,real,wikimedia-commons,video/hd,0.1931,0.3078,16,24,True,,103.49
+clips/commons/c051.mp4,69ab0feb7fb3f94782370c7f2de2419762bed1ac3fc95faabfc1eb41860bf4a4,real,wikimedia-commons,video/hd,0.1555,0.0568,16,25,True,,109.13
+clips/commons/c052.mp4,1631340f8b41e0f217af3b0298ea83edb52163d0f98d1cccad42788332436382,real,wikimedia-commons,video/hd,0.1994,0.169,16,25,True,,82.96
+clips/commons/c053.mp4,4fe86413e3555b21abde8d6b7ef38a181c35da549ba2d5d2941dd81bbc16c96c,real,wikimedia-commons,video/hd,0.1561,0.2788,16,24,True,,75.48
+clips/commons/c054.mp4,16d7aac8ec7c12a7252e754ea77971dfc3ed914563e4141adaefda712d45db2d,real,wikimedia-commons,video/hd,0.2111,0.0752,16,24,True,,61.54
+clips/commons/c055.mp4,20b161afa8d84bf60e34ec81eca9eb6873cdedba6e7eb68e58bdf801fc6de342,real,wikimedia-commons,video/hd,0.2109,0.2645,16,24,True,,53.73
+clips/commons/c057.mp4,988f82f36992ea284d71aff72b658dc299eef4c10a3aa7b9dcbe271fa49cf09e,real,wikimedia-commons,video/hd,0.0881,0.0881,16,23,True,,45.11
+clips/commons/c058.mp4,b8a7ed0f78610843a7543f21ddb6615fc30a078a59cdb4891820134d654f9a44,real,wikimedia-commons,video/hd,0.2372,0.6081,16,19,False,the frames disagree with each other,58.82
+clips/commons/c059.mp4,16d6c459d0688d47bda21a7bfcb439b135e74a9a4d9d060560bb49df6c0a1d17,real,wikimedia-commons,video/hd,0.4869,0.2652,16,16,True,,58.51
+clips/commons/c060.mp4,5db7fbf1082582c00840e552a1221e71c0c0c93f9c8386a4e5daeed51ac8eaf2,real,wikimedia-commons,video/hd,0.4311,0.3225,11,48,False,a usable face was visible in only 11 of 48 frames checked,47.42
+clips/commons_wa/c001.mp4,061e06d45e83e72d707a5c7e6d70aa599eb84f9be482dfbe13388892ac48eb4f,real,wikimedia-commons+whatsapp-like,video/sd,,,0,48,False,the face is too small to judge (about 59 px; needs 80),6.03
+clips/commons_wa/c002.mp4,3599598303b684069f8d28f194a5d3508c01ad9b3f7c480e275b7b213f7f753e,real,wikimedia-commons+whatsapp-like,video/sd,0.1179,0.0791,16,39,False,a usable face was visible in only 16 of 39 frames checked,47.67
+clips/commons_wa/c003.mp4,7edc67ff75dc9a5c9331433e9b388dbec787a593c2c1de035377d8296d566894,real,wikimedia-commons+whatsapp-like,video/sd,0.138,0.2575,16,23,True,,46.9
+clips/commons_wa/c004.mp4,f1af73cce78422b774351733d85ed8321040094850a4feb7fceb1545ee158d9e,real,wikimedia-commons+whatsapp-like,video/sd,0.5627,0.5883,4,48,False,a usable face was visible in only 4 of 48 frames checked,26.19
+clips/commons_wa/c005.mp4,d9c3227b0977a9de22eb837955f9847d69e3f0ed522f2bf7da388393f3da3595,real,wikimedia-commons+whatsapp-like,video/sd,0.4919,0.2334,16,33,False,a usable face was visible in only 16 of 33 frames checked,41.2
+clips/commons_wa/c006.mp4,40f5c44b81a174a5b604ab75617452b62432f4f3824f84160a2b7a0d4ea1a450,real,wikimedia-commons+whatsapp-like,video/sd,0.4964,0.6072,16,18,False,the frames disagree with each other,43.9
+clips/commons_wa/c007.mp4,9910afc2466a9820c9da5da60f6933e860ad222ec5975c7853f38e29f3aa1822,real,wikimedia-commons+whatsapp-like,video/sd,0.7495,0.6095,16,18,False,the frames disagree with each other,43.8
+clips/commons_wa/c008.mp4,31f7dc8c7b97139efd807630177e43a514f7f3259c75b4551fecb9589ad4f307,real,wikimedia-commons+whatsapp-like,video/sd,0.971,0.1887,16,17,True,,34.93
+clips/commons_wa/c009.mp4,81c3149ab3433538243ab7ece61b61cee2bf19a4bce25bff635628e727b5ea68,real,wikimedia-commons+whatsapp-like,video/sd,0.1664,0.2198,16,27,True,,33.48
+clips/commons_wa/c010.mp4,46eefa27fc910b6eed9e876904ef02dfeac87dcd783086c4be37df037bb1259b,real,wikimedia-commons+whatsapp-like,video/sd,0.4151,0.2896,8,48,False,a usable face was visible in only 8 of 48 frames checked,19.19
+clips/commons_wa/c011.mp4,c17630e47f9e97728a726f378bd50626550dd186116ea3cb03a21b55ab91ca51,real,wikimedia-commons+whatsapp-like,video/sd,0.081,0.1101,16,16,True,,33.38
+clips/commons_wa/c012.mp4,24b5631de97c1129ce9a589492284be8693d86b9ad22d4923bed089545183df8,real,wikimedia-commons+whatsapp-like,video/sd,0.0967,0.0813,16,17,True,,34.15
+clips/commons_wa/c013.mp4,d98376b44aa5d6ca8b79c8a5739716f08596705a6c74e8d3dd2f89baf92c5cf6,real,wikimedia-commons+whatsapp-like,video/sd,0.5917,0.5739,16,41,False,a usable face was visible in only 16 of 41 frames checked,34.85
+clips/commons_wa/c014.mp4,319f2274a10e8036d9f0bd47feee9acea6de2c6f724d5509f43e2a25d1480deb,real,wikimedia-commons+whatsapp-like,video/sd,0.9569,0.317,16,31,True,,34.24
+clips/commons_wa/c015.mp4,acd6d0cda4e8adfa57649270d10f0f9ced44a8f1d6acde60c96dcaeb8aa2c667,real,wikimedia-commons+whatsapp-like,video/sd,0.8625,0.3095,16,46,False,a usable face was visible in only 16 of 46 frames checked,35.34
+clips/commons_wa/c016.mp4,cbdebf1e024163a6798c6234e1ab2d5b9fdfdef7dde4762390cf1016457fc8f0,real,wikimedia-commons+whatsapp-like,video/sd,,,0,48,False,the face is too small to judge (about 66 px; needs 80),2.94
+clips/commons_wa/c017.mp4,ec2f5c17e27f269c50330b06fc27942befe84c32cf9fcd5cfc20418cb9ded992,real,wikimedia-commons+whatsapp-like,video/sd,,,0,48,False,the face is too small to judge (about 68 px; needs 80),2.8
+clips/commons_wa/c018.mp4,f8b40fdb31380a8f52f2575f80ed3954618ad363e186779d62d502da861f01e2,real,wikimedia-commons+whatsapp-like,video/sd,,,0,48,False,the face is too small to judge (about 57 px; needs 80),2.66
+clips/commons_wa/c019.mp4,4467f81763478b4af3fa595885dc7ace0d65f47e3160f7b1eedadfcbc473a9f2,real,wikimedia-commons+whatsapp-like,video/sd,,,0,48,False,the face is too small to judge (about 62 px; needs 80),2.84
+clips/commons_wa/c020.mp4,5ebb61d9803e0241ecc18d49805683758277b4a453c2e71f9faf0e045e733588,real,wikimedia-commons+whatsapp-like,video/sd,,,0,48,False,the face is too small to judge (about 53 px; needs 80),3.21
+clips/commons_wa/c021.mp4,9b29cab6ec1340d6c9e9fab9dcfcb3404bc68fe10a94ee845304440a4cb6f82e,real,wikimedia-commons+whatsapp-like,video/sd,,,0,48,False,the face is too small to judge (about 61 px; needs 80),2.75
+clips/commons_wa/c022.mp4,10ac4968b644baa892ec79c0c9827955a5a91f00f25bd464a2366b6238070732,real,wikimedia-commons+whatsapp-like,video/sd,0.2494,0.1616,5,48,False,a usable face was visible in only 5 of 48 frames checked,13.17
+clips/commons_wa/c023.mp4,390ec0de8de5ec50e2a67b6dacc78b88cb0f408a5bba22ed899321b5bfa7534a,real,wikimedia-commons+whatsapp-like,video/sd,,,0,48,False,the face is too small to judge (about 55 px; needs 80),2.59
+clips/commons_wa/c024.mp4,bff707e47ac5d4e44fbdd726a471308ad185ef59409946cce6f959f39141062e,real,wikimedia-commons+whatsapp-like,video/sd,0.2349,0.2143,13,48,False,a usable face was visible in only 13 of 48 frames checked,29.29
+clips/commons_wa/c025.mp4,bb36cae1f79f373ebeb8ebda6db85092b18c35bb3d34807c161d0442c2e186be,real,wikimedia-commons+whatsapp-like,video/sd,0.5174,0.126,4,48,False,a usable face was visible in only 4 of 48 frames checked,10.77
+clips/commons_wa/c026.mp4,c366e2edd7d4e83739ddce5b2a029780ca38f0cb41f4045bed092276e0ee44ac,real,wikimedia-commons+whatsapp-like,video/sd,0.1716,0.0985,16,17,True,,34.25
+clips/commons_wa/c027.mp4,172d6d32a6cb3494fbc5389bac6651d83fdfabf62ab7b7e898bdcf5d0cf6fa91,real,wikimedia-commons+whatsapp-like,video/sd,0.1778,0.0672,16,18,True,,34.07
+clips/commons_wa/c028.mp4,f3ff7d3bf788c1b8bb6c3a9a578394242d59524574e48d21bef9c437175c13a8,real,wikimedia-commons+whatsapp-like,video/sd,,,0,48,False,the face is too small to judge (about 63 px; needs 80),2.17
+clips/commons_wa/c029.mp4,c644bd477badb2b3ebd72f88b9aae52d10bd532b96abb3c08af284fd350b72a9,real,wikimedia-commons+whatsapp-like,video/sd,0.7118,0.3071,16,23,True,,33.87
+clips/commons_wa/c030.mp4,072169506d7bd430a2399e84d78a3a6ae6197126a3e9e93307cd11f162b05858,real,wikimedia-commons+whatsapp-like,video/sd,,,0,48,False,the face is too small to judge (about 26 px; needs 80),2.48
+clips/commons_wa/c031.mp4,6f36fc7a50ff0694c41d7ce61f95ddc28f7d6143d95a96a450f842a42484c7bc,real,wikimedia-commons+whatsapp-like,video/sd,,,0,48,False,the face is too small to judge (about 36 px; needs 80),1.05
+clips/commons_wa/c032.mp4,f5559d7e44884a421ab047455426eccad004d1d3758d65370dc30c3ef1907697,real,wikimedia-commons+whatsapp-like,video/sd,,,0,48,False,the face is too small to judge (about 36 px; needs 80),2.31
+clips/commons_wa/c033.mp4,d83bca9b3f803d04bdfe75bf4113571f09b216664de90517f1799a8176d3ab66,real,wikimedia-commons+whatsapp-like,video/sd,0.5612,0.2796,16,24,True,,34.42
+clips/commons_wa/c034.mp4,bff8ee25075cf1bae9260a747504ad6a8f277e0c2d848fe42cde4ac73fd873d4,real,wikimedia-commons+whatsapp-like,video/sd,,,0,48,False,the face is too small to judge (about 47 px; needs 80),2.72
+clips/commons_wa/c035.mp4,4fc8237377b934972fa7797799e5565447a3dc35fbc257c58d11e8ecdb87ef88,real,wikimedia-commons+whatsapp-like,video/sd,,,0,48,False,the face is too small to judge (about 73 px; needs 80),1.28
+clips/commons_wa/c036.mp4,5a89fa9669d8dd6d21ed68ab445554dbf9e0950b30f99b3235ddf943ff541054,real,wikimedia-commons+whatsapp-like,video/sd,0.1772,0.2907,16,16,True,,34.57
+clips/commons_wa/c037.mp4,272b6c89c71ead16e01e297b0a3716b9de54f70f207de69f85582273389298e5,real,wikimedia-commons+whatsapp-like,video/sd,0.5125,0.5735,16,17,False,the frames disagree with each other,34.74
+clips/commons_wa/c038.mp4,6a5aa7ba1890b9fcd13b837ff8745ac1cf1bdf03646a0ada12fe27cf91a848a8,real,wikimedia-commons+whatsapp-like,video/sd,0.3793,0.26,10,48,False,a usable face was visible in only 10 of 48 frames checked,23.92
+clips/commons_wa/c039.mp4,1696a81001aac0abfbbde0278c381c69418a72f671565c3a04eba5a7929caa02,real,wikimedia-commons+whatsapp-like,video/sd,0.2806,0.0498,16,29,True,,34.61
+clips/commons_wa/c040.mp4,68907c809f8ac70ef4edbd767ed320e975b949da06adde0b26b9c7076f6698e1,real,wikimedia-commons+whatsapp-like,video/sd,0.1314,0.1767,16,28,True,,34.7
+clips/commons_wa/c041.mp4,723f308c9176100afd94b80cbd279248cee506d7a1625721e75030658b65de82,real,wikimedia-commons+whatsapp-like,video/sd,0.201,0.2018,16,20,True,,34.14
+clips/commons_wa/c042.mp4,cc0d0e25624a260d7ea4d1b224829cc8db2d535287761465e1c23dd0417c37d5,real,wikimedia-commons+whatsapp-like,video/sd,0.3511,0.6342,16,18,False,the frames disagree with each other,34.21
+clips/commons_wa/c043.mp4,4ca100b5d74503cf6171e83a1af1475504640f6277ece2c5f8904c1bb37a6c20,real,wikimedia-commons+whatsapp-like,video/sd,0.3161,0.6726,16,18,False,the frames disagree with each other,34.53
+clips/commons_wa/c044.mp4,d80cb0f1bca59679237acd6a39f4a126307e2a1148ac99946c80138e365aecca,real,wikimedia-commons+whatsapp-like,video/sd,0.1201,0.0812,16,39,False,a usable face was visible in only 16 of 39 frames checked,35.42
+clips/commons_wa/c045.mp4,c9be8770ba314816bb5721ca525c5f7e5e58eeffc813bae7546b6d14e52f5ca3,real,wikimedia-commons+whatsapp-like,video/sd,,,0,48,False,the face is too small to judge (about 49 px; needs 80),2.67
+clips/commons_wa/c046.mp4,1880d5e799c9ceca1a8322c5a27208c306d6721ba96b376a35b0ce44a29ea174,real,wikimedia-commons+whatsapp-like,video/sd,0.3623,0.7133,16,25,False,the frames disagree with each other,34.69
+clips/commons_wa/c047.mp4,54f5975d3b6edf1aac4d88bf8bb57a7d6dccd1eaff2d553bc3aff51c7eeb829b,real,wikimedia-commons+whatsapp-like,video/sd,0.3537,0.2732,16,25,True,,34.59
+clips/commons_wa/c048.mp4,9681ccfbe434b5ed04f600f456ac9428faa10f583d8e80ae49724ebec48b97ba,real,wikimedia-commons+whatsapp-like,video/sd,0.1864,0.4051,16,25,False,the frames disagree with each other,34.88
+clips/commons_wa/c049.mp4,75042a3aea33b17c772386c74554a625db9c785c6ede7cd0b4abdb7a0d9d3c7f,real,wikimedia-commons+whatsapp-like,video/sd,0.671,0.4922,16,25,False,the frames disagree with each other,35.09
+clips/commons_wa/c050.mp4,f5e80c4dc5a64fc0f50f54ec3b05d800f86fbdc26783b6d623089026c76d3a1c,real,wikimedia-commons+whatsapp-like,video/sd,0.3626,0.4848,16,26,False,the frames disagree with each other,34.71
+clips/commons_wa/c051.mp4,bf62aa46019abe4358af80102e02f9b0be002fc8bc09d233a7bafab1e4b7abf1,real,wikimedia-commons+whatsapp-like,video/sd,0.2263,0.2041,16,25,True,,34.46
+clips/commons_wa/c052.mp4,51df5b276a942c8060590a281bf4780d3a325ed762b55c0dc6bcdfdb25a3b101,real,wikimedia-commons+whatsapp-like,video/sd,0.2749,0.2881,16,28,True,,34.75
+clips/commons_wa/c053.mp4,39da00e4ec68fc7a0c7a72ee59171fc0a2acfdd3ef6206e4155f3899a0de4129,real,wikimedia-commons+whatsapp-like,video/sd,0.6376,0.4807,16,25,False,the frames disagree with each other,35.03
+clips/commons_wa/c054.mp4,8d1c6cdfefd1c9a01ba2b3b0ea190b395b15738685a9aa78b45fb35fa6b2f146,real,wikimedia-commons+whatsapp-like,video/sd,0.3972,0.432,16,24,False,the frames disagree with each other,35.52
+clips/commons_wa/c055.mp4,91f65331bf6f9eaad77a8a8e3c8f4f41354ce95a129dfc967c4bc0dde8247025,real,wikimedia-commons+whatsapp-like,video/sd,0.3501,0.4728,16,24,False,the frames disagree with each other,36.53
+clips/commons_wa/c057.mp4,633ba03447cd7f6294894f7c815f3747ba9cccbdca434968fe2c8e3272728e98,real,wikimedia-commons+whatsapp-like,video/sd,,,0,48,False,the face is too small to judge (about 68 px; needs 80),2.79
+clips/commons_wa/c058.mp4,5aba0845703b704a8368daf8eeb00904d9bdd06eb247c5682791586bdf32542e,real,wikimedia-commons+whatsapp-like,video/sd,0.9395,0.1603,16,19,True,,35.6
+clips/commons_wa/c059.mp4,ad5b12c96985e24b3862d6183aea31f658d00f336ab3f9ae8c3c677608a5476f,real,wikimedia-commons+whatsapp-like,video/sd,0.8165,0.472,16,16,False,the frames disagree with each other,29.67
+clips/commons_wa/c060.mp4,6dfe046cf5e03678ba9545fc6781366b4a77d0baee1dfc67f2cc171779296b6e,real,wikimedia-commons+whatsapp-like,video/sd,0.8162,0.1643,4,48,False,a usable face was visible in only 4 of 48 frames checked,11.02
+clips/unidata/video/1.mp4,585563deeb447132157369d41f72a3b2c8229f33751598bac6125148e6f4f771,real,unidatapro-sample,video/hd,0.1159,0.0392,16,16,True,,33.83
+clips/unidata/video/2.mp4,6f6de286c1c068d6781b98e817e3d7df74d7ae52fe7813ea70c63473d1f76f67,real,unidatapro-sample,video/hd,0.2934,0.1965,16,16,True,,36.02
+clips/unidata/video/3.mp4,2a0914f5dcc90a12a1d63fc0039e06e3d8531173756cfd5636b0f1bfb9ac4f3c,real,unidatapro-sample,video/hd,0.5603,0.3886,16,16,True,,35.82
+clips/unidata/video/4.mp4,cf066d7d72ccc9893631bd82b4f17d64708f299efa0c88e3bc6794d127a2eac3,real,unidatapro-sample,video/hd,0.2464,0.1913,16,16,True,,33.75
+clips/unidata/video/5.MOV,9f8561d9bc2b2177b8eff136a3e0df7d773316384759c4acdaeb270d6e1d484c,real,unidatapro-sample,video/sd,0.2809,0.283,16,16,True,,31.95
+clips/unidata/deepfake/1.mp4,4d718c8e3ff6050132f105faaa2ebd7285bca1ce7ea465edc00f77959579e58c,fake,unidatapro-sample,video/hd,0.7951,0.3687,16,16,True,,33.89
+clips/unidata/deepfake/2.mp4,8acacf8f7fbf720a7cd76ad3083afea60806a3e8dfe0a86305f5e990f061c48d,fake,unidatapro-sample,video/hd,0.955,0.0233,16,16,True,,33.6
+clips/unidata/deepfake/3.mp4,7c7a69eaff03d75ebbcd8f89ba6a8bd32ec749c54f6b7d0f5a56a60e9e6e06e4,fake,unidatapro-sample,video/sd,0.9588,0.0204,16,16,True,,31.76
+clips/unidata/deepfake/4.mp4,13d8b90f4de1a7c65499f3a0e5b2fbb5f00d4af4b367eb4e41f837f3883db757,fake,unidatapro-sample,video/sd,0.6065,0.4417,16,16,False,the frames disagree with each other,32.31
+clips/unidata/deepfake/5.mov,1e3c0f1239f979d0c9cf3688e073bd65076c48758aeb329d5e3bcd29368ea10a,fake,unidatapro-sample,video/sd,0.9636,0.0614,16,16,True,,32.13
+clips/unidata_wa/video__1.mp4,198f56cdeab7467d921aa8fcbca955875879aeed3aabbb989059cdf7391c8fa6,real,unidatapro-sample+whatsapp-like,video/sd,0.153,0.3456,16,16,True,,32.27
+clips/unidata_wa/video__2.mp4,689d0bef9c70f7971245fcfcd6fc0f7210e4fb126b972a517cc2e6fa75311350,real,unidatapro-sample+whatsapp-like,video/sd,0.1743,0.0619,16,16,True,,32.34
+clips/unidata_wa/video__3.mp4,6c87bafb42aae669d24d784b794886cae36d403992bec2fd07296bd4cf1df430,real,unidatapro-sample+whatsapp-like,video/sd,0.4438,0.45,16,16,False,the frames disagree with each other,33.3
+clips/unidata_wa/video__4.mp4,e61a8da3db7d0779da9945505addf82d57e12873b824b24125aa823b748e5ec7,real,unidatapro-sample+whatsapp-like,video/sd,0.4546,0.6089,16,16,False,the frames disagree with each other,32.01
+clips/unidata_wa/video__5.mp4,c19311a42f4e85ba3a4a6fb2d1246c24a48e95840536ec154727f3f298901616,real,unidatapro-sample+whatsapp-like,video/sd,0.4076,0.5145,16,16,False,the frames disagree with each other,31.48
+clips/unidata_wa/deepfake__1.mp4,ecca2446708fc50d580d2676986c8eb3b10f7fdf6c7c6eed7c9f93c3ad6c4108,fake,unidatapro-sample+whatsapp-like,video/sd,0.7665,0.5597,16,16,False,the frames disagree with each other,32.43
+clips/unidata_wa/deepfake__2.mp4,b4950415129f97d49d3909c8d1fcde6c1817d0d09a979f2e45578b797fbbd0a7,fake,unidatapro-sample+whatsapp-like,video/sd,0.8715,0.2819,16,16,True,,33.1
+clips/unidata_wa/deepfake__3.mp4,d891cb0d265abb861ae71ad9c7d12856e02bff922c8601a5257d45367d8f12ce,fake,unidatapro-sample+whatsapp-like,video/sd,0.9313,0.1028,16,16,True,,31.92
+clips/unidata_wa/deepfake__4.mp4,e6513209a0b579e2e1b3422a00df54c9c19b836f76b59ced41d7bc793b51d47b,fake,unidatapro-sample+whatsapp-like,video/sd,0.348,0.3895,16,16,True,,31.76
+clips/unidata_wa/deepfake__5.mp4,142b80b7f87801eed969b0f86940998fa73f6dcfd64ead8a7653a4d0473a4e75,fake,unidatapro-sample+whatsapp-like,video/sd,0.9479,0.1573,16,16,True,,32.36

@@ -1,0 +1,19 @@
+{
+ "model": "GenD_CLIP_L_14@891ce01",
+ "cells": {
+  "video/hd": {
+   "t_fpr5": 0.9235,
+   "t_fpr20": 0.4869,
+   "t_fpr1": null,
+   "n_real": 38,
+   "n_fake": 2
+  },
+  "video/sd": {
+   "t_fpr5": 0.971,
+   "t_fpr20": 0.7118,
+   "t_fpr1": null,
+   "n_real": 26,
+   "n_fake": 6
+  }
+ }
+}

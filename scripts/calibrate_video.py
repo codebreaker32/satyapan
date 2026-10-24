@@ -16,6 +16,7 @@ ever reach the threshold in use. t_fpr1 is only set with at least 100 usable rea
 """
 import argparse
 import csv
+import os
 import json
 import sys
 from collections import Counter, defaultdict
@@ -28,6 +29,17 @@ from forensics.video import MODEL_NAME, GenDVideoForensics, sha256_of  # noqa: E
 
 ROOT = Path(__file__).resolve().parent.parent
 MIN_REAL_FOR_CELL = 10      # fewer usable real clips than this -> the cell is not calibrated (detector abstains)
+
+
+def reason_category(reason: str) -> str:
+    """Group abstain reasons for the report ("face too small (about 36 px...)" -> "the face is too small to judge")."""
+    for key, label in (("too small", "the face is too small to judge (under 80 px)"),
+                       ("usable face was visible in only", "a usable face was visible in too few frames"),
+                       ("frames disagree", "the frames disagree with each other"),
+                       ("no face", "no face was found"), ("could not be read", "the video could not be read")):
+        if key in reason:
+            return label
+    return reason or "unknown"
 
 
 def auc(real: list[float], fake: list[float]) -> float | None:
@@ -44,7 +56,15 @@ def main() -> int:
     ap.add_argument("--out", type=Path, default=ROOT / "calibration" / "video.json")
     ap.add_argument("--runs", type=Path, default=ROOT / "calibration" / "video_runs.csv")
     ap.add_argument("--report", type=Path, default=ROOT / "calibration" / "video_report.md")
+    ap.add_argument("--from-runs", action="store_true", help="rebuild thresholds and report from --runs without re-scoring")
     a = ap.parse_args()
+    if a.from_runs:
+        runs = []
+        for r in csv.DictReader(a.runs.open()):
+            r["usable"] = r["usable"] == "True"
+            r["median"] = float(r["median"]) if r["median"] not in ("", "None") else None
+            runs.append(r)
+        return write_outputs(a, runs)
 
     rows = list(csv.DictReader(a.manifest.open()))
     bad = [r for r in rows if r.get("label") not in ("real", "fake")]
@@ -62,13 +82,17 @@ def main() -> int:
         gate_reason = det.gate(m) if p.is_file() else "the file was not found"
         usable = gate_reason is None and score is not None
         reason = gate_reason or ""
-        runs.append({"path": r["path"], "sha256": sha256_of(p) if p.is_file() else "", "label": r["label"],
+        runs.append({"path": os.path.relpath(p, ROOT) if p.is_absolute() else r["path"], "sha256": sha256_of(p) if p.is_file() else "", "label": r["label"],
                      "source": r.get("source", ""), "cell": cell, "median": score,
                      "spread": round(m["spread"], 4) if "spread" in m else None, "faces_scored": m.get("faces_scored"),
                      "frames_tried": m.get("frames_tried"), "usable": usable, "why_not": "" if usable else reason,
                      "seconds": (m.get("seconds") or {}).get("total") if isinstance(m.get("seconds"), dict) else m.get("seconds")})
         print(f"[{i}/{len(rows)}] {r['label']:4s} {cell:9s} median={runs[-1]['median']} usable={usable} {'' if usable else '(' + reason + ')'}")
 
+    return write_outputs(a, runs)
+
+
+def write_outputs(a, runs: list[dict]) -> int:
     a.runs.parent.mkdir(parents=True, exist_ok=True)
     with a.runs.open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(runs[0].keys()))
@@ -101,8 +125,9 @@ def main() -> int:
         A = auc(real, fake)
         f = lambda v: "-" if v is None else f"{v:.3f}"
         lines.append(f"| {cell} | {len(real)} | {len(fake)} | {abstained_fakes[cell]} | {f(t20)} | {f(t5)} | {f(t1)} | {f(c5)} | {f(c20)} | {f(A)} |")
-    why = Counter(r["why_not"] for r in runs if not r["usable"])
-    lines += ["", "## Clips not used for thresholds", ""] + ([f"- {k}: {v}" for k, v in why.most_common()] or ["- none"])
+    why = Counter(reason_category(r["why_not"]) for r in runs if not r["usable"])
+    lines += ["", "## Clips the detector declined to judge (not used for thresholds)", ""]
+    lines += [f"- {k}: {v}" for k, v in why.most_common()] or ["- none"]
     lines += ["", "With few real clips these thresholds are coarse; the counts above say how much to trust them."]
     cal.save(a.out)
     a.report.write_text("\n".join(lines) + "\n")
