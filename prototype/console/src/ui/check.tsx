@@ -253,10 +253,14 @@ function Segments({
   onHover: (l: Lit) => void
   onPick: (l: Lit) => void
 }) {
+  // The engine's offsets count code points (Python); a JS string slices UTF-16 units, so every emoji before a span
+  // shifted each mark and leader line one unit onto the wrong words. Slice by code point.
+  const cps = Array.from(text)
+  const cut = (a: number, b?: number) => cps.slice(a, b).join('')
   const parts: React.ReactNode[] = []
   let cursor = 0
   spans.forEach((s) => {
-    if (s.start > cursor) parts.push(text.slice(cursor, s.start))
+    if (s.start > cursor) parts.push(cut(cursor, s.start))
     const id = `span:${s.key}`
     parts.push(
       <mark
@@ -278,12 +282,12 @@ function Segments({
         }}
       >
         <Numbers numbers={numbersAt[id] ?? []} />
-        {text.slice(s.start, s.end)}
+        {cut(s.start, s.end)}
       </mark>,
     )
     cursor = s.end
   })
-  if (cursor < text.length) parts.push(text.slice(cursor))
+  if (cursor < cps.length) parts.push(cut(cursor))
   return <>{parts}</>
 }
 

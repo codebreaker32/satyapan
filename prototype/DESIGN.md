@@ -194,6 +194,20 @@ already keeps.
 - The shared `.grid-2` minimum is `min(360px, 100%)`: at 390 the content box is 358px, and the old 360px minimum
   pushed every two-column page 2px wider than the screen.
 
+## Truthful controls (25 Oct, overnight bug-hunt fixes)
+
+No new look; the same components say what the engine actually did.
+
+- The band on a capped AMBER (two independent checks agree, no money demand read) now says "Two independent checks
+  agree, and nothing here asked for money" and shows the engine's own sentence. The one-rule heading is kept for
+  the lone-hard-rule AMBER only. The engine marks the capped case with `verdict.no_money_cap`.
+- The co-sign panel appears whenever the engine says a release needs one (`inputs.release_needs_co_sign`), which
+  includes a case that was RED before a field was struck. Its lead sentence says which of the two it is.
+- The strike picker opens on the first field it lists, so the field struck is the one shown.
+- Highlighted spans slice the message by code point, so emoji before a span no longer shift marks and leader
+  lines onto other words (e2e-guarded: "spans: emoji before a span ...").
+- The Memory page's approve guard ignores letter case, matching the engine's two-person rule.
+
 ## Memorable moment
 
 Flip a byte of the signed evidence pack on the projector and watch Verify fail (`.verify-bad`, red), restore it

@@ -66,6 +66,7 @@ export interface Verdict {
   headline_hi: string
   anchor_rule: string | null
   second_family: string | null
+  no_money_cap?: boolean // two families agreed but no money demand was read, so AMBER and not RED
   explanation: string
   policy_version: string
   signals: Signal[]

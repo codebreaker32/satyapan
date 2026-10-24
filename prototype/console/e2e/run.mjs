@@ -172,6 +172,25 @@ try {
     fail('one byte changed inside the signed manifest makes verify return ok:false', 'manifest.case.flag.amount_inr not found in pack')
   }
 
+  // -- f1b. spans stay on their words when the message has emoji before them ----
+  // The engine counts code points; a JS slice counts UTF-16 units, so each emoji shifted every mark by one.
+  {
+    const post = (url, body) =>
+      fetch(`${base}${url}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then((r) => r.json())
+    const made = await post('/api/cases', { flag: { reason: 'e2e emoji spans', amount_inr: 50000, customer_ref: 'cust-demo' } })
+    const eid = made.case.id
+    await post(`/api/cases/${eid}/consent`, { check: true })
+    await post(`/api/cases/${eid}/text`, {
+      text: '🚨🚨 URGENT 🙏 This is the Enforcement Directorate. Transfer Rs 50,000 to account 50100248891776 IFSC SBIN0001234 now or face arrest.',
+    })
+    const ran = await post(`/api/cases/${eid}/run`, {})
+    const want = [ran.case.claim.issuer_span?.text, ran.case.claim.payee?.account?.span?.text].filter(Boolean)
+    await page.goto(`${base}/#/case/${eid}`)
+    await page.waitForSelector('mark.span', { timeout: WAIT })
+    const marks = await page.$$eval('mark.span', (els) => els.map((el) => el.lastChild?.textContent ?? el.textContent))
+    check(want.length === 2 && want.every((w) => marks.includes(w)), 'spans: emoji before a span do not shift its mark onto other words', JSON.stringify({ want, marks }))
+  }
+
   // -- f2. keyboard-only walk: tab order reaches actions, then features, then the card ----
   // DOM order is tab order here (every focusable is natural or tabIndex=0); real Tab presses, no synthetic focus.
   await page.goto(`${base}/#/case/${caseId}`)

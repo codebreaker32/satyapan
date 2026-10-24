@@ -271,6 +271,7 @@ class Verdict(BaseModel):
     policy_version: str
     signals: list[Signal]
     scores: Optional[dict] = None           # instruction %, deepfake %, combined % when media was judged
+    no_money_cap: bool = False              # two families agreed, but no money demand was read, so AMBER not RED
 
 
 # ---------- the case ----------

@@ -255,8 +255,13 @@ def _why_nothing_fired(claim: Claim) -> str:
     # elsewhere: no rule matched on the pair alone (each one needs more, or none covers that pair), and either the
     # bank had no record to check against or the records it could check found nothing.
     pair = "the authority and the instruction it read are not enough for a rule on their own"
-    if _bank_record_could_check(claim):
+    # The outbound log and the ledger always answer, so "found nothing wrong" is true of them. The name look-up may
+    # not hold the account at all (status UNKNOWN), and any account a judge types is one it does not hold, so for
+    # the account door the sentence says only what is true either way.
+    if claim.claimed_issuer == Issuer.BANK_SELF or claim.instruction == Instruction.RETURN_EXCESS_CREDIT:
         return pair + ", and the bank's own records found nothing wrong"
+    if _bank_record_could_check(claim):
+        return pair + ", and the bank's name look-up raised nothing about this account"
     return pair + ", and the bank has no record that could check it"
 
 
@@ -322,12 +327,12 @@ def _fuse_rules(claim: Claim, signals: list[Signal], names: dict[str, str], show
     neutral = not money_in_play(claim)
 
     def verdict(outcome: Outcome, explanation: str, anchor: str | None = None, second: str | None = None,
-                *, payment_neutral: bool = False) -> Verdict:
+                *, payment_neutral: bool = False, no_money_cap: bool = False) -> Verdict:
         en, hi = HEADLINES[outcome]
         if neutral or payment_neutral:
             en, hi = HEADLINES_NO_PAYMENT.get(outcome, (en, hi))
         return Verdict(outcome=outcome, headline_en=en, headline_hi=hi, anchor_rule=anchor, second_family=second,
-                       explanation=explanation, policy_version=POLICY_VERSION, signals=shown)
+                       explanation=explanation, policy_version=POLICY_VERSION, signals=shown, no_money_cap=no_money_cap)
 
     if match and not hard:
         return verdict(Outcome.MATCHES, "The message carries the bank's own signature and is in its outbound log. "
@@ -357,7 +362,8 @@ def _fuse_rules(claim: Claim, signals: list[Signal], names: dict[str, str], show
                         return verdict(Outcome.AMBER, f"{pair}. Nothing in this message asked for money, though: no "
                                        "instruction to pay and no payee account, IFSC or UPI ID were read out of it. "
                                        "Satyapan verifies the instruction, so with no instruction to verify this stops "
-                                       f"at “{stops_at}”.", anchor=h.rule_id, payment_neutral=True)
+                                       f"at “{stops_at}”.", anchor=h.rule_id, payment_neutral=True,
+                                       no_money_cap=True)   # the band must not say "one hard rule fired" here
                     return verdict(Outcome.RED, pair + ".", anchor=h.rule_id, second=s.rule_id)
         h = hard[0]
         if media_counts:

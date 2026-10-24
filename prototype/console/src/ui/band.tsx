@@ -108,7 +108,15 @@ export function VerdictBand({ view, titles }: Props) {
             </ul>
           </>
         )}
-        {!sc && v.outcome === 'AMBER' && anchor && (
+        {/* A capped AMBER: two independent checks agreed, but no money demand was read, so the engine stopped at
+            AMBER. The one-rule heading below was false here; the engine's own sentence says what happened. */}
+        {!sc && v.outcome === 'AMBER' && anchor && v.no_money_cap && (
+          <>
+            <h3>Two independent checks agree, and nothing here asked for money</h3>
+            <p>{humanise(v.explanation, titles)}</p>
+          </>
+        )}
+        {!sc && v.outcome === 'AMBER' && anchor && !v.no_money_cap && (
           <>
             <h3>One hard rule fired. One rule alone never gives RED.</h3>
             <ul>
