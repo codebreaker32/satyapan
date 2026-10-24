@@ -134,6 +134,10 @@ def contents_contradict_name(kind: str, head: bytes) -> bool:
     # audio into. So a WebM named as audio does not contradict its name.
     if sniffed == "video" and kind == "audio" and head.startswith(b"\x1a\x45\xdf\xa3"):
         return False
+    # The same holds for an MP4 container: Android voice recorders save .m4a with an "mp42" or "isom" brand rather
+    # than "M4A ", and a call recorder's .3gp is often sound only. An MP4 named as audio does not contradict its name.
+    if sniffed == "video" and kind == "audio" and head[4:8] == b"ftyp":
+        return False
     if sniffed is not None:
         return sniffed != kind
     return kind in SNIFFABLE_KINDS

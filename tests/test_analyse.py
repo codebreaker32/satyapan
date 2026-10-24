@@ -197,3 +197,18 @@ def test_live_replay_video_gets_no_face_verdict_and_keeps_the_voice_replay_rule(
     assert rs[0].kind == "video" and rs[0].status == "abstain" and rs[0].reason == REPLAY_FACE_REASON
     assert rs[0].cell == "video/live-replay" and rs[0].extra["sha256"]
     assert k.calls == [(".wav", "hi", "live-replay")]
+
+
+def test_a_sound_only_mp4_family_file_is_audio(tmp_path):
+    """A call recorder's .3gp, or an .mp4 holding only sound, used to get a face check that said it could not read
+    the video."""
+    import subprocess
+
+    import imageio_ffmpeg
+    call = tmp_path / "call.3gp"
+    subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "lavfi", "-i",
+                    "sine=frequency=300:duration=3", "-c:a", "aac", "-f", "3gp", str(call)], check=True)
+    assert kind_of(call) == "audio"
+    v, a = Fixed("video"), Fixed("audio")
+    assert [r.kind for r in analyse(call, video=v, audio=a)] == ["audio"] and not v.seen
+    assert kind_of(with_sound(tmp_path, "clip.mp4", "-c:a", "aac")) == "video"     # with a picture it is still video

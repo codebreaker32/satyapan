@@ -73,6 +73,7 @@ ALLOWED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp",                      # i
 ALLOWED_CONTENT_TYPES = {"image/png", "image/jpeg", "image/webp",
                          "audio/ogg", "audio/opus", "audio/mpeg", "audio/mp3", "audio/wav", "audio/x-wav",
                          "audio/mp4", "audio/x-m4a", "audio/m4a", "audio/webm", "audio/aac", "audio/x-aac",
+                         "audio/vnd.dlna.adts", "audio/x-hx-aac-adts",     # what Windows and macOS call .aac
                          "audio/amr", "audio/3gpp", "audio/flac", "audio/x-flac",
                          "video/mp4", "video/webm", "video/quicktime", "video/3gpp", "video/x-matroska",
                          "application/pdf", "text/plain"}

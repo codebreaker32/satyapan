@@ -39,8 +39,9 @@ def kind_of(path: Path) -> Optional[str]:
         head = path.read_bytes()[:16] if path.stat().st_size < 64 else path.open("rb").read(16)
     except OSError:
         return None
-    if head[4:8] == b"ftyp":                        # MP4 family: .m4a is audio, the rest video
-        return "audio" if ext in (".m4a", ".aac") or head[8:11] in (b"M4A", b"M4B") else "video"
+    if head[4:8] == b"ftyp":                        # MP4 family: .m4a is audio; the rest by their streams, because a
+        # call recorder's .3gp, or an .mp4 holding only sound, has no picture to face-check
+        return "audio" if ext in (".m4a", ".aac") or head[8:11] in (b"M4A", b"M4B") else _webm_kind(path, ext)
     if head[:4] == b"\x1a\x45\xdf\xa3":             # Matroska / WebM: a browser's voice recording is WebM too
         return _webm_kind(path, ext)
     if head[:4] == b"OggS" or head[:3] == b"ID3" or head[:4] in (b"RIFF", b"fLaC") or head[:6] == b"#!AMR\n":
@@ -53,7 +54,8 @@ def kind_of(path: Path) -> Optional[str]:
 
 
 def _webm_kind(path: Path, ext: str) -> str:
-    """WebM holds video or only sound; look at its streams (a cheap header read), else go by the extension."""
+    """WebM (and an MP4-family file) holds video or only sound; look at its streams (a cheap header read), else go by
+    the extension."""
     try:
         import av
         with av.open(str(path)) as container:

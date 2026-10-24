@@ -33,6 +33,9 @@ export function Check({ view, titles }: Props) {
 
   const spans = useMemo(() => (claim ? collectSpans(claim) : []), [claim])
   const { features, noted } = useMemo(() => sortSignals(view), [view])
+  // With judged media, a face or voice check that found no signs counts 0% in the combined score, so the heading
+  // says "never counted" only when that is true of every row under it.
+  const countedQuiet = noted.some((s) => s.family === 'F3' && s.detail?.status === 'clean' && !!view.case.verdict?.scores)
   const pairs = useMemo(
     () => features.flatMap((s) => targetsFor(s, spans).map((to) => ({ from: s.rule_id, to }))),
     [features, spans],
@@ -165,7 +168,7 @@ export function Check({ view, titles }: Props) {
         </div>
         {noted.length > 0 && (
           <div className="noted">
-            <h3>Also noted, never counted</h3>
+            <h3>{countedQuiet ? 'Also noted' : 'Also noted, never counted'}</h3>
             {noted.map((s) => (
               <div className="row" key={s.rule_id + s.evidence_key}>
                 {FAMILY_WORD[s.family]}: {s.reason_en.replace(/^Bank flag: /, '')}

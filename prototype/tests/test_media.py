@@ -130,3 +130,12 @@ def test_a_voice_note_with_no_speech_is_still_refused(tmp_path, monkeypatch):
     with pytest.raises(media.MediaUnreadable):
         media.ingest(note)
     assert not media.has_video_frames(note)
+
+
+def test_an_android_m4a_with_an_mp4_brand_is_a_voice_note():
+    """Android recorders write .m4a with an "mp42" or "isom" brand; the sniffer called that a video and refused it."""
+    from satyapan.media import contents_contradict_name
+    for brand in (b"mp42", b"isom", b"3gp4"):
+        head = b"\x00\x00\x00\x18ftyp" + brand + b"\x00\x00\x00\x00" + b"\x00" * 20
+        assert not contents_contradict_name("audio", head)
+        assert not contents_contradict_name("video", head)

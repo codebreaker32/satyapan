@@ -278,8 +278,11 @@ class DocumentForensics:
 class RemoteForensics:
     """Client for the satyapan-finale forensics service (`python -m forensics.service`, http://127.0.0.1:8765)."""
 
-    def __init__(self, url: str, timeout: float = 180.0):
+    def __init__(self, url: str, timeout: float = 900.0):
         self.url = url.rstrip("/")
+        # How long a check may take. A one-minute 1080p video takes about 2.5 minutes on this laptop's CPU and the
+        # upload cap allows longer clips; a shorter wait ended with "the forensics service is not running" while the
+        # service was still working, and a second request queued behind the first.
         self.timeout = timeout
         # Prefetch: forensics start when a file is uploaded (alongside speech-to-text), and run() picks up the result
         # by content hash, so the officer is not waiting for the face check after clicking Run.
@@ -290,16 +293,16 @@ class RemoteForensics:
                            "(non-commercial licence), calibrated per kind of input", "Model risk",
                            f"local service at {self.url}; abstains when unsure, uncalibrated or not running", mock=False)
 
-    def _call(self, method: str, route: str, body: Optional[dict] = None) -> dict:
+    def _call(self, method: str, route: str, body: Optional[dict] = None, timeout: Optional[float] = None) -> dict:
         import urllib.request
         data = json.dumps(body).encode() if body is not None else None
         req = urllib.request.Request(self.url + route, data=data, method=method, headers={"Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=self.timeout) as r:
+        with urllib.request.urlopen(req, timeout=timeout or self.timeout) as r:
             return json.load(r)
 
     def health(self) -> Optional[dict]:
         try:
-            return self._call("GET", "/health")
+            return self._call("GET", "/health", timeout=10)   # answered at once even while a check runs
         except Exception:  # noqa: BLE001 - any failure means "not running"
             return None
 
@@ -372,7 +375,11 @@ class RemoteForensics:
             body["kind"] = kind      # a browser voice recording is WebM: without this the service would face-check it
         try:
             out = self._call("POST", "/analyse", body)
-        except Exception:  # noqa: BLE001 - not running, timed out, or bad reply: abstain, never fail the case
+        except Exception as e:  # noqa: BLE001 - not running, timed out, or bad reply: abstain, never fail the case
+            if isinstance(e, TimeoutError) or isinstance(getattr(e, "reason", None), TimeoutError):
+                # still working on it, so not "not running"; and not retried, which would queue a second copy behind it
+                return [ForensicResult(kind=kind, status="abstain", model="none",
+                                       reason=f"the media checks did not finish within {int(self.timeout // 60)} minutes")]
             return [ForensicResult(kind=kind, status="abstain", reason="the forensics service is not running", model="none",
                                    extra={"unreachable": True})]
         results = []

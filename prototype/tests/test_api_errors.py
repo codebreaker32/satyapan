@@ -306,6 +306,7 @@ def test_a_phones_own_formats_are_accepted():
     for ext in (".mov", ".3gp", ".mkv", ".amr", ".aac", ".flac"):
         assert ext in api.ALLOWED_EXTENSIONS and ext in (AUDIO | VIDEO)
     assert {"video/quicktime", "video/3gpp", "audio/amr"} <= api.ALLOWED_CONTENT_TYPES
+    assert "audio/vnd.dlna.adts" in api.ALLOWED_CONTENT_TYPES     # what a Windows browser sends for .aac
 
 
 def test_the_detectors_measured_accuracy_is_served_as_written():

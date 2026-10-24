@@ -235,3 +235,17 @@ def test_a_voice_note_says_it_is_audio_and_never_gets_a_face_row(tmp_path):
         httpd.shutdown()
     assert bodies[0]["kind"] == "audio"
     assert [r.kind for r in rs] == ["audio"]
+
+
+def test_a_slow_check_is_not_called_a_dead_service_and_is_not_sent_twice(tmp_path):
+    """A long video once outlasted the wait: the case said "the forensics service is not running" while the service
+    was still working, and a second request queued behind the first."""
+    import time
+    bodies = []
+    httpd, url = serve(lambda body: (bodies.append(body), time.sleep(2.5), {"results": [VIDEO_FAKE]})[2])
+    try:
+        rs = RemoteForensics(url, timeout=1).analyse_all(video_file(tmp_path), "video")
+    finally:
+        httpd.shutdown()
+    assert len(bodies) == 1
+    assert rs[0].status == "abstain" and "did not finish" in rs[0].reason and "not running" not in rs[0].reason
