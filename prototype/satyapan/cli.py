@@ -221,8 +221,10 @@ def cmd_preflight(args) -> int:
         code = (get_json(base + "/api/meta").get("code") or {}).get("sha256")
         here = code_sha256()
         if code != here:
-            return False, (f"the server runs engine code {str(code)[:12]} and this checkout is {here[:12]}: it was "
-                           "started before the last change; restart it (scripts/stop_demo.sh, then scripts/demo_up.sh)")
+            running = (f"runs engine code {code[:12]} and this checkout is {here[:12]}" if code
+                       else "does not report its engine code, so it is older than this checkout")
+            return False, (f"the server {running}: it was started before the last change; restart it "
+                           "(scripts/stop_demo.sh, then scripts/demo_up.sh)")
         return True, f"/api/meta 200; rulebook sha matches local ({local.sha256[:12]}), and so does the engine code ({here[:12]})"
 
     def chk_forensics():
