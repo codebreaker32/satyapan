@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { api, type Evaluation as Result, type EvalRow } from '../lib/api'
+import { api, type Accuracy, type Evaluation as Result, type EvalRow } from '../lib/api'
 import { Trouble } from '../ui/trouble'
 
 // The labelled evaluation, exactly as `satyapan evaluate` wrote it (data/eval/results.json). Nothing is computed
@@ -88,6 +88,8 @@ export function Evaluation({ reload = 0 }: { reload?: number }) {
         </div>
       </section>
 
+      <DetectorAccuracy reload={reload} />
+
       <section className="section">
         <h2>By category</h2>
         <table className="table">
@@ -139,5 +141,114 @@ export function Evaluation({ reload = 0 }: { reload?: number }) {
         )}
       </section>
     </div>
+  )
+}
+
+const CELL_WORDS: Record<string, string> = {
+  'video/hd': 'HD video',
+  'video/sd': 'WhatsApp-size video',
+  'hi/clean': 'Hindi, clean recording',
+  'hi/whatsapp-opus': 'Hindi, WhatsApp voice note',
+  'hi/phone-8k': 'Hindi, phone call (8 kHz)',
+  'en/clean': 'English, clean recording',
+  'en/whatsapp-opus': 'English, WhatsApp voice note',
+  'en/phone-8k': 'English, phone call (8 kHz)',
+}
+
+const SOURCE_WORDS: Record<string, string> = {
+  itw: 'In-the-Wild (English)',
+  fleurs: 'Google FLEURS (Hindi)',
+  indicsynth: 'IndicSynth (Hindi clones)',
+  gramvaani: 'Gram Vaani (Hindi phone calls)',
+  'wikimedia-commons': 'Wikimedia Commons',
+  'unidatapro-sample': 'UniDataPro face-swap sample',
+}
+// "fleurs (simulated)" -> "Google FLEURS (Hindi), re-encoded"; "wikimedia-commons+whatsapp-like" -> "..., WhatsApp-size copies"
+function sourceWords(id: string): string {
+  const [base, how] = id.replace(' (simulated)', '+re-encoded').split('+')
+  const word = SOURCE_WORDS[base] ?? base
+  return how ? `${word}, ${how === 'whatsapp-like' ? 'WhatsApp-size copies' : 're-encoded'}` : word
+}
+
+// The face and voice checks' measured accuracy, exactly as scripts/accuracy_card.py wrote it from the calibration
+// runs: the outcomes are the ones the officer sees (flagged, unsure, no signs), false alarms are also counted on
+// genuine clips that did not set the threshold, and the failure cases are named. A judge's first question about a
+// detector is "how often is it wrong on real people"; the answer is on screen, with its sample sizes.
+function DetectorAccuracy({ reload }: { reload: number }) {
+  const [acc, setAcc] = useState<Accuracy | null>(null)
+  const [failed, setFailed] = useState(false)
+  useEffect(() => {
+    api
+      .accuracy()
+      .then((a) => {
+        setAcc(a)
+        setFailed(false)
+      })
+      .catch(() => setFailed(true))
+  }, [reload])
+  if (failed)
+    return (
+      <section className="section">
+        <h2>Face and voice checks</h2>
+        <p className="muted">The measured accuracy of the face and voice checks is not on this laptop (scripts/accuracy_card.py writes it).</p>
+      </section>
+    )
+  if (!acc) return null
+  return (
+    <section className="section">
+      <h2>Face and voice checks: measured accuracy</h2>
+      <p>
+        {acc._note} Face: {acc.models.face}. Voice: {acc.models.voice}. Made {acc.made}.
+      </p>
+      <table className="table">
+        <thead>
+          <tr>
+            <th>Check</th>
+            <th>Kind of input</th>
+            <th>Genuine clips judged</th>
+            <th>False alarms</th>
+            <th>False alarms, held out</th>
+            <th>Genuine unsure</th>
+            <th>Fakes judged</th>
+            <th>Caught</th>
+            <th>Unsure</th>
+            <th>Missed</th>
+            <th>Declined (genuine / fake)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {acc.cells.map((c) => (
+            <tr key={c.cell}>
+              <td>{c.check}</td>
+              <td>{CELL_WORDS[c.cell] ?? c.cell}</td>
+              <td>{c.genuine.judged}</td>
+              <td>{c.genuine.flagged}</td>
+              <td>{c.genuine.false_alarm_heldout_pct ?? '-'}%</td>
+              <td>{c.genuine.unsure}</td>
+              <td>{c.fake.judged}</td>
+              <td>{c.fake.flagged}</td>
+              <td>{c.fake.unsure}</td>
+              <td>{c.fake.no_signs}</td>
+              <td>
+                {c.genuine.declined} / {c.fake.declined}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="muted small">
+        Flagged counts in the score; unsure is not counted; declined means the check would not judge the clip (too short, face
+        too small, frames disagree). Sources:{' '}
+        {[...new Set(acc.cells.flatMap((c) => [...c.genuine.sources, ...c.fake.sources]).map(sourceWords))].join('; ')}.
+      </p>
+      <h3>Where it fails</h3>
+      <ul className="stack" style={{ gap: 4 }}>
+        {acc.failure_cases.map((f) => (
+          <li key={f.text}>
+            <b>{f.check}:</b> {f.text}
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }

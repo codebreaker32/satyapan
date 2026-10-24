@@ -1,0 +1,290 @@
+{
+ "_note": "Measured on public clips, never on customer data. We did not train or fine-tune either model; the thresholds were set on the genuine clips only. 'Held-out false alarms' counts genuine clips that did not help set the threshold (5-fold cross-validation). Fakes never set a threshold.",
+ "made": "2026-10-24",
+ "models": {
+  "face": "GenD_CLIP_L_14@891ce01",
+  "voice": "DF_Arena_500M_V_1@8258fa8"
+ },
+ "cells": [
+  {
+   "check": "face",
+   "cell": "video/hd",
+   "t_fpr5": 0.9235,
+   "t_fpr20": 0.4869,
+   "genuine": {
+    "n": 50,
+    "judged": 38,
+    "flagged": 1,
+    "unsure": 6,
+    "no_signs": 31,
+    "declined": 12,
+    "sources": [
+     "unidatapro-sample",
+     "wikimedia-commons"
+    ],
+    "false_alarm_heldout_pct": 2.9
+   },
+   "fake": {
+    "n": 2,
+    "judged": 2,
+    "flagged": 1,
+    "unsure": 1,
+    "no_signs": 0,
+    "declined": 0,
+    "sources": [
+     "unidatapro-sample"
+    ]
+   }
+  },
+  {
+   "check": "face",
+   "cell": "video/sd",
+   "t_fpr5": 0.971,
+   "t_fpr20": 0.7118,
+   "genuine": {
+    "n": 78,
+    "judged": 26,
+    "flagged": 1,
+    "unsure": 4,
+    "no_signs": 21,
+    "declined": 52,
+    "sources": [
+     "unidatapro-sample",
+     "unidatapro-sample+whatsapp-like",
+     "wikimedia-commons",
+     "wikimedia-commons+whatsapp-like"
+    ],
+    "false_alarm_heldout_pct": 4.0
+   },
+   "fake": {
+    "n": 8,
+    "judged": 6,
+    "flagged": 0,
+    "unsure": 5,
+    "no_signs": 1,
+    "declined": 2,
+    "sources": [
+     "unidatapro-sample",
+     "unidatapro-sample+whatsapp-like"
+    ]
+   }
+  },
+  {
+   "check": "voice",
+   "cell": "en/clean",
+   "t_fpr5": 0.999153,
+   "t_fpr20": 0.383323,
+   "genuine": {
+    "n": 150,
+    "judged": 92,
+    "flagged": 4,
+    "unsure": 14,
+    "no_signs": 74,
+    "declined": 58,
+    "sources": [
+     "itw"
+    ],
+    "false_alarm_heldout_pct": 4.0
+   },
+   "fake": {
+    "n": 150,
+    "judged": 98,
+    "flagged": 97,
+    "unsure": 0,
+    "no_signs": 1,
+    "declined": 52,
+    "sources": [
+     "itw"
+    ]
+   }
+  },
+  {
+   "check": "voice",
+   "cell": "en/phone-8k",
+   "t_fpr5": 0.999168,
+   "t_fpr20": 0.717665,
+   "genuine": {
+    "n": 150,
+    "judged": 89,
+    "flagged": 4,
+    "unsure": 13,
+    "no_signs": 72,
+    "declined": 61,
+    "sources": [
+     "itw (simulated)"
+    ],
+    "false_alarm_heldout_pct": 4.3
+   },
+   "fake": {
+    "n": 150,
+    "judged": 98,
+    "flagged": 96,
+    "unsure": 1,
+    "no_signs": 1,
+    "declined": 52,
+    "sources": [
+     "itw (simulated)"
+    ]
+   }
+  },
+  {
+   "check": "voice",
+   "cell": "en/whatsapp-opus",
+   "t_fpr5": 0.999543,
+   "t_fpr20": 0.963223,
+   "genuine": {
+    "n": 150,
+    "judged": 88,
+    "flagged": 4,
+    "unsure": 13,
+    "no_signs": 71,
+    "declined": 62,
+    "sources": [
+     "itw (simulated)"
+    ],
+    "false_alarm_heldout_pct": 4.2
+   },
+   "fake": {
+    "n": 150,
+    "judged": 98,
+    "flagged": 95,
+    "unsure": 2,
+    "no_signs": 1,
+    "declined": 52,
+    "sources": [
+     "itw (simulated)"
+    ]
+   }
+  },
+  {
+   "check": "voice",
+   "cell": "hi/clean",
+   "t_fpr5": 0.99964,
+   "t_fpr20": 0.990331,
+   "genuine": {
+    "n": 120,
+    "judged": 81,
+    "flagged": 4,
+    "unsure": 12,
+    "no_signs": 65,
+    "declined": 39,
+    "sources": [
+     "fleurs"
+    ],
+    "false_alarm_heldout_pct": 4.5
+   },
+   "fake": {
+    "n": 60,
+    "judged": 60,
+    "flagged": 57,
+    "unsure": 3,
+    "no_signs": 0,
+    "declined": 0,
+    "sources": [
+     "indicsynth"
+    ]
+   }
+  },
+  {
+   "check": "voice",
+   "cell": "hi/phone-8k",
+   "t_fpr5": 0.999913,
+   "t_fpr20": 0.99967,
+   "genuine": {
+    "n": 270,
+    "judged": 198,
+    "flagged": 9,
+    "unsure": 30,
+    "no_signs": 159,
+    "declined": 72,
+    "sources": [
+     "fleurs (simulated)",
+     "gramvaani"
+    ],
+    "false_alarm_heldout_pct": 4.3
+   },
+   "fake": {
+    "n": 60,
+    "judged": 60,
+    "flagged": 49,
+    "unsure": 9,
+    "no_signs": 2,
+    "declined": 0,
+    "sources": [
+     "indicsynth (simulated)"
+    ]
+   }
+  },
+  {
+   "check": "voice",
+   "cell": "hi/whatsapp-opus",
+   "t_fpr5": 0.999916,
+   "t_fpr20": 0.999404,
+   "genuine": {
+    "n": 120,
+    "judged": 69,
+    "flagged": 3,
+    "unsure": 10,
+    "no_signs": 56,
+    "declined": 51,
+    "sources": [
+     "fleurs (simulated)"
+    ],
+    "false_alarm_heldout_pct": 3.6
+   },
+   "fake": {
+    "n": 60,
+    "judged": 60,
+    "flagged": 52,
+    "unsure": 7,
+    "no_signs": 1,
+    "declined": 0,
+    "sources": [
+     "indicsynth (simulated)"
+    ]
+   }
+  }
+ ],
+ "failure_cases": [
+  {
+   "check": "face",
+   "text": "WhatsApp-size video (480 px or less): compression makes some genuine faces score like fakes, so the 5% false-alarm line sits at 0.97 and none of the 6 face swaps cleared it. On a WhatsApp forward the face check rarely flags; it says no signs or unsure."
+  },
+  {
+   "check": "face",
+   "text": "Real-world footage is often declined: 66 of 138 clips were not judged (frames disagree 24, face under 80 px 21, a usable face in too few frames 21). It says unsure rather than guess."
+  },
+  {
+   "check": "face",
+   "text": "Only 2 HD face swaps (one vendor sample), so the HD catch rate is an anecdote, not a measurement."
+  },
+  {
+   "check": "face",
+   "text": "Still images are not face-checked; they get the document check only."
+  },
+  {
+   "check": "face",
+   "text": "A video re-filmed with a camera pointed at a screen is not calibrated: the face check says unsure."
+  },
+  {
+   "check": "voice",
+   "text": "Less than 2 s of speech, or parts of a recording that disagree, and the voice check says unsure."
+  },
+  {
+   "check": "voice",
+   "text": "Voice conversion (FreeVC) is harder than text-to-speech (XTTS): on phone and WhatsApp-style Hindi audio it caught 20 and 23 of 31 FreeVC clones, against 29 of 29 XTTS clones."
+  },
+  {
+   "check": "voice",
+   "text": "A voice replayed through a speaker (recorded at the counter) hides traces of cloning: a clean result becomes unsure."
+  },
+  {
+   "check": "voice",
+   "text": "Genuine Hindi voices often score 0.99 or more on the raw model, so the Hindi lines sit at 0.9996 and above; a genuine video's sound track at 0.9986 landed in the grey band (unsure) in our live check."
+  },
+  {
+   "check": "both",
+   "text": "No public Indian scam-call audio or video exists to test on. Our fakes are lab-made (IndicSynth Hindi, In-the-Wild English celebrity speech, one face-swap vendor sample). Open detectors lose about half their accuracy on deepfakes circulated in 2024 (Deepfake-Eval-2024), so real-world catch rates may be lower."
+  }
+ ]
+}

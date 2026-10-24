@@ -416,6 +416,18 @@ def evaluation():
     return json.loads(EVAL_RESULTS.read_text(encoding="utf-8"))
 
 
+@app.get("/api/accuracy")
+def accuracy():
+    """The face and voice checks' measured accuracy, exactly as satyapan-finale/scripts/accuracy_card.py wrote it from
+    the calibration runs (calibration/accuracy.json): per kind of input, what genuine and fake clips got, false alarms
+    on genuine clips that did not set the threshold, and the named failure cases. Nothing is computed for the screen."""
+    from .forensics import TEAM_REPO
+    path = TEAM_REPO / "calibration" / "accuracy.json"
+    if not path.exists():
+        raise HTTPException(404, "No detector accuracy has been measured on this laptop. Run scripts/accuracy_card.py.")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 @app.post("/api/memory/propose")
 def propose(case_id: str = Body(...), analyst: str = Body(...), note: str = Body("")):
     case = get_case(case_id)

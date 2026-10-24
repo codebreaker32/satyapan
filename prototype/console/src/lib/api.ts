@@ -164,6 +164,25 @@ export interface Scenario {
   has_reencode_step: boolean
 }
 
+// The face and voice checks' measured accuracy (calibration/accuracy.json, written by scripts/accuracy_card.py)
+export interface AccuracyCounts {
+  n: number
+  judged: number
+  flagged: number
+  unsure: number
+  no_signs: number
+  declined: number
+  sources: string[]
+  false_alarm_heldout_pct?: number
+}
+export interface Accuracy {
+  _note: string
+  made: string
+  models: { face?: string; voice?: string }
+  cells: { check: 'face' | 'voice'; cell: string; t_fpr5: number; t_fpr20: number; genuine: AccuracyCounts; fake: AccuracyCounts }[]
+  failure_cases: { check: string; text: string }[]
+}
+
 export interface Label { name: string; production_source: string; owner: string; route: string; mock: boolean }
 
 export interface RuleMeta {
@@ -336,6 +355,7 @@ export const api = {
   demoReset: () => call<{ ok: boolean; cases_cleared: number }>('/demo/reset', { method: 'POST' }),
 
   evaluation: () => call<Evaluation>('/evaluation'),
+  accuracy: () => call<Accuracy>('/accuracy'),
   memory: () => call<{ entries: MemoryEntry[] }>('/memory'),
   propose: (caseId: string, analyst: string, note = '') =>
     call<MemoryEntry>('/memory/propose', json({ case_id: caseId, analyst, note })),

@@ -6,6 +6,7 @@ tests drive the real module-level app, so each one starts and ends with POST /ap
 """
 import glob
 import io
+import json
 import tempfile
 from pathlib import Path
 
@@ -305,3 +306,16 @@ def test_a_phones_own_formats_are_accepted():
     for ext in (".mov", ".3gp", ".mkv", ".amr", ".aac", ".flac"):
         assert ext in api.ALLOWED_EXTENSIONS and ext in (AUDIO | VIDEO)
     assert {"video/quicktime", "video/3gpp", "audio/amr"} <= api.ALLOWED_CONTENT_TYPES
+
+
+def test_the_detectors_measured_accuracy_is_served_as_written():
+    """The Evaluation page shows the face and voice checks' error rates from calibration/accuracy.json, unchanged."""
+    from satyapan.forensics import TEAM_REPO
+    path = TEAM_REPO / "calibration" / "accuracy.json"
+    if not path.exists():
+        pytest.skip("scripts/accuracy_card.py has not been run in this checkout")
+    r = TestClient(api.app).get("/api/accuracy")
+    assert r.status_code == 200 and r.json() == json.loads(path.read_text(encoding="utf-8"))
+    cells = {c["cell"]: c for c in r.json()["cells"]}
+    assert {"video/hd", "video/sd", "hi/whatsapp-opus"} <= set(cells)
+    assert all("false_alarm_heldout_pct" in c["genuine"] for c in cells.values())
