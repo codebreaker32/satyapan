@@ -44,6 +44,11 @@ class MediaUnreadable(Exception):
     """
 
 
+class NoSpeech(MediaUnreadable):
+    """The file opened, but no speech could be made out in it. A voice note is refused for this; a video is not,
+    because its picture is evidence on its own (the face check)."""
+
+
 def unreadable_message(name: str, kind: str) -> str:
     word = KIND_WORDS.get(kind, "media")
     return f"We could not read '{name}'. It is named like {word}, and nothing inside it opens as {word}. {CLAIM_ONLY_HINT}"
@@ -76,10 +81,21 @@ def kind_of(path: Path) -> str:
     if ext in IMAGE:
         return "image"
     if ext in VIDEO:
-        return "video"
+        # a browser's voice recording is often saved as .webm with no picture; it is a voice note, not a video
+        return "audio" if ext in (".webm", ".mkv") and _has_picture(path) is False else "video"
     if ext == ".pdf":
         return "pdf"
     return "text"
+
+
+def _has_picture(path: Path) -> Optional[bool]:
+    """Does the container hold a video stream? None when it cannot be opened (the name then decides)."""
+    try:
+        import av
+        with av.open(str(path)) as c:
+            return any(st.type == "video" for st in c.streams)
+    except Exception:  # noqa: BLE001
+        return None
 
 
 # Magic bytes, cheapest first. Every image, PDF and container format we accept carries a mandatory signature,
@@ -234,7 +250,7 @@ def transcribe(path: Path, language: str = "hi") -> tuple[str, str]:
     except Exception:  # noqa: BLE001 - let the speech model try the path itself; it refuses what we could not open
         audio = str(path)
     if not isinstance(audio, str) and len(audio) == 0:
-        raise MediaUnreadable(no_speech_message(path.name, near_silent=True))
+        raise NoSpeech(no_speech_message(path.name, near_silent=True))
     try:
         beam = int(os.environ.get("SATYAPAN_WHISPER_BEAM", "5"))   # 1 = greedy: about 2x faster on CPU, slightly less accurate
         segments, _ = model.transcribe(audio, language=language if language in ("hi", "en") else None, vad_filter=True,
@@ -243,7 +259,7 @@ def transcribe(path: Path, language: str = "hi") -> tuple[str, str]:
     except Exception as e:  # noqa: BLE001 - any decoder failure means the same thing to the officer
         raise MediaUnreadable(unreadable_message(path.name, kind_of(path))) from e
     if not text:
-        raise MediaUnreadable(no_speech_message(path.name, near_silent=_near_silent(audio)))
+        raise NoSpeech(no_speech_message(path.name, near_silent=_near_silent(audio)))
     return text, f"faster-whisper {model_name}"
 
 
@@ -317,6 +333,16 @@ def ocr(path: Path, language: str = "hi") -> tuple[str, str]:
         raise MediaUnreadable(unreadable_message(path.name, kind_of(path))) from e
 
 
+def _has_sound(path: Path) -> bool:
+    """Does the file hold an audio stream? True when PyAV cannot tell, so speech-to-text still gets to try."""
+    try:
+        import av
+        with av.open(str(path)) as c:
+            return any(st.type == "audio" for st in c.streams)
+    except Exception:  # noqa: BLE001 - unreadable here: let transcribe() refuse it with its own sentence
+        return True
+
+
 def ingest(path: Path, derived_text: Optional[str] = None, language: str = "hi") -> MediaRef:
     kind = kind_of(path)
     ref = MediaRef(filename=path.name, kind=kind, sha256=sha256_file(path), bytes=path.stat().st_size)
@@ -324,7 +350,18 @@ def ingest(path: Path, derived_text: Optional[str] = None, language: str = "hi")
         ref.perceptual_hash = perceptual_hash(path)
     if derived_text is not None:
         ref.derived_text = derived_text
-    elif kind in ("audio", "video"):
+    elif kind == "video":
+        # A video's picture is evidence by itself: a face swap with no clear speech, or no sound at all, must still
+        # reach the face check, so "no speech" here is an empty transcript, not a refusal. A video that will not open
+        # at all is still refused (MediaUnreadable from the decoder).
+        if not _has_sound(path):
+            ref.derived_text, ref.derived_text_engine = "", "no sound track (the picture is still checked)"
+        else:
+            try:
+                ref.derived_text, ref.derived_text_engine = transcribe(path, language)
+            except NoSpeech:
+                ref.derived_text, ref.derived_text_engine = "", "no speech made out (the picture is still checked)"
+    elif kind == "audio":
         ref.derived_text, ref.derived_text_engine = transcribe(path, language)
     elif kind in ("image", "pdf"):
         ref.derived_text, ref.derived_text_engine = ocr(path, language)

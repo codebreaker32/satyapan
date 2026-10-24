@@ -11,7 +11,9 @@ For Aman and Bhawna. What works, what was measured, how to run it, and what is l
   Abstains with a plain reason when it cannot judge (no face, small face, too few frames, frames disagree, grey band,
   no calibration). Calibrated for HD and WhatsApp-size video (`calibration/video.json`).
 - **Voice check**: DF Arena 500M, installed on this laptop and loading offline. Calibrated per language and channel:
-  Hindi and English, each for clean, WhatsApp-style (Opus) and 8 kHz phone audio (cells in `calibration/audio.json`).
+  Hindi and English, each for clean, WhatsApp-style (Opus), the AAC sound of a phone or WhatsApp video, and 8 kHz phone
+  audio (cells in `calibration/audio.json`). The phone line is set on 474 real Gram Vaani calls only (24 Oct, after the
+  smoke test below).
   It checks voice notes and the sound track of videos, and abstains with a plain reason (under 2 s of speech, parts
   of the recording disagree, grey band, no calibration).
 - **Speech-to-text**: Whisper large-v3-turbo, local, greedy decoding (declared in `MODELS.md`).
@@ -54,7 +56,9 @@ For Aman and Bhawna. What works, what was measured, how to run it, and what is l
 | Face check, declined to judge | 66 of 138 clips (frames disagree, small face, few faces) | same |
 | Voice check, Hindi clean | at the 5% line: 4 of 81 real voices flagged, 57 of 60 fakes caught | `calibration/audio_report.md` |
 | Voice check, Hindi WhatsApp-style (simulated) | 3 of 69 real flagged, 52 of 60 fakes caught | same |
-| Voice check, Hindi phone 8 kHz (Gram Vaani real calls + simulated) | 9 of 198 real flagged, 49 of 60 fakes caught | same |
+| Voice check, Hindi phone 8 kHz (474 real Gram Vaani calls) | 23 of 474 real flagged, 39 of 60 fakes caught (simulated phone) | same |
+| Voice check, Hindi AAC video sound (simulated) | 3 of 77 real flagged, 54 of 60 fakes caught | same |
+| Voice check, unseen genuine voices (smoke test) | real phone calls 10 of 200 (5.0%) called fake, 2 of them "high"; FLEURS test split 7 of 600 versions (1.2%) | `calibration/smoke_genuine.md` |
 | Voice check, English, all channels (In-the-Wild) | 13 of 269 real flagged, 289 of 294 fakes caught | same |
 | Voice check, by kind of fake (Hindi) | XTTS-v2 clones 87 of 87 caught; FreeVC conversions 70 of 93 | same |
 | Whisper turbo, Hindi | about 33% word errors; about 2x real time on CPU | `calibration/whisper_eval_fast.md` |

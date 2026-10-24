@@ -82,3 +82,60 @@ def test_no_stt_installed_raises_with_install_hint(tmp_path):
     path.write_bytes(b"\x00fake media bytes\x00")
     with pytest.raises(RuntimeError, match=r"satyapan\[stt\]"):
         ingest(path)
+
+
+def _video(tmp_path, name, with_sound):
+    cv2 = pytest.importorskip("cv2")
+    np = pytest.importorskip("numpy")
+    imageio_ffmpeg = pytest.importorskip("imageio_ffmpeg")
+    import subprocess
+    silent = tmp_path / f"silent_{name}"
+    vw = cv2.VideoWriter(str(silent), cv2.VideoWriter_fourcc(*"mp4v"), 25, (160, 120))
+    for i in range(50):
+        vw.write(np.full((120, 160, 3), i * 5 % 255, np.uint8))
+    vw.release()
+    if not with_sound:
+        return silent
+    out = tmp_path / name
+    subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), "-y", "-loglevel", "error", "-i", str(silent), "-f", "lavfi", "-i",
+                    "sine=frequency=300:duration=2", "-shortest", "-c:v", "copy", "-c:a", "aac", str(out)], check=True)
+    return out
+
+
+def test_a_video_with_no_speech_is_accepted_so_its_face_is_still_checked(tmp_path, monkeypatch):
+    """A face swap with no clear speech used to be refused at upload, so the face check never ran on it."""
+    _install_fake_whisper(monkeypatch, [" ", ""])
+    ref = ingest(_video(tmp_path, "swap.mp4", with_sound=True))
+    assert ref.kind == "video" and ref.derived_text == "" and "picture is still checked" in ref.derived_text_engine
+
+
+def test_a_video_with_no_sound_track_is_accepted(tmp_path, monkeypatch):
+    _install_fake_whisper(monkeypatch, ["must not be consulted"])
+    ref = ingest(_video(tmp_path, "mute.mp4", with_sound=False))
+    assert ref.kind == "video" and ref.derived_text == "" and ref.derived_text_engine.startswith("no sound track")
+
+
+def test_a_voice_note_with_no_speech_is_still_refused(tmp_path, monkeypatch):
+    _install_fake_whisper(monkeypatch, [" ", ""])
+    path = tmp_path / "note.ogg"
+    path.write_bytes(b"\x00fake media bytes\x00")
+    with pytest.raises(MediaUnreadable, match=r"No words could be made out"):
+        ingest(path)
+
+
+def test_a_webm_with_no_picture_is_a_voice_note(tmp_path):
+    av = pytest.importorskip("av")
+    np = pytest.importorskip("numpy")
+    from satyapan.media import kind_of
+    p = tmp_path / "voice.webm"
+    with av.open(str(p), "w", format="webm") as c:
+        s = c.add_stream("libopus", rate=48000, layout="mono")
+        f = av.AudioFrame.from_ndarray((0.1 * np.sin(np.arange(48000) / 8)).astype(np.float32).reshape(1, -1),
+                                       format="flt", layout="mono")
+        f.sample_rate = 48000
+        for pkt in s.encode(f):
+            c.mux(pkt)
+        for pkt in s.encode(None):
+            c.mux(pkt)
+    assert kind_of(p) == "audio"
+    assert kind_of(_video(tmp_path, "v.mp4", with_sound=False)) == "video"
