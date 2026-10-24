@@ -1142,10 +1142,20 @@ def _sentence_start(text: str, at: int) -> int:
     return max((text.rfind(c, 0, at) for c in _SENTENCE_ENDS), default=-1) + 1
 
 
+# A warning that describes someone else's demand as a condition: "If someone asks you to pay Rs 50,000 to this
+# account to avoid arrest, it is a scam", "agar koi aapse paise bhejne ko kahe". An awareness SMS from the police
+# reads exactly like that, and it read as the police demanding a payment (AMBER). Only an unnamed third party after
+# the conditional counts: "If you want to avoid arrest, transfer ..." is the message's own demand and still reads.
+RE_CONDITIONAL_DEMAND = re.compile(
+    r"\b(?:if|whenever|in\s+case|agar|yadi|jab\s+bhi)\s+(?:someone|anyone|anybody|somebody|a\s+caller|a\s+person"
+    r"|any\s+(?:caller|person|officer)|koi|koi\s+bhi|they)\b|(?:अगर|यदि|जब\s+भी)\s+कोई", re.I)
+
+
 def _not_this_message_asking(text: str, m: re.Match) -> bool:
-    """Is this instruction match inside a clause that negates it, or reports somebody else's demand?"""
+    """Is this instruction match inside a clause that negates it, reports somebody else's demand, or puts it as a
+    condition about a third party?"""
     before = text[_sentence_start(text, m.start()):m.start()]
-    return bool(RE_NEGATION.search(before) or RE_REPORTED_DEMAND.search(before))
+    return bool(RE_NEGATION.search(before) or RE_REPORTED_DEMAND.search(before) or RE_CONDITIONAL_DEMAND.search(before))
 
 
 # ---------------------------------------------------------------- "you are under digital arrest" (24 Oct)

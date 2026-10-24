@@ -61,3 +61,28 @@ def test_place_named_and_masthead_authority_is_anchored(engine, text, issuer):
 @pytest.mark.parametrize("text", BENIGN_PAY)
 def test_everyday_pay_sentences_stay_grey(engine, text):
     assert run_text(engine, text).verdict.outcome is Outcome.GREY
+
+
+AWARENESS = [
+    "RBI: Never share your OTP or PIN. RBI never asks anyone to transfer money to any account.",
+    "Delhi Police: Beware of digital arrest calls. Police never ask you to transfer money to any account.",
+    "CBI: There is no such thing as digital arrest. Do not pay anyone who calls claiming to be from CBI.",
+    "Mumbai Police: If someone asks you to pay Rs 50,000 to this account 123456789012 to avoid arrest, it is a scam. "
+    "Call 1930.",
+    "Delhi Police here. If anyone asks you to transfer money to account 123456789012, report it.",
+    "दिल्ली पुलिस: डिजिटल अरेस्ट जैसा कुछ नहीं होता। किसी के कहने पर पैसे न भेजें।",
+]
+
+
+@pytest.mark.parametrize("text", AWARENESS)
+def test_an_authority_awareness_message_is_not_a_demand(engine, text):
+    """The masthead anchor and the pay verbs must not turn a police or RBI warning into the body demanding money; a
+    demand put as a condition about someone else ("If someone asks you to pay ...") is not this message asking."""
+    case = run_text(engine, text)
+    assert case.claim.instruction is Instruction.NONE
+    assert case.verdict.outcome is Outcome.GREY
+
+
+def test_the_messages_own_conditional_demand_still_reads(engine):
+    case = run_text(engine, "CBI: If you want to avoid arrest, transfer Rs 50,000 to account 123456789012 today.")
+    assert case.claim.instruction is Instruction.TRANSFER_TO_ACCOUNT and case.verdict.outcome is Outcome.AMBER
