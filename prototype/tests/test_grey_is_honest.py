@@ -224,7 +224,7 @@ def test_quiet_media_checks_are_named_by_what_they_did_never_by_a_finding_title(
     v = fuse(_claim(claimed_issuer=Issuer.RBI), signals)
     assert v.outcome == Outcome.GREY
     assert "Signs of face manipulation" not in v.explanation and "Signs of synthetic speech" not in v.explanation
-    assert "Media checks: the face check found no signs and the voice check abstained; they only corroborate." in v.explanation
+    assert "Media checks: the face check found no signs and the voice check abstained." in v.explanation
     assert NEVER_SAFE in v.explanation
 
 

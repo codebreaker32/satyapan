@@ -31,16 +31,18 @@ SCAM = ("Main ED adhikari bol raha hoon. Aap digital arrest mein hain. Aaj hi 38
 BENIGN = "Namaste, kal shaam paanch baje milte hain. Dhanyavaad."
 
 
-def make_short_and_silent(tmp: Path) -> tuple[Path, Path]:
+def make_short_and_silent(tmp: Path) -> tuple[Path, Path, Path]:
     import imageio_ffmpeg
     ff = imageio_ffmpeg.get_ffmpeg_exe()
-    short, silent = tmp / "short_1s.ogg", tmp / "silent_6s.ogg"
+    short, silent, weba = tmp / "short_1s.ogg", tmp / "silent_6s.ogg", tmp / "recording.weba"
     src = C / "audio" / "real_opus" / "real_000.ogg"
     if src.exists():
         subprocess.run([ff, "-y", "-loglevel", "error", "-i", str(src), "-t", "1", "-c:a", "libopus", "-b:a", "16k", str(short)], check=True)
+        # what the console's Record voice button saves: Opus in a WebM container, named .weba
+        subprocess.run([ff, "-y", "-loglevel", "error", "-i", str(src), "-c:a", "libopus", "-b:a", "32k", "-f", "webm", str(weba)], check=True)
     subprocess.run([ff, "-y", "-loglevel", "error", "-f", "lavfi", "-i", "anullsrc=r=16000:cl=mono", "-t", "6", "-c:a", "libopus",
                     "-b:a", "16k", str(silent)], check=True)
-    return short, silent
+    return short, silent, weba
 
 
 def media_line(sigs: list, rule: str) -> dict:
@@ -52,13 +54,13 @@ def media_line(sigs: list, rule: str) -> dict:
             "text": s.get("reason_en", "")[:90]}
 
 
-def run_case(base: str, path: Path, text, language: str) -> dict:
+def run_case(base: str, path: Path, text, language: str, channel=None) -> dict:
     case = call(base, "POST", "/api/cases", {"flag": {"reason": "pipeline check: large transfer to a first-time payee",
                                                       "amount_inr": 3800000, "customer_ref": "cust-demo"}})
     cid = case["case"]["id"]
     call(base, "POST", f"/api/cases/{cid}/consent", {"check": True, "report": False, "memory": False, "lang": "hi"})
     t0 = time.perf_counter()
-    form = {"language": language} | ({"derived_text": text} if text else {})
+    form = {"language": language} | ({"derived_text": text} if text else {}) | ({"channel": channel} if channel else {})
     try:
         call(base, "POST", f"/api/cases/{cid}/media", form, files={"file": path})
     except urllib.error.HTTPError as e:
@@ -81,10 +83,10 @@ def main() -> int:
     a = ap.parse_args()
     base = a.server.rstrip("/")
     tmp = Path(tempfile.mkdtemp())
-    short, silent = make_short_and_silent(tmp)
+    short, silent, weba = make_short_and_silent(tmp)
     fake_v = C / "audio" / "fake_opus" / "fake_000.ogg"
     real_v = C / "audio" / "real_opus" / "real_000.ogg"
-    # (name, file, message text or None for speech-to-text, language, check)
+    # (name, file, message text or None for speech-to-text, language, check[, channel])
     cases = [
         ("voice: cloned Hindi note, Whisper reads it", fake_v, None, "hi",
          lambda r: r["voice"]["status"] in ("synthetic", "abstain") and r["read_by"] and r["read_by"].startswith("faster-whisper")),
@@ -98,6 +100,8 @@ def main() -> int:
          lambda r: r["voice"]["status"] == "abstain"),
         ("voice: silent clip is refused with a sentence", silent, None, "hi",
          lambda r: r["http"] == 415),
+        ("voice: browser recording (.weba, live-replay) gets a voice check and no face check", weba, BENIGN, "hi",
+         lambda r: r["face"]["status"] == "-" and r["voice"]["status"] in ("abstain", "synthetic", "clean"), "live-replay"),
         ("video: face swap (HD) + ED scam text", C / "demo" / "officer_faceswap.mp4", SCAM, "hi",
          lambda r: r["verdict"] == "RED" and r["face"]["status"] == "synthetic"),
         ("video: genuine HD video, Whisper reads it", C / "unidata" / "video" / "1.mp4", None, "hi",
@@ -106,16 +110,18 @@ def main() -> int:
          lambda r: r["face"].get("cell") == "video/sd" and r["verdict"] == "RED"),
         ("video: genuine WhatsApp-size video", C / "commons_wa" / "c003.mp4", BENIGN, "hi",
          lambda r: r["face"]["status"] != "synthetic"),
+        ("video: re-filmed at the counter (live-replay): the face check says unsure", C / "demo" / "officer_faceswap.mp4", SCAM, "hi",
+         lambda r: r["face"]["status"] == "abstain" and r["face"].get("cell") == "video/live-replay", "live-replay"),
     ]
     rows, failed = [], 0
-    for name, path, text, lang, ok in cases:
+    for name, path, text, lang, ok, *chan in cases:
         if a.only and a.only not in name:
             continue
         if not path.exists():
             rows.append((name, "SKIP", f"missing {path.relative_to(ROOT) if path.is_relative_to(ROOT) else path}"))
             continue
         try:
-            r = run_case(base, path, text, lang)
+            r = run_case(base, path, text, lang, *chan)
             passed = bool(ok(r))
         except Exception as e:  # noqa: BLE001 - one broken case must not hide the rest
             r, passed = {"error": f"{type(e).__name__}: {e}"}, False

@@ -142,3 +142,16 @@ def test_preflight_forensics_ready_passes(capsys):
                                                              "audio": {"installed": False}}}}}
     line = _forensics_line(ok, capsys)
     assert line.startswith("PASS") and "video/sd" in line and "not installed yet" in line
+
+
+def test_preflight_fails_when_the_voice_model_did_not_load(capsys):
+    """A missing download once looked 'installed' here while every voice note abstained with a reason that blamed
+    the customer's file."""
+    video = {"model": "GenD", "calibrated_cells": ["video/sd"]}
+    broken = {"forensics": {"service": {"route": "x", "health": {"ok": True, "video": video, "audio": {
+        "installed": True, "loaded": False, "error": "OSError: no snapshot"}}}}}
+    line = _forensics_line(broken, capsys)
+    assert line.startswith("FAIL") and "did not load" in line and "fetch_models.sh" in line
+    ready = {"forensics": {"service": {"route": "x", "health": {"ok": True, "video": video, "audio": {
+        "installed": True, "loaded": True, "error": None}}}}}
+    assert "voice detector loaded" in _forensics_line(ready, capsys)

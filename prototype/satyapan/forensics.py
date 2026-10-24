@@ -48,8 +48,8 @@ class AudioForensics(Protocol):
 
 
 class NullAudioForensics:
-    label = Label("Audio forensics", "AASIST-L anti-spoofing (CPU), calibrated per language × codec", "Model risk",
-                  "in-process model; abstains when no calibrated detector is loaded", mock=False)
+    label = Label("Audio forensics", "No voice detector loaded in this process", "Model risk",
+                  "abstains here; when the local forensics service runs, voice notes are checked there", mock=False)
 
     def analyse(self, path: Path, language: str = "hi") -> ForensicResult:
         return ForensicResult(kind="audio", status="abstain", reason="no calibrated audio detector loaded", model="none")
@@ -78,7 +78,8 @@ class AASISTAudioForensics:
     where the model did run, its score, so the officer sees a real model ran and why it said nothing.
 
     What the calibration measures is false alarms on real speech re-encoded through each channel. How often the model
-    catches a modern Indian-language voice clone is not measured here, which is why F3 stays corroboration only.
+    catches a modern Indian-language voice clone is not measured here, which is why it counts only through these
+    calibrated bands.
     """
     label = Label("Audio forensics", "AASIST-L (clovaai/aasist, MIT) on CPU", "Model risk", "in-process model with per-cell calibration", mock=False)
     WINDOW = 64600  # ~4 s at 16 kHz, as in the AASIST recipe; the score is the mean over windows
@@ -183,13 +184,18 @@ def default_audio_forensics():
     SATYAPAN_AUDIO picks one: "dfarena" (the default when the team repository and its calibration are present),
     "aasist", or "none". The test suite pins "aasist" so its results do not depend on a 1.7 GB download."""
     choice = os.environ.get("SATYAPAN_AUDIO", "").lower()
+    if choice == "none":
+        return NullAudioForensics()
+    # Both real detectors need torch. Without it (the engine's own environment on the demo laptop, where the voice check
+    # runs in the forensics service instead) the label must not name a model that cannot run in this process.
+    import importlib.util
+    if importlib.util.find_spec("torch") is None:
+        return NullAudioForensics()
     if choice in ("", "dfarena") and (TEAM_REPO / "calibration" / "audio.json").exists():
         try:
             return DFArenaAudioForensics(TEAM_REPO)
         except Exception:  # noqa: BLE001 - a broken checkout falls back to AASIST-L, never a crash
             pass
-    if choice == "none":
-        return NullAudioForensics()
     ckpt = AASIST_DIR / "models" / "weights" / "AASIST-L.pth"
     if not (ckpt.exists() and AASIST_CALIBRATION.exists()):
         return NullAudioForensics()
@@ -280,8 +286,8 @@ class RemoteForensics:
         import threading
         self._lock = threading.Lock()
         self._pending: dict = {}
-        self.label = Label("Video and audio forensics", "GenD CLIP-L/14 face check (MIT) and an audio deepfake check, "
-                           "calibrated per kind of input", "Model risk",
+        self.label = Label("Video and audio forensics", "GenD CLIP-L/14 face check (MIT) and DF Arena 500M voice check "
+                           "(non-commercial licence), calibrated per kind of input", "Model risk",
                            f"local service at {self.url}; abstains when unsure, uncalibrated or not running", mock=False)
 
     def _call(self, method: str, route: str, body: Optional[dict] = None) -> dict:
@@ -362,6 +368,8 @@ class RemoteForensics:
         body = {"path": str(Path(path).resolve()), "language": language if language in ("hi", "en") else "hi"}
         if channel:
             body["channel"] = channel
+        if kind in ("audio", "video"):
+            body["kind"] = kind      # a browser voice recording is WebM: without this the service would face-check it
         try:
             out = self._call("POST", "/analyse", body)
         except Exception:  # noqa: BLE001 - not running, timed out, or bad reply: abstain, never fail the case
@@ -371,6 +379,8 @@ class RemoteForensics:
         for d in out.get("results", []):
             if d.get("status") not in ("synthetic", "clean", "abstain") or d.get("kind") not in ("audio", "video"):
                 continue
+            if kind == "audio" and d.get("kind") == "video":
+                continue             # a voice note has no face to check, whatever an older service answered
             results.append(ForensicResult(kind=d["kind"], status=d["status"], band=d.get("band", ""), score=d.get("score"),
                                           reason=d.get("reason", ""), model=d.get("model", ""), cell=d.get("cell", ""),
                                           extra={"sha256": (d.get("extra") or {}).get("sha256"), "service_seconds": out.get("seconds")}))
@@ -421,14 +431,14 @@ def to_signal(book, res: ForensicResult):
     check_en = CHECK_EN.get(res.kind, "Media check")
     check_hi = CHECK_HI.get(res.kind, "मीडिया की जाँच")
     if res.status == "clean":
-        reason_en = f"{check_en}{tag}: no signs found. This only corroborates; it does not confirm the media."
-        reason_hi = f"{check_hi}{tag}: कोई संकेत नहीं मिला। यह सिर्फ़ सहायक जानकारी है।"
+        reason_en = f"{check_en}{tag}: no signs found. That does not confirm the media is genuine."
+        reason_hi = f"{check_hi}{tag}: कोई संकेत नहीं मिला। इससे यह पक्का नहीं होता कि मीडिया असली है।"
     else:
         reason_en = f"{check_en}{tag}: unsure: {res.reason or 'it could not judge this file'}."
         reason_hi = f"{check_hi}{tag}: अनिश्चित।"
     return Signal(rule_id=rule_id, family=Family.F3, severity=Severity.ABSTAIN if res.status == "abstain" else Severity.INFO,
                   evidence_key=f"media:{res.kind}", reason_en=reason_en,
-                  reason_hi=reason_hi, citation="corroboration only", citation_verified=True,
+                  reason_hi=reason_hi, citation="media check; counts in the combined score only when it can judge the media", citation_verified=True,
                   rule_version="forensics-1.0",
                   detail={"can_be_second": False, "status": res.status, "score": res.score, "model": res.model, "cell": res.cell, "simulated": res.simulated,
                           "deepfake_pct": deepfake_pct(res)})

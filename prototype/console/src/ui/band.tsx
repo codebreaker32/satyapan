@@ -56,7 +56,11 @@ export function VerdictBand({ view, titles }: Props) {
               </li>
               <li>
                 <b>Deepfake check</b>
-                <span>{sc.deepfake_pct}%</span>
+                <span>
+                  {sc.deepfake_pct}%
+                  {/* a scripted rehearsal result must never read as a live detector, here least of all */}
+                  {sc.deepfake_simulated && <span className="tag tag-sim">Simulated</span>}
+                </span>
               </li>
               <li>
                 <b>Combined</b>

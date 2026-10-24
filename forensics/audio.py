@@ -56,6 +56,12 @@ def model_name(size: str) -> str:
 Scorer = Callable[[list[np.ndarray]], list[float]]            # 16 kHz windows -> P(spoof) each
 
 
+class VoiceModelUnavailable(RuntimeError):
+    """DF Arena could not be loaded (files missing from the cache, torch missing, out of memory). Kept apart from a
+    file that cannot be decoded, so the officer is never told the customer's recording is unreadable when it is the
+    model that is missing."""
+
+
 @dataclass
 class AudioSettings:
     max_windows: int = 3          # windows to score (3 x 4.04 s ~ 12 s; about 7 s of CPU with the 500M model)
@@ -235,7 +241,11 @@ class DFArenaAudioForensics:
         if m["speech_s"] >= st.min_speech_s:
             windows = speech_windows(wav, mask, st)
             t1 = time.perf_counter()
-            scores = self.scorer(windows)
+            try:
+                scorer = self.scorer                    # loads DF Arena on first use
+            except Exception as e:  # noqa: BLE001 - any load failure means the same thing to the officer
+                raise VoiceModelUnavailable(type(e).__name__) from e
+            scores = scorer(windows)
             m["window_scores"] = [round(s, 4) for s in scores]
             m["median"] = float(statistics.median(scores))
             m["range"] = float(max(scores) - min(scores))
@@ -280,17 +290,30 @@ class DFArenaAudioForensics:
             status, reason = "abstain", "the voice was replayed through a speaker, which can hide signs of cloning"
         return status, band, reason, m["median"], cell
 
+    def _abstain(self, path: Path, reason: str) -> ForensicResult:
+        return ForensicResult(kind="audio", status="abstain", reason=reason, model=self.model_name,
+                              extra={"sha256": sha256_of(path)})
+
     def analyse(self, path: Path | str, language: str = "hi", channel: Optional[str] = None) -> ForensicResult:
         """`channel` overrides how the audio is taken to have arrived; pass "live-replay" for a recording made by
         playing a phone's speaker into a microphone, which hides a clone's traces and has its own thresholds."""
         path = Path(path)
         if not path.is_file():
             return ForensicResult(kind="audio", status="abstain", reason="the file was not found", model=self.model_name)
+        # A detector must never crash the case; it abstains instead, and the reason names what failed: the recording
+        # (it could not be decoded), the model (not available), or the check itself.
+        t0 = time.perf_counter()
         try:
-            m = self.measure(path)
-        except Exception as e:                       # a detector must never crash the case; it abstains instead
-            return ForensicResult(kind="audio", status="abstain", reason=f"the audio could not be read ({type(e).__name__})",
-                                  model=self.model_name, extra={"sha256": sha256_of(path)})
+            wav, rate, codec = decode_audio(path)
+        except Exception as e:  # noqa: BLE001
+            return self._abstain(path, f"the audio could not be read ({type(e).__name__})")
+        try:
+            m = self.measure_wave(wav, rate, codec)
+        except VoiceModelUnavailable as e:
+            return self._abstain(path, f"the voice model is not available ({e})")
+        except Exception as e:  # noqa: BLE001
+            return self._abstain(path, f"the voice check failed ({type(e).__name__})")
+        m["decode_s"] = round(time.perf_counter() - t0, 2) - sum((m.get("seconds") or {}).values())
         status, band, reason, score, cell = self.decide(m, language, channel)
         extra = dict(m)
         extra["sha256"] = sha256_of(path)

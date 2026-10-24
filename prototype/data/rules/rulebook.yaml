@@ -442,17 +442,17 @@ rules:
     sign_off: [infosec]
     test: tests/test_rules.py::test_own_signature_matches
 
-  # ---------------- F3: media forensics (corroborate only) ----------------
+  # ---------------- F3: media forensics (counts half in the combined score when it can judge the media) ----------------
   - id: R-AUDIO-SYNTH
     family: F3
     severity: soft
     title: Signs of synthetic speech
-    reason_en: "This voice shows signs of being computer-generated ({band}). This is supporting information only."
-    reason_hi: "इस आवाज़ में कंप्यूटर से बनी होने के संकेत मिले हैं ({band_hi})। यह सिर्फ़ सहायक जानकारी है।"
+    reason_en: "This voice shows signs of being computer-generated ({band}). It is one of the checks, not proof on its own."
+    reason_hi: "इस आवाज़ में कंप्यूटर से बनी होने के संकेत मिले हैं ({band_hi})। यह जाँचों में से एक है, अपने आप में सबूत नहीं।"
     citation:
-      source: "Calibrated audio anti-spoofing model (per language × codec); never decides alone"
+      source: "Calibrated audio anti-spoofing model (per language × codec); counts half with the instruction checks (docs/changes-2026-10-24.md)"
       url: "internal://forensics/audio"
-      quote: "corroboration only"
+      quote: "counts half with the instruction checks"
       checked: "2026-10-16"
       verified: true
     sign_off: [model-risk]
@@ -462,12 +462,12 @@ rules:
     family: F3
     severity: soft
     title: Signs of face manipulation
-    reason_en: "The face in this video shows signs of manipulation ({band}). This is supporting information only."
-    reason_hi: "इस वीडियो में चेहरे से छेड़छाड़ के संकेत मिले हैं ({band_hi})। यह सिर्फ़ सहायक जानकारी है।"
+    reason_en: "The face in this video shows signs of manipulation ({band}). It is one of the checks, not proof on its own."
+    reason_hi: "इस वीडियो में चेहरे से छेड़छाड़ के संकेत मिले हैं ({band_hi})। यह जाँचों में से एक है, अपने आप में सबूत नहीं।"
     citation:
-      source: "Calibrated video deepfake model (GenD CLIP-L/14, thresholds per kind of video); never decides alone"
+      source: "Calibrated video deepfake model (GenD CLIP-L/14, thresholds per kind of video); counts half with the instruction checks (docs/changes-2026-10-24.md)"
       url: "internal://forensics/video"
-      quote: "corroboration only"
+      quote: "counts half with the instruction checks"
       checked: "2026-10-24"
       verified: true
     sign_off: [model-risk]
@@ -477,12 +477,12 @@ rules:
     family: F3
     severity: soft
     title: Signs of document editing
-    reason_en: "This document shows signs of editing ({band}). This is supporting information only."
-    reason_hi: "इस दस्तावेज़ में बदलाव के संकेत मिले हैं ({band_hi})। यह सिर्फ़ सहायक जानकारी है।"
+    reason_en: "This document shows signs of editing ({band}). It is one of the checks, not proof on its own."
+    reason_hi: "इस दस्तावेज़ में बदलाव के संकेत मिले हैं ({band_hi})। यह जाँचों में से एक है, अपने आप में सबूत नहीं।"
     citation:
       source: "Document error-level analysis and metadata checks; abstains on recompressed files"
       url: "internal://forensics/document"
-      quote: "corroboration only"
+      quote: "counts half with the instruction checks"
       checked: "2026-10-16"
       verified: true
     sign_off: [model-risk]
@@ -492,12 +492,12 @@ rules:
     family: F3
     severity: soft
     title: Document made by an AI image tool
-    reason_en: "This document's own file label says an AI image tool made it ({tool}). This is supporting information only."
-    reason_hi: "इस दस्तावेज़ की फ़ाइल पर लिखा है कि इसे AI टूल ने बनाया है ({tool})। यह सिर्फ़ सहायक जानकारी है।"
+    reason_en: "This document's own file label says an AI image tool made it ({tool}). It is one of the checks, not proof on its own."
+    reason_hi: "इस दस्तावेज़ की फ़ाइल पर लिखा है कि इसे AI टूल ने बनाया है ({tool})। यह जाँचों में से एक है, अपने आप में सबूत नहीं।"
     citation:
       source: "The file's own provenance label: IPTC digital source type trainedAlgorithmicMedia (used by C2PA content credentials), or an AI tool named in its metadata; a missing label proves nothing"
       url: "https://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia"
-      quote: "corroboration only"
+      quote: "counts half with the instruction checks"
       checked: "2026-10-24"
       verified: true
     sign_off: [model-risk]

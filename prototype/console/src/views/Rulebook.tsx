@@ -2,23 +2,35 @@ import type { Label, Meta } from '../lib/api'
 import { FAMILY_WORD, SEVERITY_WORD } from '../lib/spans'
 import { Trouble } from '../ui/trouble'
 
-// The rows of the integrations table, in the order the page shows them: outside lookups, the two forensics
-// components, then the evidence signer.
+// The rows of the integrations table, in the order the page shows them: outside lookups, the forensics components
+// (with the local face and voice service when the engine uses one), then the evidence signer.
 export function integrationRows(meta: Meta): Label[] {
-  return [...meta.adapters, meta.forensics.audio, meta.forensics.document, meta.signer]
+  const service = meta.forensics.service
+  return [...meta.adapters, meta.forensics.audio, meta.forensics.document, ...(service ? [service] : []), meta.signer]
 }
 
 // One sentence about what is mocked, counted from the same labels the table prints, so the rail and the
 // Rulebook page can never disagree about the arithmetic.
 //
-// The forensics clause says what is loaded, not what is "not a mock". The default audio component is
-// NullAudioForensics: it abstains on every clip because no calibrated detector ships, and the rehearsal
-// scenarios script a SIMULATED result instead, labelled as such on the case. Calling it "running" would present
-// a stand-in as live, which is the one thing this sentence exists to prevent.
+// The forensics clause says what is actually loaded, read from /api/meta, never a fixed sentence: it used to say "no
+// calibrated audio detector is loaded" on the same screen where the live face and voice checks ran. Calling a
+// stand-in "running" would present it as live, and calling a running check absent is just as untrue.
 export function integrationHonesty(meta: Meta): string {
   const mocked = meta.adapters.filter((a) => a.mock).length
   const lookups = `${mocked} of ${meta.adapters.length} outside lookups${meta.signer.mock ? ' and the evidence signer' : ''} are mocks`
-  return `${lookups}; the document detector runs here, no calibrated audio detector is loaded, so audio forensics abstain and the rehearsal scenarios script a result marked SIMULATED.`
+  const sim = 'the rehearsal scenarios script a result marked SIMULATED'
+  const service = meta.forensics.service
+  if (service) {
+    const h = service.health
+    if (!h?.ok) return `${lookups}; the document check runs here, but the face and voice service is not answering, so those checks abstain; ${sim}.`
+    const voice = h.audio?.loaded ?? h.audio?.installed
+    const checks = voice
+      ? 'the face check, the voice check and the document check run here on this laptop'
+      : 'the face check and the document check run here on this laptop; the voice model is not loaded, so the voice check abstains'
+    return `${lookups}; ${checks}, and each says "unsure" when it cannot judge; ${sim}.`
+  }
+  const voiceHere = !meta.forensics.audio.production_source.startsWith('No voice detector')
+  return `${lookups}; the document check runs here, ${voiceHere ? 'and so does the voice check' : 'no voice detector is loaded, so the voice check abstains'}; ${sim}.`
 }
 
 // Every rule with its citation, and every outside lookup with the label that says what it mocks.

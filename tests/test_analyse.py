@@ -3,7 +3,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from forensics.analyse import analyse, extract_sound_track, kind_of
+from forensics.analyse import REPLAY_FACE_REASON, analyse, extract_sound_track, kind_of
 from forensics.common import ForensicResult
 
 
@@ -75,7 +75,7 @@ def test_video_with_sound_sends_its_track_to_the_audio_detector(tmp_path):
     v, a = Fixed("video"), Fixed("audio")
     rs = analyse(withsound, video=v, audio=a)
     assert [r.kind for r in rs] == ["video", "audio"] and len(a.seen) == 1 and a.seen[0].suffix == ".wav"
-    assert rs[1].extra["from_video"] == "vs.mp4"
+    assert rs[1].extra["from_video"] == "vs.mp4" and rs[1].extra["sound_track"]["codec"] == "aac"
     assert extract_sound_track(src, tmp_path) is None
 
 
@@ -128,3 +128,72 @@ def test_a_detector_without_those_options_still_works(tmp_path):
     o.write_bytes(b"OggS" + b"\x00" * 60)
     a = Fixed("audio")                                   # analyse(self, path) only
     assert analyse(o, video=Fixed("video"), audio=a, language="en", channel="live-replay")[0].status == "clean"
+
+
+def with_sound(tmp_path: Path, name: str, *audio_args: str) -> Path:
+    """A small video with a 3 s tone as its sound track, encoded with the given ffmpeg audio options."""
+    import subprocess
+
+    import imageio_ffmpeg
+    src = make_video(tmp_path / f"src_{name}.mp4", n=75)
+    out = tmp_path / name
+    vcodec = ["-c:v", "libvpx", "-b:v", "200k"] if out.suffix == ".webm" else ["-c:v", "copy"]
+    subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), "-y", "-loglevel", "error", "-i", str(src), "-f", "lavfi", "-i",
+                    "sine=frequency=300:duration=3", "-shortest", *vcodec, *audio_args, str(out)], check=True)
+    return out
+
+
+def voice_recording(tmp_path: Path, name: str = "recording.weba") -> Path:
+    """What the console's Record voice button saves: Opus in a WebM container, no picture."""
+    import subprocess
+
+    import imageio_ffmpeg
+    out = tmp_path / name
+    subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "lavfi", "-i",
+                    "sine=frequency=300:duration=3", "-c:a", "libopus", "-f", "webm", str(out)], check=True)
+    return out
+
+
+def test_a_browser_voice_recording_is_audio_and_gets_no_face_check(tmp_path):
+    rec = voice_recording(tmp_path)
+    assert kind_of(rec) == "audio"
+    assert kind_of(voice_recording(tmp_path, "recording.webm")) == "audio"     # the extension does not decide it
+    v, a = Fixed("video"), Fixed("audio")
+    rs = analyse(rec, video=v, audio=a)
+    assert [r.kind for r in rs] == ["audio"] and not v.seen and a.seen == [rec]
+
+
+def test_a_webm_video_is_still_a_video(tmp_path):
+    clip = with_sound(tmp_path, "clip.webm", "-c:a", "libopus")
+    assert kind_of(clip) == "video"
+
+
+def test_the_callers_kind_audio_skips_the_face_check(tmp_path):
+    clip = with_sound(tmp_path, "clip.mp4", "-c:a", "aac")
+    v, a = Fixed("video"), Fixed("audio")
+    rs = analyse(clip, video=v, audio=a, kind="audio")
+    assert [r.kind for r in rs] == ["audio"] and not v.seen and a.seen == [clip]
+    v2 = Fixed("video")
+    assert [r.kind for r in analyse(clip, video=v2, audio=Fixed("audio"), kind="video")] == ["video", "audio"] and v2.seen
+
+
+def test_the_voice_cell_comes_from_the_sound_as_it_arrived(tmp_path):
+    """The sound track is checked as a 16 kHz WAV, but its calibration cell follows the original stream, as it does
+    for a voice note: Opus in a WebM is the WhatsApp/browser cell, 8 kHz sound is the phone cell, AAC is clean."""
+    for name, args, channel in [("aac.mp4", ("-c:a", "aac"), "clean"),
+                                ("phone.mp4", ("-c:a", "aac", "-ar", "8000"), "phone-8k"),
+                                ("opus.webm", ("-c:a", "libopus"), "whatsapp-opus")]:
+        k = Keen()
+        rs = analyse(with_sound(tmp_path, name, *args), video=Fixed("video"), audio=k, language="en")
+        assert k.calls == [(".wav", "en", channel)], name
+        assert rs[1].extra["from_video"] == name
+
+
+def test_live_replay_video_gets_no_face_verdict_and_keeps_the_voice_replay_rule(tmp_path):
+    clip = with_sound(tmp_path, "filmed.webm", "-c:a", "libopus")
+    v, k = Fixed("video", "clean"), Keen()
+    rs = analyse(clip, video=v, audio=k, channel="live-replay")
+    assert not v.seen, "a camera pointed at a screen is not what the face check was calibrated on"
+    assert rs[0].kind == "video" and rs[0].status == "abstain" and rs[0].reason == REPLAY_FACE_REASON
+    assert rs[0].cell == "video/live-replay" and rs[0].extra["sha256"]
+    assert k.calls == [(".wav", "hi", "live-replay")]

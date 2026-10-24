@@ -225,10 +225,16 @@ def cmd_preflight(args) -> int:
         if not h or not h.get("ok"):
             return False, f"configured at {svc.get('route')} but not answering; start it or restart demo_up.sh"
         cells = (h.get("video") or {}).get("calibrated_cells") or []
-        audio = (h.get("audio") or {}).get("installed")
+        a = h.get("audio") or {}
         if not cells:
             return False, "video detector has no calibration: every video would say 'unsure: not calibrated'"
-        return True, f"video {h['video'].get('model')} calibrated for {', '.join(cells)}; audio detector {'installed' if audio else 'not installed yet'}"
+        # "installed" only means the code and calibration are there. Whether the model itself loaded is what decides
+        # if a voice note gets a score, and a missing download once looked installed here while every voice abstained.
+        if a.get("installed") and a.get("loaded") is False:
+            return False, (f"voice model did not load ({a.get('error') or 'unknown error'}): every voice note would say "
+                           "'unsure'; run satyapan-finale/scripts/fetch_models.sh, then restart demo_up.sh")
+        voice = ("loaded" if a.get("loaded") else "installed") if a.get("installed") else "not installed yet"
+        return True, f"video {h['video'].get('model')} calibrated for {', '.join(cells)}; voice detector {voice}"
 
     def chk_forensics_safe():
         try:

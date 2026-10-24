@@ -120,10 +120,14 @@ class Satyapan:
         ref = ingest(Path(path), derived_text=derived_text, language=language)
         case.media.append(ref)
         inp = self._inputs[case.id]
-        inp["media_paths"][ref.filename] = Path(path)
+        # Keyed by the upload's position in case.media, not its file name: two uploads both called PTT-WA0001.ogg
+        # once resolved to the second file, so the first (perhaps the clone) was never checked. Not by content hash
+        # either: the same bytes recorded at the counter (live-replay) and forwarded as a file are judged differently.
+        idx = len(case.media) - 1
+        inp["media_paths"][idx] = Path(path)
         if channel:
-            inp.setdefault("media_channels", {})[ref.filename] = channel
-        inp.setdefault("media_langs", {})[ref.filename] = language   # the remote voice check uses the same language
+            inp.setdefault("media_channels", {})[idx] = channel
+        inp.setdefault("media_langs", {})[idx] = language   # the remote voice check uses the same language
         inp["sender_number"] = sender_number or inp["sender_number"]
         inp["signature"] = signature or inp["signature"]
         if ref.derived_text:
@@ -169,17 +173,17 @@ class Satyapan:
         signals: list[Signal] = evaluate(self.book, claim, ctx)
 
         # F3: forensics on each media file (or the scripted rehearsal result)
-        for m in case.media:
-            path = inp["media_paths"].get(m.filename)
+        for idx, m in enumerate(case.media):
+            path = inp["media_paths"].get(idx)
             if inp["forensics_sim"] and m.kind in ("audio", "video", "image", "pdf"):
                 signals.append(to_signal(self.book, SimulatedForensics(inp["forensics_sim"]).analyse(path or Path(m.filename), claim.language_hint)))
             elif path and m.kind in ("audio", "video") and self.remote is not None:
                 # finale detectors: a video gets a face check and a voice check, each its own F3 signal
                 signals.extend(to_signal(self.book, r) for r in self.remote.analyse_all(
-                    path, m.kind, language=inp.get("media_langs", {}).get(m.filename, claim.language_hint),
-                    channel=inp.get("media_channels", {}).get(m.filename)))
+                    path, m.kind, language=inp.get("media_langs", {}).get(idx, claim.language_hint),
+                    channel=inp.get("media_channels", {}).get(idx)))
             elif path and m.kind in ("audio", "video"):
-                channel = inp.get("media_channels", {}).get(m.filename)
+                channel = inp.get("media_channels", {}).get(idx)
                 if channel and getattr(self.audio, "accepts_channel", False):
                     signals.append(to_signal(self.book, self.audio.analyse(path, claim.language_hint, channel=channel)))
                 else:
@@ -266,6 +270,16 @@ class Satyapan:
         # would have been judged on this case's claim.
         return self.run(case, claim=c)
 
+    def _forensics_labels(self) -> dict:
+        """What checked the media, as the pack records it. With the local service connected, voice notes and videos go
+        there (face and voice models, calibrated cells, read from its health answer at the time the pack is made), so
+        the pack names it rather than only the in-process detectors that did not judge this case's media."""
+        out = {"audio": self.audio.label.as_dict(), "document": self.document.label.as_dict()}
+        if self.remote is not None:
+            out["service"] = {**self.remote.label.as_dict(), "health": self.remote.health(),
+                              "routes": "voice notes and videos go to the service; documents are checked in-process"}
+        return out
+
     def evidence_pack(self, case: Case) -> dict:
         inp = self._inputs.get(case.id, {})
         manifest = {
@@ -275,7 +289,7 @@ class Satyapan:
             "rulebook": {"version": self.book.version, "sha256": self.book.sha256, "path": Path(self.book.path).name},
             "policy_version": POLICY_VERSION,
             "extractor": getattr(self.extractor, "name", type(self.extractor).__name__),
-            "forensics": {"audio": self.audio.label.as_dict(), "document": self.document.label.as_dict()},
+            "forensics": self._forensics_labels(),
             "adapters": self.adapters.labels(),
             "inputs": {"sender_number": inp.get("sender_number"), "bank_signature_present": bool(inp.get("signature")),
                        "forensics_simulated": bool(inp.get("forensics_sim"))},

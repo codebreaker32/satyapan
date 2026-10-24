@@ -1,23 +1,31 @@
 #!/usr/bin/env bash
 # Start the whole demo on this laptop, offline:
 #   1. the forensics service from this repo (GenD face check + audio check), models loaded once and kept warm;
-#   2. the engine and officer console (../satyapan), connected to it, with Whisper speech-to-text.
+#   2. the engine and officer console (prototype/), connected to it, with Whisper speech-to-text.
 # Then open http://localhost:8000.   Stop everything: scripts/stop_demo.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
 FIN=$(pwd)
 # The engine and console: prototype/ in this repo (merged 24 Oct), else the older sibling checkout ../satyapan.
 if [ -d prototype/satyapan ]; then PROTO="$FIN/prototype"; else PROTO=$(cd ../satyapan && pwd); fi
-# Its Python environment (pip install -e prototype into it). SATYAPAN_ENGINE_VENV overrides.
-ENGINE_VENV="${SATYAPAN_ENGINE_VENV:-$(cd "$FIN/../satyapan" 2>/dev/null && pwd)/.venv}"
-[ -x "$ENGINE_VENV/bin/satyapan" ] || ENGINE_VENV="$PROTO/.venv"
+# Its Python environment (pip install -e prototype into it): SATYAPAN_ENGINE_VENV, else the sibling checkout's
+# ../satyapan/.venv (this laptop), else prototype/.venv. No command substitution that can fail here: under set -e a
+# failing `cd` inside one ended the script silently on any machine without the sibling checkout.
+if [ -n "${SATYAPAN_ENGINE_VENV:-}" ]; then ENGINE_VENV="$SATYAPAN_ENGINE_VENV"
+elif [ -x "$FIN/../satyapan/.venv/bin/satyapan" ]; then ENGINE_VENV="$FIN/../satyapan/.venv"
+else ENGINE_VENV="$PROTO/.venv"; fi
+if [ ! -x "$ENGINE_VENV/bin/satyapan" ]; then
+  echo "no engine environment at $ENGINE_VENV. Make one:"
+  echo "  python3 -m venv prototype/.venv && prototype/.venv/bin/pip install -e 'prototype[dev,stt,ocr]'"
+  exit 1
+fi
 PORT=${FORENSICS_PORT:-8765}
 LOGS="$FIN/clips/logs"
 mkdir -p "$LOGS"
 
 if ! curl -fs "http://127.0.0.1:$PORT/health" >/dev/null 2>&1; then
   echo "starting the forensics service (first start loads about 3 GB of model, ~10-60 s)..."
-  nohup .venv/bin/python -m forensics.service --port "$PORT" >"$LOGS/forensics.log" 2>&1 &
+  nohup .venv/bin/python -u -m forensics.service --port "$PORT" >"$LOGS/forensics.log" 2>&1 &   # -u: the log shows a failed model load at once
   for _ in $(seq 1 180); do
     curl -fs "http://127.0.0.1:$PORT/health" >/dev/null 2>&1 && break
     sleep 1
@@ -35,5 +43,8 @@ export SATYAPAN_FORENSICS_URL="http://127.0.0.1:$PORT"
 export SATYAPAN_WHISPER_MODEL="${SATYAPAN_WHISPER_MODEL:-large-v3-turbo}"
 export SATYAPAN_WHISPER_BEAM="${SATYAPAN_WHISPER_BEAM:-1}"
 export SATYAPAN_WHISPER_PRELOAD=1   # load speech-to-text at start-up, not on the first voice note
-echo "engine: forensics at $SATYAPAN_FORENSICS_URL, speech-to-text: Whisper $SATYAPAN_WHISPER_MODEL"
+# The website registration look-up uses its recorded answers, so no check leaves the laptop and a slow venue network
+# cannot stall a verdict. SATYAPAN_LIVE_WEB=1 scripts/demo_up.sh asks the public RDAP registry (rdap.org) live instead.
+export SATYAPAN_LIVE_WEB="${SATYAPAN_LIVE_WEB:-0}"
+echo "engine: forensics at $SATYAPAN_FORENSICS_URL, speech-to-text: Whisper $SATYAPAN_WHISPER_MODEL, live website look-up: $([ "$SATYAPAN_LIVE_WEB" = 1 ] && echo on || echo off)"
 exec "$ENGINE_VENV/bin/satyapan" serve

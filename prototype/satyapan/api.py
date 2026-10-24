@@ -329,7 +329,8 @@ async def add_media(case_id: str, file: UploadFile = File(...), derived_text: Op
         # longer existed — and the manifest is what a Bharatiya Sakshya Adhiniyam s.63(4) certificate would rest on.
         final = kept / f"{max(len(case.media) - 1, 0):02d}-{name}"   # this upload's index; add_media already appended
         shutil.move(str(path), str(final))
-        engine._inputs[case.id]["media_paths"][name] = final   # forensics read the kept file
+        if case.media:   # forensics read the kept file, found by this upload's index (the same one as in its name)
+            engine._inputs[case.id]["media_paths"][len(case.media) - 1] = final
     finally:
         shutil.rmtree(staging, ignore_errors=True)
     return case_view(case)
@@ -345,6 +346,10 @@ def add_picklist(case_id: str, body: PicklistIn):
 @app.post("/api/cases/{case_id}/run")
 def run_case(case_id: str):
     case = get_case(case_id)
+    if case.media:
+        # An uploaded voice note or video can wait on the face and voice service for most of a minute. The Scenarios
+        # page's timing line says "engine only", so such runs are not recorded there.
+        return case_view(engine.run(case))
     return case_view(timed_run(lambda: engine.run(case)))
 
 

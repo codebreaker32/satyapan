@@ -82,7 +82,7 @@ def test_video_result_maps_to_the_video_rule(engine):
     from satyapan.forensics import ForensicResult
     s = to_signal(engine.book, ForensicResult(kind="video", status="synthetic", band="high", score=0.97, model="m", cell="video/sd"))
     assert s.rule_id == "R-VIDEO-SYNTH" and s.family == Family.F3 and s.severity == Severity.SOFT
-    assert "face" in s.reason_en and "supporting information only" in s.reason_en
+    assert "face" in s.reason_en and "not proof on its own" in s.reason_en
     clean = to_signal(engine.book, ForensicResult(kind="video", status="clean", model="m"))
     assert clean.rule_id == "R-VIDEO-SYNTH" and clean.severity == Severity.INFO and clean.detail["can_be_second"] is False
 
@@ -221,3 +221,17 @@ def test_language_and_channel_travel_to_the_service_and_key_the_cache(tmp_path):
     finally:
         httpd.shutdown()
     assert [(b.get("language"), b.get("channel")) for b in bodies] == [("en", "live-replay"), ("hi", None)]
+
+
+def test_a_voice_note_says_it_is_audio_and_never_gets_a_face_row(tmp_path):
+    """A browser voice recording is WebM, which the service once took for a video and face-checked."""
+    bodies = []
+    httpd, url = serve(lambda body: (bodies.append(body), {"results": [VIDEO_FAKE, AUDIO_CLEAN], "seconds": 1.0})[1])
+    try:
+        note = tmp_path / "recording.weba"
+        note.write_bytes(b"\x1aE\xdf\xa3voice")
+        rs = RemoteForensics(url).analyse_all(note, "audio")
+    finally:
+        httpd.shutdown()
+    assert bodies[0]["kind"] == "audio"
+    assert [r.kind for r in rs] == ["audio"]

@@ -136,7 +136,7 @@ def test_valid_small_png_is_accepted_and_kept_on_disk():
     # that no longer existed. The recorded filename the officer sees is unchanged.
     kept = api.UPLOADS / cid / "00-notice.png"
     assert kept.is_file(), "a file that decoded is kept under evidence/uploads/"
-    assert api.engine._inputs[cid]["media_paths"]["notice.png"] == kept   # forensics read the kept file
+    assert api.engine._inputs[cid]["media_paths"][0] == kept   # forensics read the kept file
 
 
 def test_two_uploads_with_the_same_name_each_keep_their_own_file():
@@ -151,6 +151,9 @@ def test_two_uploads_with_the_same_name_each_keep_their_own_file():
     assert media[0]["sha256"] != media[1]["sha256"], "two different files were uploaded"
     kept = sorted(p.name for p in (api.UPLOADS / cid).iterdir())
     assert len(kept) == 2, f"a file per recorded hash, got {kept}"
+    # and each recorded hash leads the forensics to its own file, so the first upload is still checked
+    paths = api.engine._inputs[cid]["media_paths"]
+    assert [paths[i].name for i in range(2)] == ["00-notice.png", "01-notice.png"]
 
 
 @pytest.mark.skipif(tesseract_cmd() is None, reason="tesseract binary not installed")
