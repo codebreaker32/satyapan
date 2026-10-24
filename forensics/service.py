@@ -85,6 +85,8 @@ def make_handler(svc: Service):
                 return self._send(200, svc.run(path))
             except (ValueError, KeyError, TypeError) as e:
                 return self._send(400, {"error": str(e) or type(e).__name__})
+            except Exception as e:  # noqa: BLE001 - answer with an error rather than dropping the connection
+                return self._send(500, {"error": type(e).__name__})
 
         def log_message(self, fmt, *args):            # quiet: one line per request
             print(f"[forensics] {self.command} {self.path} -> {args[1] if len(args) > 1 else ''}")

@@ -81,10 +81,10 @@ def analyse(path: Path | str, video: Optional[Detector] = None, audio: Optional[
 
     results: list[ForensicResult] = []
     if kind == "audio":
-        results.append(audio.analyse(path) if audio else _no_audio_detector("the audio detector is not installed yet"))
+        results.append(_safe(audio, path, "audio") if audio else _no_audio_detector("the audio detector is not installed yet"))
         return results
 
-    results.append(video.analyse(path))
+    results.append(_safe(video, path, "video"))
     with tempfile.TemporaryDirectory() as tmp:
         track = extract_sound_track(path, Path(tmp))
         if track is None:
@@ -92,7 +92,16 @@ def analyse(path: Path | str, video: Optional[Detector] = None, audio: Optional[
         elif audio is None:
             results.append(_no_audio_detector("the audio detector is not installed yet"))
         else:
-            r = audio.analyse(track)
+            r = _safe(audio, track, "audio")
             r.extra = {**r.extra, "from_video": str(path.name)}
             results.append(r)
     return results
+
+
+def _safe(detector: Detector, path: Path, kind: str) -> ForensicResult:
+    """One detector failing must not throw away the other's finished result: it abstains instead."""
+    try:
+        return detector.analyse(path)
+    except Exception as e:  # noqa: BLE001 - any failure in a detector reads the same to the officer
+        return ForensicResult(kind=kind, status="abstain", reason=f"the {'voice' if kind == 'audio' else 'face'} check failed ({type(e).__name__})",
+                              model=getattr(detector, "model_name", "") or type(detector).__name__)

@@ -86,3 +86,20 @@ def test_without_audio_detector_the_audio_half_abstains(tmp_path, monkeypatch):
     o.write_bytes(b"OggS" + b"\x00" * 60)
     rs = analyse(o, video=Fixed("video"))
     assert rs[0].status == "abstain" and "not installed" in rs[0].reason
+
+
+def test_a_failing_voice_check_keeps_the_face_result(tmp_path):
+    import subprocess
+
+    import imageio_ffmpeg
+    src = make_video(tmp_path / "v.mp4", n=50)
+    withsound = tmp_path / "vs.mp4"
+    subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), "-y", "-loglevel", "error", "-i", str(src), "-f", "lavfi", "-i",
+                    "sine=frequency=440:duration=2", "-shortest", "-c:v", "copy", "-c:a", "aac", str(withsound)], check=True)
+
+    class Boom:
+        def analyse(self, path):
+            raise RuntimeError("audio model exploded")
+    rs = analyse(withsound, video=Fixed("video", "synthetic"), audio=Boom())
+    assert rs[0].kind == "video" and rs[0].status == "synthetic"
+    assert rs[1].kind == "audio" and rs[1].status == "abstain" and "voice check failed" in rs[1].reason
