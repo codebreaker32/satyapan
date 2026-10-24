@@ -187,6 +187,29 @@ def read_frames(path: str, indices: Sequence[int]) -> dict[int, np.ndarray]:
             i += 1
     finally:
         cap.release()
+    if not got:
+        # cv2's bundled FFmpeg has no software AV1 decoder ("Failed to get pixel format"), so an AV1 mp4 or webm
+        # gave no frames and the face check said the video could not be read. PyAV, in the same venv, decodes it
+        # with libdav1d. Only used when cv2 decoded nothing, so every clip the calibration saw reads as before.
+        got = _read_frames_av(path, want, last)
+    return got
+
+
+def _read_frames_av(path: str, want: set[int], last: int) -> dict[int, np.ndarray]:
+    """The same frames through PyAV, turned upright the way cv2 turns them (the display rotation)."""
+    got: dict[int, np.ndarray] = {}
+    try:
+        import av
+        with av.open(path) as container:
+            for i, frame in enumerate(container.decode(video=0)):
+                if i > last:
+                    break
+                if i in want:
+                    img = frame.to_ndarray(format="bgr24")
+                    turns = round((getattr(frame, "rotation", 0) or 0) / 90) % 4
+                    got[i] = np.ascontiguousarray(np.rot90(img, turns)) if turns else img
+    except Exception:  # noqa: BLE001 - a file PyAV cannot decode either stays "could not be read"
+        return {}
     return got
 
 

@@ -267,7 +267,8 @@ class DFArenaAudioForensics:
         if m.get("speech_s", 0) < st.min_speech_s:
             if m.get("speech_s", 0) == 0:
                 return "no voice can be heard in the recording"
-            return f"only {m['speech_s']:.1f} s of voice (needs {st.min_speech_s:.0f} s to judge)"
+            # Rounded down, so a value under the minimum never prints as the minimum ("only 2.0 s ... needs 2 s").
+            return f"only {math.floor(m['speech_s'] * 10) / 10:.1f} s of voice (needs {st.min_speech_s:g} s to judge)"
         if m.get("range", 0) > st.max_range:
             return "parts of the recording disagree with each other"
         return None

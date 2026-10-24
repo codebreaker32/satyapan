@@ -77,6 +77,16 @@ def sound_track_format(path: Path) -> Optional[tuple[str, int]]:
         return None
 
 
+def has_no_audio_stream(path: Path) -> bool:
+    """True only when the container opens and holds no audio stream."""
+    try:
+        import av
+        with av.open(str(path)) as container:
+            return not any(s.type == "audio" for s in container.streams)
+    except Exception:  # noqa: BLE001 - a file that will not open is not known to have no sound
+        return False
+
+
 def _sha256(path: Path) -> Optional[str]:
     import hashlib
     try:
@@ -145,7 +155,10 @@ def analyse(path: Path | str, video: Optional[Detector] = None, audio: Optional[
     with tempfile.TemporaryDirectory() as tmp:
         track = extract_sound_track(path, Path(tmp))
         if track is None:
-            results.append(_no_audio_detector("the video has no sound track"))
+            # "No sound track" only when the container opens and holds no audio stream; a truncated or unreadable
+            # file with an AAC track used to be told it had none.
+            results.append(_no_audio_detector("the video has no sound track" if has_no_audio_stream(path)
+                                              else "the sound track could not be read"))
         elif audio is None:
             results.append(_no_audio_detector("the audio detector is not installed yet"))
         else:
