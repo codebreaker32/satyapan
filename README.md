@@ -20,6 +20,7 @@ scripts/fetch_models.sh                       # YuNet + GenD (about 3 GB, once);
 
 .venv/bin/python scripts/score_video.py clip.mp4          # what the officer would see for one video
 scripts/demo_up.sh                                        # forensics service + engine + console, offline
+scripts/stop_demo.sh                                      # stop both
 ```
 
 How it fits together, and where the deepfake check sits in a case: `docs/architecture.md`. The plan for the two

@@ -2,7 +2,7 @@
 # Start the whole demo on this laptop, offline:
 #   1. the forensics service from this repo (GenD face check + audio check), models loaded once and kept warm;
 #   2. the engine and officer console (../satyapan), connected to it, with Whisper speech-to-text.
-# Then open http://localhost:8000.   Stop: Ctrl-C (the engine), then `pkill -f "[f]orensics.service"`.
+# Then open http://localhost:8000.   Stop everything: scripts/stop_demo.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
 FIN=$(pwd)
