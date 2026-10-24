@@ -16,7 +16,7 @@ For Aman and Bhawna. What works, what was measured, how to run it, and what is l
   - uploads no longer freeze the server while Whisper works;
   - preflight has a `server forensics` line;
   - the GREY and coverage wording names quiet media checks by what they did, never as findings.
-- **Tests**: finale repo 60 pass; prototype 874 pass; console browser e2e passes against the live server; preflight
+- **Tests**: finale repo 60 pass; prototype 879 pass (OCR tests now run); console browser e2e passes against the live server; preflight
   7/7 PASS with the face check connected.
 - **Live end to end** (real API, real models, this laptop):
   - the face-swap sample with an ED "digital arrest" message gives RED on the two independent checks, with
@@ -63,10 +63,9 @@ Run-sheet beat 4 is now a live face check: `../docs/finale-runsheet.md`.
     (CC-BY-NC-4.0);
   - add Deepfake-Eval-2024 only if access is approved (requested; pending);
   - Kathbath and DFDC were not used: Kathbath is gated, and DFDC's competition has closed.
-- **OCR on this laptop**: Tesseract is not installed here (it needs sudo). Before the demo:
-  `sudo apt install tesseract-ocr tesseract-ocr-hin` and `../satyapan/.venv/bin/pip install pytesseract pymupdf`,
-  then `../satyapan/.venv/bin/python -m pytest -q ../satyapan/tests/test_ocr.py`. Without it, an uploaded image notice
-  asks the officer for its text; the scripted scenarios are unaffected.
+- ~~OCR on this laptop~~ **Done (24 Oct evening):** tesseract 5.3.4 with Hindi and English data, pytesseract and
+  PyMuPDF in the engine's environment. `tests/test_ocr.py` passes (not skipped). Live: a synthetic summons image is read
+  in about 2 s and reaches RED. For an English notice, pick English as the document language.
 - **Run-sheet beat 4**: build the face-swap case before the slot, after the final reset (see `../docs/finale-runsheet.md`).
 - **Optional, if time**:
   - more face-swap clips (Deepfake-Eval-2024) to turn the catch rates into measurements;
