@@ -231,6 +231,7 @@ def test_case_list_summary_carries_about():
     scenario_case = r.json()["case"]["id"]
     # A hand-opened case falls back to the claimed issuer once the claim exists.
     cid = open_case()
+    client.post(f"/api/cases/{cid}/consent", json={"check": True})   # C1: a run needs the customer's consent
     client.post(f"/api/cases/{cid}/picklist", json={"issuer": "ED", "instruction": "TRANSFER_TO_ACCOUNT"})
     assert client.post(f"/api/cases/{cid}/run").status_code == 200
     rows = {row["id"]: row for row in client.get("/api/cases").json()}

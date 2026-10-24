@@ -290,6 +290,11 @@ class Satyapan:
         from .models import Decision
         if action not in ("release", "hold", "escalate", "help_report", "strike_field"):
             raise ValueError(f"'{action}' is not a decision this system records")
+        if action == "help_report" and not case.consent.report:
+            # C2 gates reporting the way C3 gates campaign memory. It was recorded and never read: the signed pack held
+            # consent.report=false next to "officer helped the customer report".
+            raise PermissionError("the customer did not agree (C2) to including this in a report. Ask her, and "
+                                  "record her answer in the consent step, before helping her report it")
         co_signer = visible_name(co_signer)   # whitespace, and anything invisible, is no co-sign
         if action == "release" and self.release_needs_co_sign(case):
             if not co_signer:

@@ -371,6 +371,9 @@ def add_picklist(case_id: str, body: PicklistIn):
 @app.post("/api/cases/{case_id}/run")
 def run_case(case_id: str):
     case = get_case(case_id)
+    if not case.consent.check:   # C1: the console asks first; the service no longer relies on the browser for it
+        raise HTTPException(403, "The customer has not agreed (C1) to this message being checked. Record her consent "
+                                 "in the case first.")
     if case.media:
         # An uploaded voice note or video can wait on the face and voice service for most of a minute. The Scenarios
         # page's timing line says "engine only", so such runs are not recorded there.

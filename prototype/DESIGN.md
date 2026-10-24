@@ -207,6 +207,8 @@ No new look; the same components say what the engine actually did.
 - Highlighted spans slice the message by code point, so emoji before a span no longer shift marks and leader
   lines onto other words (e2e-guarded: "spans: emoji before a span ...").
 - The Memory page's approve guard ignores letter case, matching the engine's two-person rule.
+- "Help the customer report" is disabled, with a tooltip saying why, when the customer did not agree to reporting
+  (C2). The service refuses it too (403), as it refuses a run without C1.
 
 ## Memorable moment
 

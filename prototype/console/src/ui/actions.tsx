@@ -171,7 +171,8 @@ export function Actions({ view, onView }: Props) {
           </button>
           <button
             className="btn btn-sm"
-            disabled={stop}
+            disabled={stop || !c.consent.report}
+            title={c.consent.report ? undefined : 'The customer did not agree to reporting (C2)'}
             onClick={async () => {
               if (await decide('help_report', 'officer helped the customer report')) setReportShown(true)
             }}
