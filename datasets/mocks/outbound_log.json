@@ -1,0 +1,42 @@
+[
+  {
+    "message_id": "DB-SMS-20261015-0091",
+    "channel": "SMS",
+    "retention_days": 365,
+    "customer_ref": "cust-demo",
+    "sent_at": "2026-10-15T09:30:00+00:00",
+    "content_text": "Dear Customer, your Demo Bank savings account statement for September is ready. View it in netbanking at demobank.bank.in. Demo Bank will never ask you to transfer money to a 'safe account'. Helpline 1600 123 4567."
+  },
+  {
+    "message_id": "DB-EMAIL-20261012-0044",
+    "channel": "EMAIL",
+    "retention_days": 365,
+    "customer_ref": "cust-demo",
+    "sent_at": "2026-10-12T04:10:00+00:00",
+    "content_text": "Dear Customer, your Demo Bank debit card ending 4417 expires next month. A replacement card has been despatched to your registered address. No action is needed, and we never ask you for your PIN or OTP."
+  },
+  {
+    "message_id": "DB-IVR-20261009-0310",
+    "channel": "IVR",
+    "retention_days": 180,
+    "customer_ref": "cust-demo",
+    "sent_at": "2026-10-09T11:45:00+00:00",
+    "content_text": "This is an automated call from Demo Bank about your cheque book request. Your cheque book is ready for collection at your branch. Demo Bank never asks you to move money on a call."
+  },
+  {
+    "message_id": "DB-WA-20261006-0127",
+    "channel": "WHATSAPP",
+    "retention_days": 365,
+    "customer_ref": "cust-demo",
+    "sent_at": "2026-10-06T06:20:00+00:00",
+    "content_text": "Demo Bank: your standing instruction for the monthly SIP of Rs 5,000 has been registered. Reply STOP to unsubscribe from Demo Bank updates on WhatsApp."
+  },
+  {
+    "message_id": "DB-INAPP-20260928-0802",
+    "channel": "IN_APP",
+    "retention_days": 365,
+    "customer_ref": "*",
+    "sent_at": "2026-09-28T03:00:00+00:00",
+    "content_text": "Demo Bank notice to all customers: our website address is demobank.bank.in and our only service number is 1600 123 4567. We never ask you to transfer money to another account to keep it safe."
+  }
+]

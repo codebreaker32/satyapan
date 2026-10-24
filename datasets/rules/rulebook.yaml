@@ -1,0 +1,406 @@
+# Satyapan rulebook. Every rule carries a primary citation, the date we checked it, a unit test and sign-off.
+# A rule whose citation is not `verified: true` is demoted to soft at load time, so it can never anchor a RED.
+# Reason strings are what the customer hears. They must never say "fake", "genuine" or "fraud" (tests enforce this).
+version: "1.4"
+bank_name: "Demo Bank"
+
+rules:
+  # ---------------- F1: issuer rulebook ----------------
+  - id: R-AGENCY-PAY
+    family: F1
+    severity: hard
+    # "A state authority", not "a law-enforcement agency", since 19 Oct: the issuer set is LAW_ENFORCEMENT, which
+    # holds the telecom department as well as ED, CBI, the police and Customs, and a regulator is not law
+    # enforcement. The title is what the band, the fusion explanation and the signed pack print.
+    # The open-set body (Issuer.OTHER) was briefly in this rule's issuer set on 19 Oct and is now R-STATE-NAME-PAY
+    # below: this rule's sentence asserts what the sender claims to be, and that is only safe to say about a body
+    # the message names in so many words. See CLAIMED_STATE_AUTHORITY in models.py for the partition.
+    title: A state authority demands a payment
+    reason_en: "There is no “digital arrest” in Indian law, and no government agency demands money on a call. This message claims to be {issuer_en} and asks for {instruction_en}."
+    reason_hi: "भारतीय क़ानून में “डिजिटल अरेस्ट” जैसा कुछ नहीं है, और कोई सरकारी एजेंसी कॉल पर पैसे नहीं माँगती। यह संदेश {issuer_hi} होने का दावा करता है और {instruction_hi} कह रहा है।"
+    citation:
+      source: "I4C advisory TAU/ADV/003, 6 Mar 2025; PM's Mann Ki Baat, 27 Oct 2024 (PIB PRID 2068606)"
+      url: "https://cybercrime.gov.in/Webform/theme/resources/advisories/ADVISORYTAU-ADV-003DigitalArrest06.03.2025.pdf"
+      quote: "There is no concept of Digital Arrest under any Indian Laws."
+      checked: "2026-10-05"
+      verified: true
+    sign_off: [compliance, legal]
+    test: tests/test_rules.py::test_agency_pay
+
+  - id: R-STATE-NAME-PAY
+    family: F1
+    severity: hard
+    # The open-set half of CLAIMED_STATE_AUTHORITY: a body in masthead or self-claim position whose head noun
+    # places it in the state (Bureau, Directorate, Commission, Authority, and Department / Board / Cell / Unit
+    # with a state-vocabulary marker) and which the Issuer enum does not name.
+    #
+    # The sentence below is the whole point of the rule being separate. The open-set net reads the FORM of a
+    # name, and the form of "Narcotics Control Bureau" is the form of "Credit Information Bureau (India)
+    # Limited" and of "Acme Recovery and Fraud Investigation Unit". So this rule may not say "this message
+    # claims to be a government body" — that is a statement of fact about a sender who may be an ordinary
+    # company, read aloud to a frightened customer, with the matching title on the officer's band and in the
+    # signed pack. It says what was READ instead: a government-sounding name, a demand for money, and a sender
+    # we could not confirm. Every clause rests on a span or on our own check, and none of them accuses anyone.
+    #
+    # The body's own name is NOT interpolated. It is attacker-controlled text; it belongs in the quoted span the
+    # officer reads beside the message, and the officer's band and coverage strip still name it there.
+    # The first sentence is R-AGENCY-PAY's own second clause, word for word, because that copy is already signed
+    # off against this citation and the claim has not changed. The "digital arrest" clause is deliberately NOT
+    # carried over: an open-set body is as often a vendor-invoice chaser as a digital-arrest script, and a
+    # sentence about arrest on a letter about an unpaid invoice is noise to a frightened listener.
+    title: A government-sounding name demands a payment
+    reason_en: "No government agency demands money on a call. This message carries a government-sounding name and asks for {instruction_en}. We could not confirm who sent it."
+    reason_hi: "कोई सरकारी एजेंसी कॉल पर पैसे नहीं माँगती। इस संदेश पर सरकारी दफ़्तर जैसा नाम लिखा है और यह {instruction_hi} कह रहा है। यह संदेश किसने भेजा, इसकी पुष्टि हम नहीं कर सके।"
+    citation:
+      source: "PM's address, 115th episode of Mann Ki Baat, 27 Oct 2024 (PIB PRID 2068606)"
+      url: "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2068606"
+      quote: "No government agency threatens you on the phone like this, neither inquires nor demands money on a video call like this."
+      checked: "2026-10-05"
+      verified: true
+    sign_off: [compliance, legal]
+    test: tests/test_rules.py::test_state_name_pay
+
+  - id: R-COURT-PAY
+    family: F1
+    severity: soft
+    escalate_alone: true
+    title: A court order demands a deposit
+    reason_en: "Courts do not issue orders on video calls asking you to deposit money. The Supreme Court is hearing cases where such orders were shown to victims."
+    reason_hi: "अदालतें वीडियो कॉल पर आदेश देकर पैसे जमा करने को नहीं कहतीं। सुप्रीम कोर्ट ऐसे आदेश दिखाकर पैसे माँगने के मामलों की सुनवाई कर रहा है।"
+    citation:
+      source: "Supreme Court of India, SMW(Crl) No. 3/2025, order of 17 Oct 2025"
+      url: "https://api.sci.gov.in/supremecourt/2025/59769/59769_2025_2_7_65003_Order_17-Oct-2025.pdf"
+      quote: "In Re: Victims of Digital Arrest Related to Forged Documents"
+      checked: "2026-10-05"
+      verified: true
+    sign_off: [compliance, legal]
+    test: tests/test_rules.py::test_court_pay_is_soft
+
+  - id: R-ED-SUMMONS-NOTFOUND
+    family: F1
+    severity: hard
+    title: Summons number and passcode not found in ED's system
+    reason_en: "A summons from ED's system can be checked on ED's website with its summons number and passcode. This one ({summons_no}) was not found there."
+    reason_hi: "ED के सिस्टम से जारी समन को समन नंबर और पासकोड से ED की वेबसाइट पर जाँचा जा सकता है। यह समन ({summons_no}) वहाँ नहीं मिला।"
+    citation:
+      source: "Directorate of Enforcement, Verify Your Summon"
+      url: "https://enforcementdirectorate.gov.in/verify-summon"
+      quote: "Summons issued during the last 180 days can be verified."
+      checked: "2026-10-05"
+      verified: true
+    sign_off: [compliance, legal]
+    test: tests/test_rules.py::test_ed_summons_not_found
+
+  - id: R-ED-NO-PASSCODE
+    family: F1
+    severity: soft
+    escalate_alone: true
+    title: ED summons has no passcode
+    # Customer-facing reason text is the checkable fact only. The old version carried the procedure (check it on
+    # ED's website) and an instruction (confirm with ED first), which is a third thing to remember at a counter and
+    # nothing she can do there. Both moved to the officer's say_next on the card, which carries ED's verify route.
+    reason_en: "A summons from ED's system carries a passcode. This one has none."
+    reason_hi: "ED के सिस्टम से जो समन आता है, उस पर पासकोड होता है। इस पर कोई पासकोड नहीं है।"
+    citation:
+      source: "Directorate of Enforcement, Verify Your Summon (procedure PDF)"
+      url: "https://enforcementdirectorate.gov.in/verify-summon"
+      quote: "QR code and a unique Passcode at the bottom"
+      checked: "2026-10-05"
+      verified: true
+    sign_off: [compliance, legal]
+    test: tests/test_rules.py::test_ed_no_passcode_is_amber
+
+  - id: R-ED-WINDOW
+    family: F1
+    severity: soft
+    escalate_alone: true
+    title: ED summons outside the online verification window
+    reason_en: "ED's website can check a summons only from 24 hours after it is issued, and only for 180 days. Confirm this one ({summons_no}) with ED directly before acting on it."
+    reason_hi: "ED की वेबसाइट समन जारी होने के 24 घंटे बाद से 180 दिनों तक ही उसे जाँच सकती है। इस समन ({summons_no}) की पुष्टि सीधे ED से करें, उसके बाद ही कुछ करें।"
+    citation:
+      source: "Directorate of Enforcement, Verify Your Summon"
+      url: "https://enforcementdirectorate.gov.in/verify-summon"
+      quote: "Summons can be verified after 24 hours from the issuance of summons, excluding Public and Government Holidays."
+      checked: "2026-10-05"
+      verified: true
+    sign_off: [compliance, legal]
+    test: tests/test_rules.py::test_ed_window_is_amber
+
+  - id: R-ED-FOUND
+    family: F1
+    severity: info
+    title: Summons found in ED's system
+    reason_en: "This summons number and passcode match ED's records."
+    reason_hi: "यह समन नंबर और पासकोड ED के रिकॉर्ड से मेल खाते हैं।"
+    citation:
+      source: "Directorate of Enforcement, Verify Your Summon"
+      url: "https://enforcementdirectorate.gov.in/verify-summon"
+      quote: "Summons issued during the last 180 days can be verified."
+      checked: "2026-10-05"
+      verified: true
+    sign_off: [compliance, legal]
+    test: tests/test_rules.py::test_ed_found_is_info
+
+  - id: R-ED-CHANNEL
+    family: F1
+    severity: hard
+    title: ED does not demand payment over WhatsApp or video call
+    reason_en: "ED sends its letters, summonses and notices by post or e-mail. It does not demand money over WhatsApp, a phone call or a video call."
+    reason_hi: "ED अपने पत्र, समन और नोटिस डाक या ईमेल से भेजता है। वह व्हाट्सऐप, फ़ोन या वीडियो कॉल पर पैसे की माँग नहीं करता।"
+    citation:
+      source: "Directorate of Enforcement, Note on Conmen"
+      url: "https://enforcementdirectorate.gov.in/media/note-on-conmen/"
+      quote: "generally despatched through post or emails"
+      checked: "2026-10-05"
+      verified: true
+    sign_off: [compliance, legal]
+    test: tests/test_rules.py::test_ed_channel
+
+  - id: R-RBI-INV
+    family: F1
+    severity: hard
+    title: RBI gives no investment advice
+    reason_en: "RBI does not run or endorse investment schemes. In its own words: “RBI does not give any such financial investment advice.”"
+    reason_hi: "RBI कोई निवेश योजना नहीं चलाता और न ही उसकी सिफ़ारिश करता है। RBI के अपने शब्दों में: “RBI does not give any such financial investment advice.”"
+    citation:
+      source: "RBI Press Release 2024-2025/1537, 19 Nov 2024"
+      url: "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=59135"
+      quote: "RBI does not give any such financial investment advice"
+      checked: "2026-10-05"
+      verified: true
+    sign_off: [compliance, legal]
+    test: tests/test_rules.py::test_rbi_inv
+
+  - id: R-SEBI-VALID
+    family: F1
+    severity: soft
+    title: Investment payee UPI ID is not an @valid handle
+    reason_en: "SEBI-registered investment firms collect payments on UPI IDs ending in “@valid”. This ID ({vpa}) does not."
+    reason_hi: "SEBI से रजिस्टर्ड निवेश कंपनियाँ “@valid” पर खत्म होने वाली UPI आईडी से ही पैसे लेती हैं। यह आईडी ({vpa}) वैसी नहीं है।"
+    citation:
+      source: "SEBI circular SEBI/HO/DEPA-II/DEPA-II_SRG/P/CIR/2025/86, 11 Jun 2025"
+      url: "https://www.sebi.gov.in/sebi_data/attachdocs/jun-2025/1749641449497.pdf"
+      quote: "it is mandatory for intermediaries to obtain and make available this structured UPI address to their investors"
+      checked: "2026-10-05"
+      verified: true
+    sign_off: [compliance, legal]
+    test: tests/test_rules.py::test_sebi_valid
+
+  - id: R-CALLER-1600
+    family: F1
+    severity: soft
+    title: Financial call not from the 1600 series
+    # The citation is a fact about the calls a BANK places, so the reason may only be said about an artefact
+    # that carries a call AND about a message claiming to be a bank. The wording here says "this call" and
+    # "banks and financial firms", so a reason that reaches a card with no call in it, or about a regulator,
+    # is a visible contradiction rather than a quiet one. Both have now happened in front of a judge: a pasted
+    # letter (pass 5) and a pasted "RBI ALERT" SMS saying "call our helpline" (pass 6). `rules._call_number`
+    # gates the channel AND the artefact kind; `rules.SERVICE_CALL_ISSUERS` holds the gate to BANK_SELF, because
+    # RBI and SEBI are regulators and do not place service calls to bank customers at all.
+    reason_en: "Banks and financial firms place service calls only from numbers starting 1600. This call came from {caller}, which is not one."
+    reason_hi: "बैंक और वित्तीय कंपनियाँ सेवा से जुड़ी कॉल सिर्फ़ 1600 से शुरू होने वाले नंबरों से करती हैं। यह कॉल {caller} से आई है, जो वैसा नंबर नहीं है।"
+    citation:
+      source: "RBI circular RBI/2024-25/105, 17 Jan 2025; TRAI PR 135/2025"
+      url: "https://www.rbi.org.in/Scripts/NotificationUser.aspx?Id=12770&Mode=0"
+      quote: "1600xx"
+      checked: "2026-10-05"
+      verified: true
+    sign_off: [compliance, legal]
+    test: tests/test_rules.py::test_caller_1600
+
+  - id: R-DOMAIN-BANKIN
+    family: F1
+    severity: soft
+    title: Bank link not on .bank.in
+    reason_en: "Indian banks' websites end in “.bank.in”. This link ({url}) does not."
+    reason_hi: "भारतीय बैंकों की वेबसाइट “.bank.in” पर खत्म होती है। यह लिंक ({url}) वैसा नहीं है।"
+    citation:
+      source: "RBI circular RBI/2025-26/28, 22 Apr 2025"
+      url: "https://www.rbi.org.in/Scripts/NotificationUser.aspx?Id=12837&Mode=0"
+      quote: ".bank.in"
+      checked: "2026-10-05"
+      verified: true
+    sign_off: [compliance, legal]
+    test: tests/test_rules.py::test_domain_bankin
+
+  - id: R-SUSPECT
+    family: F1
+    severity: soft
+    title: Identifier already in the I4C suspect registry
+    reason_en: "This {what} is already listed in the national suspect registry run by I4C."
+    reason_hi: "यह {what_hi} पहले से I4C की राष्ट्रीय संदिग्ध सूची में दर्ज है।"
+    citation:
+      source: "PIB, Cases of Digital Arrest Scams, 27 Nov 2024 (PRID 2077948): NCRP Report & Check Suspect"
+      url: "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2077948"
+      quote: "Report & Check Suspect"
+      checked: "2026-10-05"
+      verified: true
+    sign_off: [compliance, legal]
+    test: tests/test_rules.py::test_suspect_registry
+
+  - id: R-BANK-NEVER-MOVE-FD
+    family: F1
+    severity: hard
+    title: The bank never asks you to move money to a “safe account”
+    reason_en: "{bank} never asks you to break an FD or move money to another account to keep it safe. That instruction does not come from us."
+    reason_hi: "{bank} आपसे कभी नहीं कहता कि FD तोड़ दें या पैसा किसी “सुरक्षित खाते” में भेज दें। यह निर्देश हमारी ओर से नहीं है।"
+    citation:
+      source: "Demo Bank customer notice on safe-account scams (bank policy document, data/mocks/bank_policy.md)"
+      url: "data/mocks/bank_policy.md"
+      quote: "We will never ask you to transfer money to a 'safe account'."
+      checked: "2026-10-16"
+      verified: true
+    sign_off: [compliance, branch-ops]
+    test: tests/test_rules.py::test_bank_never_move_fd
+
+  # ---------------- F2: bank-truth provenance ----------------
+  - id: R-BANK-SELF
+    family: F2
+    severity: hard
+    title: Not in our outbound record
+    # The reason used to end "It did not come from us", which is categorical, over a log that is not: it holds
+    # what the bank sends centrally and nothing a branch hands over, posts or says at a counter. A judge pasted a
+    # genuine head-office recovery letter and the card told a real customer the bank had not sent it. The scope
+    # now rides in the same two sentences as the claim. {scope_en} / {scope_hi} are computed by
+    # `rules._log_coverage` from the channels the log's own records carry, so the card can only name coverage the
+    # record in data/mocks/outbound_log.json actually has.
+    # The scope belongs to the officer, not to the customer. The first version put the computed channel list on the
+    # card itself and a frightened 70-year-old was read 44 words containing "आउटबाउंड लॉग" and "IVR कॉल". The card
+    # now carries the claim and the one boundary she needs to understand it; the full computed coverage rides in
+    # the citation and in `detail.lookup.coverage`, which the officer's evidence panel and the signed pack show.
+    reason_en: "{bank} has no record of sending this message. A letter handed over at a branch would not be in that record."
+    reason_hi: "{bank} के रिकॉर्ड में ऐसा कोई संदेश नहीं है। शाखा से हाथ में दिया गया पत्र उस रिकॉर्ड में नहीं होता।"
+    citation:
+      source: "Bank outbound-communications log, centrally sent channels only (SMS, e-mail, IVR, official WhatsApp, in-app); branch letters, posted notices and counter conversations are outside it"
+      url: "internal://outbound-log"
+      quote: "message not found in centrally sent channels"
+      checked: "2026-10-18"
+      verified: true
+    sign_off: [compliance, infosec]
+    test: tests/test_rules.py::test_bank_self_not_sent
+
+  - id: R-BANK-RM-PHONE
+    family: F2
+    severity: soft
+    escalate_alone: true
+    can_be_second: false
+    title: Message came from a relationship manager's personal phone
+    reason_en: "This message did not come through {bank}'s official channels. We will call your relationship manager from the bank's own number to confirm before anything moves."
+    reason_hi: "यह संदेश {bank} के आधिकारिक नंबर से नहीं आया। कुछ भी करने से पहले हम आपके रिलेशनशिप मैनेजर को बैंक के नंबर से कॉल करके पुष्टि करेंगे।"
+    citation:
+      source: "Bank channel policy: instructions to move funds are never given from personal phones"
+      url: "data/mocks/bank_policy.md"
+      quote: "Instructions about your money come only through the bank's official channels."
+      checked: "2026-10-16"
+      verified: true
+    sign_off: [compliance, branch-ops]
+    test: tests/test_rules.py::test_rm_personal_phone_is_amber
+
+  - id: R-PAYEE-NAME
+    family: F2
+    severity: hard
+    title: The payee is not who the message says
+    reason_en: "The account you were told belongs to {claimed_en} is registered to “{holder}” ({holder_type_en})."
+    reason_hi: "जिसे {claimed_hi} का खाता बताया गया है, वह बैंक रिकॉर्ड में “{holder}” ({holder_type_hi}) के नाम पर है।"
+    citation:
+      source: "RBI circular RBI/2024-25/99, 30 Dec 2024: beneficiary account name look-up for RTGS and NEFT"
+      url: "https://www.rbi.org.in/Scripts/NotificationUser.aspx?Id=12759&Mode=0"
+      quote: "beneficiary account name look-up facility"
+      checked: "2026-10-05"
+      verified: true
+    sign_off: [compliance, legal]
+    test: tests/test_rules.py::test_payee_name_private
+
+  - id: R-LEDGER
+    family: F2
+    severity: hard
+    title: No such credit in your account
+    reason_en: "No money was credited to your account in the last 72 hours that matches this message. There is nothing to return."
+    reason_hi: "पिछले 72 घंटों में आपके खाते में ऐसी कोई रक़म जमा नहीं हुई है। कुछ भी वापस भेजने की ज़रूरत नहीं है।"
+    citation:
+      source: "Bank ledger (core banking, read-only)"
+      url: "internal://ledger"
+      quote: "no matching credit"
+      checked: "2026-10-16"
+      verified: true
+    sign_off: [compliance, infosec]
+    test: tests/test_rules.py::test_ledger_no_credit
+
+  - id: R-OWN-SIGNATURE
+    family: F2
+    severity: match
+    title: Matches our records
+    reason_en: "This message matches {bank}'s records and carries the bank's own signature."
+    reason_hi: "यह संदेश {bank} के रिकॉर्ड से मेल खाता है और इस पर बैंक की अपनी डिजिटल मुहर है।"
+    citation:
+      source: "Bank content signature (HMAC in the demo; C2PA content credentials in production)"
+      url: "internal://signature"
+      quote: "signature verified"
+      checked: "2026-10-16"
+      verified: true
+    sign_off: [infosec]
+    test: tests/test_rules.py::test_own_signature_matches
+
+  # ---------------- F3: media forensics (corroborate only) ----------------
+  - id: R-AUDIO-SYNTH
+    family: F3
+    severity: soft
+    title: Signs of synthetic speech
+    reason_en: "This voice shows signs of being computer-generated ({band}). This is supporting information only."
+    reason_hi: "इस आवाज़ में कंप्यूटर से बनी होने के संकेत मिले हैं ({band_hi})। यह सिर्फ़ सहायक जानकारी है।"
+    citation:
+      source: "Calibrated audio anti-spoofing model (per language × codec); never decides alone"
+      url: "internal://forensics/audio"
+      quote: "corroboration only"
+      checked: "2026-10-16"
+      verified: true
+    sign_off: [model-risk]
+    test: tests/test_fusion.py::test_forensics_alone_is_amber
+
+  - id: R-DOC-TAMPER
+    family: F3
+    severity: soft
+    title: Signs of document editing
+    reason_en: "This document shows signs of editing ({band}). This is supporting information only."
+    reason_hi: "इस दस्तावेज़ में बदलाव के संकेत मिले हैं ({band_hi})। यह सिर्फ़ सहायक जानकारी है।"
+    citation:
+      source: "Document error-level analysis and metadata checks; abstains on recompressed files"
+      url: "internal://forensics/document"
+      quote: "corroboration only"
+      checked: "2026-10-16"
+      verified: true
+    sign_off: [model-risk]
+    test: tests/test_fusion.py::test_forensics_alone_is_amber
+
+  # ---------------- F4: campaign memory ----------------
+  - id: R-CAMPAIGN-MATCH
+    family: F4
+    severity: soft
+    title: Same template seen in earlier confirmed cases
+    reason_en: "A message like this one has been seen in {n} earlier cases confirmed by the bank."
+    reason_hi: "ऐसा ही संदेश पहले {n} मामलों में देखा गया है, जिनकी बैंक ने पुष्टि की है।"
+    citation:
+      source: "Campaign memory: analyst-confirmed cases only, two-person approval"
+      url: "internal://campaign-memory"
+      quote: "confirmed outside Satyapan"
+      checked: "2026-10-16"
+      verified: true
+    sign_off: [frmu]
+    test: tests/test_memory.py::test_campaign_match
+
+  # ---------------- F5: bank context (never the second family) ----------------
+  - id: R-PRESSURE-CUES
+    family: F5
+    severity: info
+    can_be_second: false
+    title: Pressure cues in the message
+    reason_en: "The message uses pressure: {cues_en}."
+    reason_hi: "संदेश में दबाव के संकेत हैं: {cues_hi}।"
+    citation:
+      source: "I4C advisory TAU/ADV/003 (typical digital-arrest script)"
+      url: "https://cybercrime.gov.in/Webform/theme/resources/advisories/ADVISORYTAU-ADV-003DigitalArrest06.03.2025.pdf"
+      quote: "Speak to your relatives and friends before taking any action to transfer money."
+      checked: "2026-10-05"
+      verified: true
+    sign_off: [frmu]
+    test: tests/test_rules.py::test_pressure_cues_info_only

@@ -1,0 +1,9 @@
+{
+  "accounts": {
+    "30011223344556": {"holder_name": "Shiv Shakti Traders", "holder_type": "PRIVATE_FIRM"},
+    "20098765432109": {"holder_name": "Rajesh Kumar", "holder_type": "INDIVIDUAL"},
+    "50100234567891": {"holder_name": "Mohit Enterprises", "holder_type": "PRIVATE_FIRM"},
+    "11110000222233": {"holder_name": "Registrar, Supreme Court of India", "holder_type": "GOVT"}
+  },
+  "official_allow_list": ["11110000222233"]
+}
