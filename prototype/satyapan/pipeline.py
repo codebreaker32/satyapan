@@ -3,6 +3,8 @@ the card and the signed evidence pack. This is the one object the API, the CLI a
 """
 from __future__ import annotations
 
+import os
+
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, Optional
@@ -13,7 +15,7 @@ from .adapters import Adapters
 from .card import Card, build_card
 from .evidence import LocalSigner, make_pack
 from .extract import RulesExtractor, claim_from_picklist, ground
-from .forensics import DocumentForensics, SimulatedForensics, default_audio_forensics, to_signal
+from .forensics import DocumentForensics, RemoteForensics, SimulatedForensics, default_audio_forensics, to_signal
 from .fusion import fuse
 from .media import ingest, sha256_file
 from .memory import CampaignMemory
@@ -51,13 +53,18 @@ def _memory_also(hit: dict) -> tuple[str, str]:
 class Satyapan:
     def __init__(self, data_dir: Path = DATA_DIR, *, adapters: Optional[Adapters] = None, extractor=None, audio=None,
                  document=None, memory: Optional[CampaignMemory] = None, signer=None,
-                 now: Optional[datetime | Callable[[], datetime]] = None, state_dir: Path = STATE_DIR):
+                 now: Optional[datetime | Callable[[], datetime]] = None, state_dir: Path = STATE_DIR,
+                 forensics_service: Optional[str] = None):
         self.data_dir = Path(data_dir)
         self.book = load_rulebook(self.data_dir / "rules" / "rulebook.yaml")
         self.adapters = adapters or Adapters.mocks(self.data_dir / "mocks")
         self.extractor = extractor or RulesExtractor(bank_names=(self.book.bank_name,))
         self.audio = audio or default_audio_forensics()
         self.document = document or DocumentForensics()
+        # Finale detectors run as a local service (satyapan-finale). Off unless a URL is given, so tests and the
+        # terminal fallback behave exactly as before.
+        url = forensics_service if forensics_service is not None else os.environ.get("SATYAPAN_FORENSICS_URL", "")
+        self.remote = RemoteForensics(url) if url else None
         self._now = now
         self.memory = memory or CampaignMemory(self.data_dir / "mocks" / "campaign_memory.json", now=self.clock())
         self.signer = signer or LocalSigner(Path(state_dir) / "keys")
@@ -148,9 +155,9 @@ class Satyapan:
         text = "\n".join(t for _, t in inp["texts"])
         return ground(self.extractor.extract(text, source=source))
 
-    def run(self, case: Case) -> Case:
+    def run(self, case: Case, claim: Optional[Claim] = None) -> Case:
         inp = self._inputs[case.id]
-        claim = self.build_claim(case)
+        claim = claim if claim is not None else self.build_claim(case)
         now = self.clock()
         sig_valid = self.adapters.signature.verify(claim.text, inp["signature"]) if inp["signature"] else None
         ctx = RuleContext(adapters=self.adapters, now=now, bank_name=self.book.bank_name, sender_number=inp["sender_number"],
@@ -165,6 +172,9 @@ class Satyapan:
             path = inp["media_paths"].get(m.filename)
             if inp["forensics_sim"] and m.kind in ("audio", "video", "image", "pdf"):
                 signals.append(to_signal(self.book, SimulatedForensics(inp["forensics_sim"]).analyse(path or Path(m.filename), claim.language_hint)))
+            elif path and m.kind in ("audio", "video") and self.remote is not None:
+                # finale detectors: a video gets a face check and a voice check, each its own F3 signal
+                signals.extend(to_signal(self.book, r) for r in self.remote.analyse_all(path, m.kind))
             elif path and m.kind in ("audio", "video"):
                 channel = inp.get("media_channels", {}).get(m.filename)
                 if channel and getattr(self.audio, "accepts_channel", False):
@@ -248,14 +258,10 @@ class Satyapan:
         self.decide(case, actor=actor, action="strike_field", note=f"struck {field}")
         inp = self._inputs[case.id]
         inp["picklist"] = None
-        # re-run on the corrected claim
-        self.extractor_override = c
-        saved = self.build_claim
-        self.build_claim = lambda _case: c  # type: ignore[assignment]
-        try:
-            return self.run(case)
-        finally:
-            self.build_claim = saved  # type: ignore[assignment]
+        # Re-run on the corrected claim, passed explicitly. It used to be patched onto the shared engine for the length
+        # of the re-run; with the finale forensics call in run() that window lasts seconds, and another case run in it
+        # would have been judged on this case's claim.
+        return self.run(case, claim=c)
 
     def evidence_pack(self, case: Case) -> dict:
         inp = self._inputs.get(case.id, {})

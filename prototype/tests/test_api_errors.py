@@ -273,3 +273,23 @@ def test_a_real_pack_still_verifies_through_the_api():
     pack["manifest"]["case"]["flag"]["amount_inr"] += 1
     bad = client.post("/api/evidence/verify", json=pack).json()
     assert bad["ok"] is False and "altered after signing" in bad["reason"]
+
+
+def test_media_ingest_runs_off_the_event_loop(monkeypatch):
+    """Whisper takes 15-70 s on a voice note; on the event loop it froze every other request, the console included."""
+    import asyncio
+
+    from satyapan import api
+    seen = {}
+
+    def fake_add_media(case, path, **kw):
+        try:
+            asyncio.get_running_loop()
+            seen["on_loop"] = True
+        except RuntimeError:
+            seen["on_loop"] = False
+        api.engine._inputs[case.id]["texts"].append(("transcript", "hello"))
+    monkeypatch.setattr(api.engine, "add_media", fake_add_media)
+    cid = open_case()
+    upload(cid, "voice-note.ogg", b"OggS" + b"\x00" * 60, "audio/ogg")
+    assert seen == {"on_loop": False}

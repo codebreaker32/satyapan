@@ -267,14 +267,34 @@ def _what_ran(claim: Claim, signals: list[Signal], titles: dict[str, str], *, ex
     the summons. Nothing informational moves a verdict, but saying nothing ran while the panel below lists one is
     the contradiction this whole change exists to remove. F5 is context and never counts, so it stays out.
     """
-    fired = sorted({s.rule_id for s in signals if s.family != Family.F5})
+    # A media check that found nothing or abstained is not a rule that fired: its rule title ("Signs of face
+    # manipulation") reads like a finding. Name such checks by what they did instead.
+    quiet_media = [s for s in signals if s.family == Family.F3 and s.severity in (Severity.ABSTAIN, Severity.INFO)]
+    fired = sorted({s.rule_id for s in signals if s.family != Family.F5 and s not in quiet_media})
+    media = _media_checks(quiet_media)
     if not fired:
         # The why-clause now carries what "nothing to corroborate" used to say, and this sentence is set on the
         # verdict band where every extra line costs. One idea, once.
         why = f", because {_why_nothing_fired(claim)}" if explain else ". There is nothing to corroborate it either way"
-        return f"No rule fired on it{why}."
+        return f"No rule fired on it{why}.{media}"
     return (f"What did run: {_join([_named(r, titles) for r in fired])}. Nothing there is strong enough to move the "
-            f"verdict, so there is nothing to corroborate either way.")
+            f"verdict, so there is nothing to corroborate either way.{media}")
+
+
+MEDIA_CHECK_WORDS = {"media:video": "the face check", "media:audio": "the voice check", "media:document": "the document check"}
+
+
+def _media_checks(quiet: list[Signal]) -> str:
+    """' Media checks: the face check found no signs and the voice check abstained; they only corroborate.'"""
+    parts = []
+    for s in quiet:
+        what = MEDIA_CHECK_WORDS.get(s.evidence_key, "a media check")
+        did = "found no signs" if (s.detail or {}).get("status") == "clean" else "abstained"
+        if what not in " ".join(parts):
+            parts.append(f"{what} {did}")
+    if not parts:
+        return ""
+    return f" Media checks: {_join(parts)}; they only corroborate."
 
 
 def _fuse_rules(claim: Claim, signals: list[Signal], names: dict[str, str], shown: list[Signal]) -> Verdict:

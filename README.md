@@ -90,5 +90,7 @@ any such clip is used. We make no deepfakes of ourselves or anyone else.
 - Synthetic, clearly labelled data only. No real official's name or likeness.
 - No automatic blocking: Satyapan advises and the bank officer decides. Releasing a held transfer needs a second person.
 - No scores shown to the customer: she gets plain reasons she can check herself.
-- No detector decides alone. With judged media, the instruction checks and the deepfake check count half each, and 40%
-  or more is RED (`fusion.py` in `prototype/satyapan`). The officer decides, and releasing a held transfer needs a second person.
+- A detector counts only through its calibrated band (never a raw score), as half of a combined score with the
+  instruction checks: 40% or more is RED, 15% or more AMBER (`fusion.py` in `prototype/satyapan`, `docs/changes-2026-10-24.md`).
+  With nothing else found, a high-confidence voice flag reaches 50%, RED only when the message asks for money; a face
+  flag is at most "moderate" (35% alone, AMBER). "Unsure" counts as no media. The officer decides, and releasing a held transfer needs a second person.

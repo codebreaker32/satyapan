@@ -33,6 +33,11 @@ class Service:
         self.lock = threading.Lock()
         if warm:                                         # load models now, not on the first case
             _ = self.video.detector, self.video.scorer
+            if self.audio is not None and hasattr(type(self.audio), "scorer"):
+                try:                                     # the voice model too (otherwise ~1 min on the first voice note)
+                    _ = self.audio.scorer
+                except Exception as e:  # noqa: BLE001 - a missing voice model must not stop the face check
+                    print(f"[forensics] voice model not loaded ({type(e).__name__}); the voice check will abstain")
 
     @staticmethod
     def _audio_detector():

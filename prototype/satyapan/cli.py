@@ -216,6 +216,26 @@ def cmd_preflight(args) -> int:
                            "the server loaded an older rulebook; restart `satyapan serve`")
         return True, f"/api/meta 200; rulebook sha matches local ({local.sha256[:12]})"
 
+    def chk_forensics():
+        """The finale detectors (satyapan-finale forensics service), as the running server sees them."""
+        svc = (get_json(base + "/api/meta").get("forensics") or {}).get("service")
+        if not svc:
+            return None, "not connected: forensics stay SIMULATED (start the demo with satyapan-finale/scripts/demo_up.sh)"
+        h = svc.get("health")
+        if not h or not h.get("ok"):
+            return False, f"configured at {svc.get('route')} but not answering; start it or restart demo_up.sh"
+        cells = (h.get("video") or {}).get("calibrated_cells") or []
+        audio = (h.get("audio") or {}).get("installed")
+        if not cells:
+            return False, "video detector has no calibration: every video would say 'unsure: not calibrated'"
+        return True, f"video {h['video'].get('model')} calibrated for {', '.join(cells)}; audio detector {'installed' if audio else 'not installed yet'}"
+
+    def chk_forensics_safe():
+        try:
+            return chk_forensics()
+        except Exception as e:  # a crashed check is a failed check
+            return False, f"{type(e).__name__}: {e}"
+
     run("rulebook", chk_rulebook)
     run("scenarios", chk_scenarios)
     run("evidence", lambda: check_evidence(load_scenarios()[0]))
@@ -223,9 +243,12 @@ def cmd_preflight(args) -> int:
     if base:
         run("server health", chk_health)
         run("server meta", chk_meta)
+        name, ok, text = "server forensics", *chk_forensics_safe()
+        results.append((name, ok, text))
     else:
         results.append(("server health", None, "--server not given"))
         results.append(("server meta", None, "--server not given"))
+        results.append(("server forensics", None, "--server not given"))
 
     for name, ok, text in results:
         print(f"{'skip' if ok is None else 'PASS' if ok else 'FAIL'}  {name}: {text}")

@@ -19,11 +19,11 @@ def test_preflight_healthy_checkout_all_pass(capsys):
     assert main(["preflight"]) == 0
     out = capsys.readouterr().out
     lines = marked_lines(out)
-    assert {l.split(":")[0].split(None, 1)[1] for l in lines} == {"rulebook", "scenarios", "evidence", "console", "server health", "server meta"}
+    assert {l.split(":")[0].split(None, 1)[1] for l in lines} == {"rulebook", "scenarios", "evidence", "console", "server health", "server meta", "server forensics"}
     assert all(l.startswith("PASS") for l in lines if not l.startswith("skip"))
     assert "FAIL" not in out
-    assert sum(1 for l in lines if l.startswith("skip")) == 2, "server checks skip cleanly without --server"
-    assert out.splitlines()[-1].endswith("0 fail, 2 skipped")
+    assert sum(1 for l in lines if l.startswith("skip")) == 3, "server checks skip cleanly without --server"
+    assert out.splitlines()[-1].endswith("0 fail, 3 skipped")
 
 
 def test_preflight_missing_console_dist_fails_and_still_runs_the_rest(tmp_path, capsys):
@@ -92,3 +92,53 @@ def test_preflight_exits_nonzero_when_evidence_is_tampered(monkeypatch, capsys):
     out = capsys.readouterr().out
     assert any(l.startswith("FAIL  evidence:") for l in out.splitlines())
     assert "(evidence)" in out.splitlines()[-1]
+
+
+def _meta_server(meta):
+    import json
+    import threading
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    class H(BaseHTTPRequestHandler):
+        def do_GET(self):  # noqa: N802
+            body = {"ok": True, "version": "t"} if self.path == "/api/health" else meta
+            data = json.dumps(body).encode()
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
+        def log_message(self, *a):
+            pass
+    httpd = ThreadingHTTPServer(("127.0.0.1", 0), H)
+    threading.Thread(target=httpd.serve_forever, daemon=True).start()
+    return httpd, f"http://127.0.0.1:{httpd.server_address[1]}"
+
+
+def _forensics_line(meta, capsys):
+    from satyapan.rulebook import load_rulebook
+    meta = {"rulebook": {"sha256": load_rulebook().sha256}, **meta}
+    httpd, url = _meta_server(meta)
+    try:
+        main(["preflight", "--server", url])
+    finally:
+        httpd.shutdown()
+    return next(l for l in capsys.readouterr().out.splitlines() if "server forensics" in l)
+
+
+def test_preflight_forensics_not_connected_is_a_skip(capsys):
+    assert _forensics_line({"forensics": {"service": None}}, capsys).startswith("skip")
+
+
+def test_preflight_forensics_down_or_uncalibrated_fails(capsys):
+    down = {"forensics": {"service": {"route": "local service", "health": None}}}
+    assert _forensics_line(down, capsys).startswith("FAIL")
+    uncal = {"forensics": {"service": {"route": "x", "health": {"ok": True, "video": {"model": "m", "calibrated_cells": []}}}}}
+    assert "no calibration" in _forensics_line(uncal, capsys)
+
+
+def test_preflight_forensics_ready_passes(capsys):
+    ok = {"forensics": {"service": {"route": "x", "health": {"ok": True, "video": {"model": "GenD", "calibrated_cells": ["video/sd"]},
+                                                             "audio": {"installed": False}}}}}
+    line = _forensics_line(ok, capsys)
+    assert line.startswith("PASS") and "video/sd" in line and "not installed yet" in line

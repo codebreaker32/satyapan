@@ -6,6 +6,9 @@ detector abstains outside the conditions it was calibrated for.
   calibration file exists.
 - DocumentForensics: error-level analysis plus creator metadata; abstains on small or recompressed images.
 - SimulatedForensics: rehearsal only; its results are labelled SIMULATED wherever they appear.
+- RemoteForensics: the finale detectors (satyapan-finale: GenD face check + audio deepfake check) through their local
+  service, which keeps the models loaded. A video gets a face result and a voice result. If the service is not
+  running, the file gets one abstaining result that says so; a case never fails because of forensics.
 """
 from __future__ import annotations
 
@@ -266,6 +269,124 @@ class DocumentForensics:
                               model="ELA", extra={"ela_mean": round(mean, 2), "ela_max": mx, "software": software})
 
 
+class RemoteForensics:
+    """Client for the satyapan-finale forensics service (`python -m forensics.service`, http://127.0.0.1:8765)."""
+
+    def __init__(self, url: str, timeout: float = 180.0):
+        self.url = url.rstrip("/")
+        self.timeout = timeout
+        # Prefetch: forensics start when a file is uploaded (alongside speech-to-text), and run() picks up the result
+        # by content hash, so the officer is not waiting for the face check after clicking Run.
+        import threading
+        self._lock = threading.Lock()
+        self._pending: dict = {}
+        self.label = Label("Video and audio forensics", "GenD CLIP-L/14 face check (MIT) and an audio deepfake check, "
+                           "calibrated per kind of input", "Model risk",
+                           f"local service at {self.url}; abstains when unsure, uncalibrated or not running", mock=False)
+
+    def _call(self, method: str, route: str, body: Optional[dict] = None) -> dict:
+        import urllib.request
+        data = json.dumps(body).encode() if body is not None else None
+        req = urllib.request.Request(self.url + route, data=data, method=method, headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=self.timeout) as r:
+            return json.load(r)
+
+    def health(self) -> Optional[dict]:
+        try:
+            return self._call("GET", "/health")
+        except Exception:  # noqa: BLE001 - any failure means "not running"
+            return None
+
+    @staticmethod
+    def _sha(path: Path) -> str:
+        import hashlib
+        h = hashlib.sha256()
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(1 << 20), b""):
+                h.update(chunk)
+        return h.hexdigest()
+
+    def prefetch(self, path: Path, kind: str) -> None:
+        """Start the analysis of a private copy of `path` in the background (the upload is moved after decoding)."""
+        import shutil
+        import tempfile
+        import threading
+        try:
+            sha = self._sha(path)
+        except OSError:
+            return
+        with self._lock:
+            e = self._pending.get(sha)
+            if e is not None and not (e["done"].is_set() and _unreachable(e["results"] or [])):
+                return                                   # already running, or a real answer is cached
+            done = threading.Event()
+            self._pending[sha] = {"done": done, "results": None}
+        tmp = Path(tempfile.mkdtemp(prefix="satyapan-forensics-"))
+        copy = tmp / Path(path).name
+        shutil.copyfile(path, copy)
+
+        def work():
+            try:
+                self._pending[sha]["results"] = self._fetch(copy, kind)
+            finally:
+                shutil.rmtree(tmp, ignore_errors=True)
+                done.set()
+        threading.Thread(target=work, daemon=True).start()
+
+    def analyse_all(self, path: Path, kind: str) -> list[ForensicResult]:
+        try:
+            sha = self._sha(path)
+        except OSError:
+            sha = None
+        entry = self._pending.get(sha) if sha else None
+        if entry is not None and entry["done"].wait(self.timeout) and entry["results"] is not None:
+            # Reuse any real answer from the service, including its own abstains ("audio detector not installed yet").
+            # Only a client-side failure (service unreachable at upload time) is retried now.
+            if not _unreachable(entry["results"]):
+                return entry["results"]
+        results = self._fetch(path, kind)
+        if sha and not _unreachable(results):          # keep it, so a re-run (strike a field) does not re-analyse
+            import threading
+            done = threading.Event()
+            done.set()
+            with self._lock:
+                self._pending[sha] = {"done": done, "results": results}
+        return results
+
+    def _fetch(self, path: Path, kind: str) -> list[ForensicResult]:
+        try:
+            out = self._call("POST", "/analyse", {"path": str(Path(path).resolve())})
+        except Exception:  # noqa: BLE001 - not running, timed out, or bad reply: abstain, never fail the case
+            return [ForensicResult(kind=kind, status="abstain", reason="the forensics service is not running", model="none",
+                                   extra={"unreachable": True})]
+        results = []
+        for d in out.get("results", []):
+            if d.get("status") not in ("synthetic", "clean", "abstain") or d.get("kind") not in ("audio", "video"):
+                continue
+            results.append(ForensicResult(kind=d["kind"], status=d["status"], band=d.get("band", ""), score=d.get("score"),
+                                          reason=d.get("reason", ""), model=d.get("model", ""), cell=d.get("cell", ""),
+                                          extra={"sha256": (d.get("extra") or {}).get("sha256"), "service_seconds": out.get("seconds")}))
+        return results or [ForensicResult(kind=kind, status="abstain", reason="the forensics service returned no result", model="none",
+                                          extra={"unreachable": True})]
+
+
+def _unreachable(results: list) -> bool:
+    return any((r.extra or {}).get("unreachable") for r in results)
+
+
+CHECK_EN = {"audio": "Voice check", "video": "Face check", "document": "Document check"}
+CHECK_HI = {"audio": "आवाज़ की जाँच", "video": "चेहरे की जाँच", "document": "दस्तावेज़ की जाँच"}
+
+RULE_FOR_KIND = {"audio": "R-AUDIO-SYNTH", "video": "R-VIDEO-SYNTH", "document": "R-DOC-TAMPER"}
+
+
+def rule_for(res: "ForensicResult") -> str:
+    """Voice -> R-AUDIO-SYNTH, face -> R-VIDEO-SYNTH; a document whose own label names an AI tool -> R-DOC-AI."""
+    if res.kind == "document" and res.status == "synthetic":
+        return "R-DOC-AI"
+    return RULE_FOR_KIND.get(res.kind, "R-DOC-TAMPER")
+
+
 DEEPFAKE_PCT = {"high": 100, "moderate": 70, "low": 30}   # calibrated band -> deepfake % (fusion's combined score)
 
 
@@ -283,16 +404,23 @@ def to_signal(book, res: ForensicResult):
     from .models import Family, Severity, Signal
     from .rulebook import make_signal
     tag = " (SIMULATED)" if res.simulated else ""
-    rule_id = "R-AUDIO-SYNTH" if res.kind in ("audio", "video") else ("R-DOC-AI" if res.status == "synthetic" else "R-DOC-TAMPER")
+    rule_id = rule_for(res)
     if res.status in ("synthetic", "edited"):
         return make_signal(book, rule_id, {"evidence_key": f"media:{res.kind}", "band": res.band + tag, "band_hi": BAND_HI.get(res.band, res.band) + tag,
                                            "score": res.score, "model": res.model, "cell": res.cell, "simulated": res.simulated,
                                            "status": res.status, "deepfake_pct": deepfake_pct(res),
                                            "tool": res.extra.get("ai_tool", "")})
-    reason = res.reason or ("no signs found" if res.status == "clean" else "abstained")
+    check_en = CHECK_EN.get(res.kind, "Media check")
+    check_hi = CHECK_HI.get(res.kind, "मीडिया की जाँच")
+    if res.status == "clean":
+        reason_en = f"{check_en}{tag}: no signs found. This only corroborates; it does not confirm the media."
+        reason_hi = f"{check_hi}{tag}: कोई संकेत नहीं मिला। यह सिर्फ़ सहायक जानकारी है।"
+    else:
+        reason_en = f"{check_en}{tag}: unsure: {res.reason or 'it could not judge this file'}."
+        reason_hi = f"{check_hi}{tag}: अनिश्चित।"
     return Signal(rule_id=rule_id, family=Family.F3, severity=Severity.ABSTAIN if res.status == "abstain" else Severity.INFO,
-                  evidence_key=f"media:{res.kind}", reason_en=f"Forensics ({res.kind}): {res.status}{tag}. {reason}",
-                  reason_hi=f"फ़ोरेंसिक ({res.kind}): {res.status}{tag}", citation="corroboration only", citation_verified=True,
+                  evidence_key=f"media:{res.kind}", reason_en=reason_en,
+                  reason_hi=reason_hi, citation="corroboration only", citation_verified=True,
                   rule_version="forensics-1.0",
                   detail={"can_be_second": False, "status": res.status, "score": res.score, "model": res.model, "cell": res.cell, "simulated": res.simulated,
                           "deepfake_pct": deepfake_pct(res)})

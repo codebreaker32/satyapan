@@ -36,7 +36,8 @@ For Aman and Bhawna. What works, what was measured, how to run it, and what is l
 | Whisper small, Hindi | about 60% word errors at similar speed (not used) | same |
 
 Plain reading: on HD video the face check is useful corroboration. On compressed WhatsApp forwards it rarely flags
-and often says "unsure". That is why it never decides a case.
+and often says "unsure" (counted as no media). Since the 24 Oct merge the deepfake check counts half in a combined
+score (`docs/changes-2026-10-24.md`); a face flag is at most "moderate", so alone it gives AMBER.
 
 ## How to run the demo
 

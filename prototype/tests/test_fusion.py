@@ -65,6 +65,23 @@ def test_forensics_alone_is_amber():
     assert fuse(CLAIM, [sig("F", Family.F3, Severity.SOFT, "media:audio")]).outcome == Outcome.AMBER
 
 
+def test_video_forensics_alone_is_amber():
+    """R-VIDEO-SYNTH (the GenD face check) is F3 like the voice check: alone it never goes above AMBER."""
+    assert fuse(CLAIM, [sig("R-VIDEO-SYNTH", Family.F3, Severity.SOFT, "media:video")]).outcome == Outcome.AMBER
+
+
+def test_video_forensics_can_second_a_cited_rule():
+    v = fuse(CLAIM, [sig("A", Family.F1, Severity.HARD, "claim"), sig("R-VIDEO-SYNTH", Family.F3, Severity.SOFT, "media:video")])
+    assert v.outcome == Outcome.RED and v.second_family == "R-VIDEO-SYNTH"
+
+
+def test_face_and_voice_checks_together_are_still_one_family():
+    """A video's face flag and voice flag are both F3: together they are not two independent checks."""
+    v = fuse(CLAIM, [sig("R-VIDEO-SYNTH", Family.F3, Severity.SOFT, "media:video"),
+                     sig("R-AUDIO-SYNTH", Family.F3, Severity.SOFT, "media:audio")])
+    assert v.outcome != Outcome.RED
+
+
 def test_two_independent_softs_are_amber_but_same_key_is_not():
     assert fuse(CLAIM, [sig("A", Family.F1, Severity.SOFT, "claim"), sig("B", Family.F2, Severity.SOFT, "bank:ledger")]).outcome == Outcome.AMBER
     assert fuse(CLAIM, [sig("A", Family.F1, Severity.SOFT, "claim"), sig("B", Family.F1, Severity.SOFT, "claim")]).outcome == Outcome.GREY

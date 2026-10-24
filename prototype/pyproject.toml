@@ -17,11 +17,11 @@ dependencies = [
 [project.optional-dependencies]
 aws = ["boto3>=1.34"]
 # speech-to-text; brings PyAV, which also decodes audio for the detector (`satyapan setup-models` fetches the model)
-stt = ["faster-whisper>=1.0"]
+stt = ["faster-whisper>=1.0", "av<19"]  # av 19 dropped an open() option faster-whisper 1.2 passes
 # OCR needs the tesseract program too (Windows: winget install -e --id UB-Mannheim.TesseractOCR); pymupdf reads PDFs
 ocr = ["pytesseract>=0.3", "pymupdf>=1.24"]
 # AASIST-L audio anti-spoofing; install torch from the CPU index: pip install torch --index-url https://download.pytorch.org/whl/cpu
-audio = ["torch>=2.2", "numpy>=1.26", "av>=12"]
+audio = ["torch>=2.2", "numpy>=1.26", "av>=12,<19"]
 # meaning-level campaign memory (multilingual sentence embeddings over ONNX, no torch needed)
 similarity = ["fastembed>=0.4"]
 dev = ["pytest>=8", "httpx>=0.27"]  # httpx: fastapi.testclient needs it

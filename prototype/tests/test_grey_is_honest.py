@@ -210,3 +210,25 @@ def test_what_was_read_quotes_the_words_it_rests_on():
     span = Span(text="invest", start=10, end=16)
     v = fuse(_claim(instruction=Instruction.INVEST_FOR_RETURNS, instruction_span=span), [])
     assert 'read from “invest”' in v.explanation
+
+
+def _media(rule: str, key: str, sev: Severity, status: str) -> Signal:
+    return Signal(rule_id=rule, family=Family.F3, severity=sev, evidence_key=key, reason_en="r", reason_hi="र",
+                  citation="corroboration only", citation_verified=True, detail={"can_be_second": False, "status": status})
+
+
+def test_quiet_media_checks_are_named_by_what_they_did_never_by_a_finding_title():
+    """A face check that found nothing (or never ran) must not read 'What did run: Signs of face manipulation'."""
+    signals = [_media("R-VIDEO-SYNTH", "media:video", Severity.INFO, "clean"),
+               _media("R-AUDIO-SYNTH", "media:audio", Severity.ABSTAIN, "abstain")]
+    v = fuse(_claim(claimed_issuer=Issuer.RBI), signals)
+    assert v.outcome == Outcome.GREY
+    assert "Signs of face manipulation" not in v.explanation and "Signs of synthetic speech" not in v.explanation
+    assert "Media checks: the face check found no signs and the voice check abstained; they only corroborate." in v.explanation
+    assert NEVER_SAFE in v.explanation
+
+
+def test_service_down_reads_as_an_abstaining_check():
+    v = fuse(_claim(), [_media("R-VIDEO-SYNTH", "media:video", Severity.ABSTAIN, "abstain")])
+    assert v.outcome == Outcome.GREY and "the face check abstained" in v.explanation
+    assert "Signs of face manipulation" not in v.explanation

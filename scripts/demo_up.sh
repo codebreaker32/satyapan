@@ -6,7 +6,11 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 FIN=$(pwd)
-PROTO=$(cd ../satyapan && pwd)
+# The engine and console: prototype/ in this repo (merged 24 Oct), else the older sibling checkout ../satyapan.
+if [ -d prototype/satyapan ]; then PROTO="$FIN/prototype"; else PROTO=$(cd ../satyapan && pwd); fi
+# Its Python environment (pip install -e prototype into it). SATYAPAN_ENGINE_VENV overrides.
+ENGINE_VENV="${SATYAPAN_ENGINE_VENV:-$(cd "$FIN/../satyapan" 2>/dev/null && pwd)/.venv}"
+[ -x "$ENGINE_VENV/bin/satyapan" ] || ENGINE_VENV="$PROTO/.venv"
 PORT=${FORENSICS_PORT:-8765}
 LOGS="$FIN/clips/logs"
 mkdir -p "$LOGS"
@@ -32,4 +36,4 @@ export SATYAPAN_WHISPER_MODEL="${SATYAPAN_WHISPER_MODEL:-large-v3-turbo}"
 export SATYAPAN_WHISPER_BEAM="${SATYAPAN_WHISPER_BEAM:-1}"
 export SATYAPAN_WHISPER_PRELOAD=1   # load speech-to-text at start-up, not on the first voice note
 echo "engine: forensics at $SATYAPAN_FORENSICS_URL, speech-to-text: Whisper $SATYAPAN_WHISPER_MODEL"
-exec .venv/bin/satyapan serve
+exec "$ENGINE_VENV/bin/satyapan" serve

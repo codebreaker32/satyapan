@@ -2,7 +2,7 @@
 
 What we build in this repo over the two days: two deepfake detectors for financial communications, each wrapped so it
 knows when to say "unsure", calibrated on our own consented clips, and joined behind one shared result format. A
-detector never decides on its own; its result is one piece of evidence the officer sees, with a plain reason.
+detector's calibrated band counts half in the combined score (`docs/changes-2026-10-24.md`); the officer sees it with a plain reason.
 
 Models are declared in `MODELS.md`. Data rules are in `README.md`: synthetic or consented only, no real official's
 face or voice.
@@ -107,7 +107,7 @@ threshold logic to mirror; `forensics/common.py` has `threshold_at_fpr` and the 
    No real official's face is shown; if a sample shows a recognisable public figure, pick another.
 3. **Blurry WhatsApp forward:** the detector says "unsure", with its reason. This shows it won't guess.
 4. **Line for Q&A:** open detectors lose about half their accuracy on 2024's real deepfakes (Deepfake-Eval-2024,
-   arXiv 2503.02857), so a detector here never decides on its own.
+   arXiv 2503.02857), so a detector here counts only through calibrated bands, and "unsure" counts as no media.
 
 ## 6. Checkpoints
 

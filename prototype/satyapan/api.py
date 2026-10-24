@@ -6,9 +6,10 @@ Prod: `npm run build` in console/ writes console/dist, which this app serves at 
 """
 from __future__ import annotations
 
+import os
+
 import copy
 import json
-import os
 import shutil
 import statistics
 import tempfile
@@ -21,6 +22,7 @@ from fastapi import Body, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
 from . import POLICY_VERSION, __version__
@@ -38,6 +40,19 @@ app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http
 # The website check asks the domain registries live when the server runs (SATYAPAN_LIVE_WEB=0 turns that off, and
 # the test suite does); offline it falls back to the recorded answers, so a dead venue network changes nothing.
 engine = Satyapan(adapters=Adapters.mocks(live_web=os.environ.get("SATYAPAN_LIVE_WEB", "1") != "0"))
+if os.environ.get("SATYAPAN_WHISPER_PRELOAD"):
+    # demo_up.sh sets this: load the speech-to-text model in the background at start-up, so the first voice note of
+    # the demo does not also wait 15-60 s for the model to load. Failure here only means the first note loads it.
+    import threading
+
+    def _preload_whisper() -> None:
+        try:
+            from .media import _whisper
+            _whisper(os.environ.get("SATYAPAN_WHISPER_MODEL", "small"))
+        except Exception:  # noqa: BLE001
+            pass
+    threading.Thread(target=_preload_whisper, daemon=True).start()
+
 UPLOADS = STATE_DIR / "uploads"
 
 # Upload limits for the demo. The cap bounds what lands on disk under evidence/uploads/; the request body itself
@@ -122,7 +137,8 @@ def meta():
                 {"id": m.id, "family": m.family.value, "severity": m.severity.value, "title": m.title, "citation": m.citation.source,
                  "citation_url": m.citation.url, "verified": m.citation.verified, "checked": m.citation.checked} for m in engine.book.rules.values()]},
             "adapters": engine.adapters.labels(),
-            "forensics": {"audio": engine.audio.label.as_dict(), "document": engine.document.label.as_dict()},
+            "forensics": {"audio": engine.audio.label.as_dict(), "document": engine.document.label.as_dict(),
+                          "service": ({**engine.remote.label.as_dict(), "health": engine.remote.health()} if engine.remote else None)},
             "signer": engine.signer.label.as_dict(),
             # honest scope: wall time to verdict in this serve session on this laptop, not a benchmark
             "session_timing": {"count": len(_verdict_ms),
@@ -295,9 +311,13 @@ async def add_media(case_id: str, file: UploadFile = File(...), derived_text: Op
             raise HTTPException(415, empty_message(name))
         if contents_contradict_name(kind, head):   # cheap magic-byte check before OCR or speech-to-text
             raise HTTPException(415, unreadable_message(name, kind))
+        if engine.remote is not None and kind in ("audio", "video"):
+            engine.remote.prefetch(path, kind)   # face/voice checks start now, alongside speech-to-text
         try:
-            engine.add_media(case, path, derived_text=derived_text, sender_number=sender_number, language=language,
-                             channel=channel)
+            # Speech-to-text (Whisper) and OCR take seconds to a minute; run them off the event loop so the console and
+            # every other request stay responsive while a voice note or video is read.
+            await run_in_threadpool(engine.add_media, case, path, derived_text=derived_text, sender_number=sender_number,
+                                    language=language, channel=channel)
         except MediaUnreadable as e:   # a decoder opened it and found nothing readable
             raise HTTPException(415, str(e)) from e
         except RuntimeError as e:      # no STT/OCR installed: ask the console for the transcript

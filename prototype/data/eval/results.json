@@ -367,9 +367,8 @@
       "in_scope": true,
       "category": "fake regulator investment",
       "lang": "devanagari",
-      "outcome": "RED",
+      "outcome": "AMBER",
       "fired": [
-        "R-CAMPAIGN-MATCH",
         "R-RBI-INV"
       ]
     },
@@ -1730,9 +1729,8 @@
       "in_scope": true,
       "category": "known campaign, reworded",
       "lang": "en",
-      "outcome": "RED",
+      "outcome": "AMBER",
       "fired": [
-        "R-CAMPAIGN-MATCH",
         "R-RBI-INV"
       ]
     },
@@ -1832,20 +1830,20 @@
     }
   ],
   "environment": {
-    "audio_detector": "AASISTAudioForensics",
-    "meaning_model": true,
+    "audio_detector": "DFArenaAudioForensics",
+    "meaning_model": false,
     "website_registry": "SnapshotWebsiteRegistry",
-    "rulebook": "1.6 (7a739f076d0e)"
+    "rulebook": "1.7 (6f76af7c67b9)"
   },
   "summary": {
     "in_scope_scams": {
       "n": 79,
-      "RED": 36,
-      "AMBER": 39,
+      "RED": 34,
+      "AMBER": 41,
       "GREY": 4,
       "MATCHES": 0,
       "flagged_pct": 94.9,
-      "stopped_pct": 45.6,
+      "stopped_pct": 43.0,
       "missed_pct": 5.1
     },
     "genuine": {
@@ -1979,8 +1977,8 @@
         "label": "scam",
         "category": "fake regulator investment",
         "n": 9,
-        "RED": 3,
-        "AMBER": 5,
+        "RED": 2,
+        "AMBER": 6,
         "GREY": 1,
         "MATCHES": 0
       },
@@ -2015,8 +2013,8 @@
         "label": "scam",
         "category": "known campaign, reworded",
         "n": 2,
-        "RED": 1,
-        "AMBER": 0,
+        "RED": 0,
+        "AMBER": 1,
         "GREY": 1,
         "MATCHES": 0
       },
@@ -2093,7 +2091,7 @@
     ],
     "total": 156
   },
-  "made": "2026-10-23",
-  "commit": "9739e70",
+  "made": "2026-10-24",
+  "commit": "958bd56",
   "_note": "Synthetic evaluation set, not field data."
 }
