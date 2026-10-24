@@ -167,6 +167,33 @@ foot section labelled "Rehearsal controls": it is a rehearsal artefact and it wa
 product's home screen. The Cases list got a fixed 112px verdict column so the eye reads a column of outcomes down
 the page instead of five identical text rectangles.
 
+## The detectors on screen (25 Oct, refinement for the live face and voice checks)
+
+Refined, not redesigned: every token, the type ladder and the material rules above are unchanged. The gate was
+taste-skill v2's house rules (no eyebrows, hairlines, monospace, gradients or resting shadows), which this world
+already keeps.
+
+- **"What the face and voice checks found"** (`ui/mediachecks.tsx`, `.mc-*`) closes step 2 as an `h3.case-head`,
+  not a fourth section. One row per F3 check on a `--panel` tone step: the check's name with the same
+  `.callout-no` number its feature row carries, the result word at 20px (accent ink only when signs were found;
+  verdict colours stay on the band), and one sentence that makes the result checkable: the score against the line
+  for that kind of input, how many genuine clips set the line, the false-alarm rate on genuine clips that did not
+  (from `/api/accuracy`), and how much it counted. A score that rounds to 1 prints "above 0.99999", because
+  "1.00000" read as certainty. Until the figures are read the result word stands alone; a failed read shows the
+  standard `Not loaded:` sentence with Retry. Face and voice lines no longer appear under "Also noted, never
+  counted", which made that heading true again (a clean check counts 0% in the combined score).
+- **"In the engine's words"** (`.record-why`): the verdict's explanation sits under the case record at full width.
+  In the Policy row's value column it ran one word per line on the projector.
+- **New case progress** (`.run-progress`): while the checks run, one sentence names the stage the form is in
+  (opening, reading, running the checks, with the typical time for that kind of file) and the elapsed seconds beside
+  it. Only the stage is a live region; the seconds are `aria-hidden`. The file picker states the formats and the
+  100 MB limit, and says the file stays on this laptop.
+- **Evaluation accuracy** (`.acc-*`): one table per check, four columns; the false-alarm rate on genuine clips the
+  line never saw and the fakes caught are set at 24px with their counts at 15px beneath. Under 960px the
+  "not judged" column hides and tables scroll inside their box (`.table-scroll`, `min-width: 0` in the grid).
+- The shared `.grid-2` minimum is `min(360px, 100%)`: at 390 the content box is 358px, and the old 360px minimum
+  pushed every two-column page 2px wider than the screen.
+
 ## Memorable moment
 
 Flip a byte of the signed evidence pack on the projector and watch Verify fail (`.verify-bad`, red), restore it
