@@ -4,6 +4,11 @@ import { when } from '../lib/format'
 import { Trouble, writeTrouble } from '../ui/trouble'
 
 // Campaign memory: fingerprints of cases two analysts confirmed. A match only ever adds a soft signal.
+// The same analyst under another spelling counts once. The engine compares a fuller identity key (lookalike letters
+// and invisible marks too); this only keeps the button from inviting a press the engine will not count.
+const nameKey = (s: string) => s.normalize('NFKC').toLowerCase().trim()
+const sameAnalyst = (approvals: string[], analyst: string) => approvals.some((a) => nameKey(a) === nameKey(analyst))
+
 export function Memory({ reload = 0 }: { reload?: number }) {
   const [entries, setEntries] = useState<MemoryEntry[] | null>(null)
   const [analyst, setAnalyst] = useState('analyst.suresh')
@@ -100,8 +105,8 @@ export function Memory({ reload = 0 }: { reload?: number }) {
                   {/* an approval with nobody's name on it is no approval: the two-person rule is the whole control
                       here, and the service refuses a blank analyst id */}
                   {pending && (
-                    <button className="btn" onClick={() => approve(e.id)} disabled={approvals.includes(analyst) || analyst.trim() === ''}>
-                      {approvals.includes(analyst) ? 'Needs a second analyst' : 'Approve'}
+                    <button className="btn" onClick={() => approve(e.id)} disabled={sameAnalyst(approvals, analyst) || analyst.trim() === ''}>
+                      {sameAnalyst(approvals, analyst) ? 'Needs a second analyst' : 'Approve'}
                     </button>
                   )}
                 </div>

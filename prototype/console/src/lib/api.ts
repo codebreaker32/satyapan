@@ -144,6 +144,8 @@ export interface CaseView {
     bank_signature_present: boolean
     forensics_simulated: boolean
     mode: 'claim-only' | 'media'
+    // True on a RED case, and on one that was RED before an officer struck a field (the engine's own rule).
+    release_needs_co_sign?: boolean
   }
   scenario?: {
     id: string

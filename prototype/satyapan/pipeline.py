@@ -21,7 +21,7 @@ from .llm_reader import LocalLLMReader, configured_model
 from .media import ingest, sha256_file
 from .memory import CampaignMemory
 from .models import (Case, Channel, Claim, ClaimedOwner, Consent, Family, Flag, Instruction, Issuer, MediaRef, Outcome,
-                     Severity, Signal, now_iso, visible_name)
+                     Severity, Signal, identity_key, now_iso, visible_name)
 from .rulebook import RuleContext, evaluate, load_rulebook, make_signal
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
@@ -50,6 +50,35 @@ def _memory_also(hit: dict) -> tuple[str, str]:
     verb, verb_hi = ("is", "है") if len(changed) == 1 else ("are", "हैं")
     return f" This time {en} {verb} different.", f" इस बार इसमें {hi} अलग {verb_hi}।"
 
+
+
+# The fields an officer can strike as wrongly read, and how each is struck.
+STRIKABLE = ("issuer", "instruction", "account", "ifsc", "vpa", "claimed_owner", "digital_arrest")
+
+
+def _has_field(c: Claim, field: str) -> bool:
+    if field == "issuer":
+        return c.claimed_issuer != Issuer.NONE
+    if field == "instruction":
+        return c.instruction != Instruction.NONE
+    if field == "claimed_owner":
+        return c.payee.claimed_owner != ClaimedOwner.UNKNOWN
+    if field == "digital_arrest":
+        return c.digital_arrest_span is not None
+    return getattr(c.payee, field) is not None
+
+
+def _strike(c: Claim, field: str) -> None:
+    if field == "issuer":
+        c.claimed_issuer, c.issuer_span = Issuer.NONE, None
+    elif field == "instruction":
+        c.instruction, c.instruction_span = Instruction.NONE, None
+    elif field in ("account", "ifsc", "vpa"):
+        setattr(c.payee, field, None)
+    elif field == "claimed_owner":
+        c.payee.claimed_owner, c.payee.claimed_owner_span = ClaimedOwner.UNKNOWN, None
+    elif field == "digital_arrest":
+        c.digital_arrest_span = None
 
 class Satyapan:
     def __init__(self, data_dir: Path = DATA_DIR, *, adapters: Optional[Adapters] = None, extractor=None, audio=None,
@@ -166,6 +195,8 @@ class Satyapan:
         claim = ground(self.extractor.extract(text, source=source))
         if self.reader is not None:
             claim = ground(self.reader.fill(claim))
+        for field in inp.get("struck", []):     # an officer's strike stands on every later run
+            _strike(claim, field)
         return claim
 
     def run(self, case: Case, claim: Optional[Claim] = None) -> Case:
@@ -240,7 +271,16 @@ class Satyapan:
                 t.append("forensics flagged but no rule fired (conflicting signals)")
         if any(d.action == "release" and case.verdict and case.verdict.outcome == Outcome.RED for d in case.decisions):
             t.append("officer released a RED case")
+        elif any(d.action == "release" for d in case.decisions) and self.release_needs_co_sign(case):
+            t.append("officer released a case that was RED before a field was struck")
         return t
+
+    def release_needs_co_sign(self, case: Case) -> bool:
+        """A RED case, or one that was RED before an officer struck a field: one officer's own correction must not be
+        what lets the same officer release it alone (strike the account, the case re-runs GREY, release)."""
+        if case.verdict and case.verdict.outcome == Outcome.RED:
+            return True
+        return bool(self._inputs.get(case.id, {}).get("red_before_strike"))
 
     def decide(self, case: Case, *, actor: str, action: str, note: str = "", co_signer: Optional[str] = None) -> Case:
         """Record a human decision. Releasing a RED needs a second person's co-sign; nothing here acts on its own."""
@@ -248,10 +288,11 @@ class Satyapan:
         if action not in ("release", "hold", "escalate", "help_report", "strike_field"):
             raise ValueError(f"'{action}' is not a decision this system records")
         co_signer = visible_name(co_signer)   # whitespace, and anything invisible, is no co-sign
-        if action == "release" and case.verdict and case.verdict.outcome == Outcome.RED:
+        if action == "release" and self.release_needs_co_sign(case):
             if not co_signer:
-                raise PermissionError("releasing a RED case needs a manager co-sign")
-            if co_signer.casefold() == actor.strip().casefold():
+                raise PermissionError("releasing a RED case needs a manager co-sign" + (
+                    "; this case was RED before a field was struck" if case.verdict and case.verdict.outcome != Outcome.RED else ""))
+            if identity_key(co_signer) == identity_key(actor):
                 raise PermissionError("a RED release needs a second person: the co-signer must be someone other than the deciding officer")
         case.decisions.append(Decision(actor=actor, action=action, note=(note + (f" (co-signed by {co_signer})" if co_signer else "")).strip()))
         case.status = {"release": "released", "hold": "held", "escalate": "escalated", "help_report": case.status, "strike_field": case.status}.get(action, case.status)
@@ -262,18 +303,19 @@ class Satyapan:
         c = case.claim
         if c is None:
             return case
-        if field == "issuer":
-            c.claimed_issuer, c.issuer_span = Issuer.NONE, None
-        elif field == "instruction":
-            c.instruction, c.instruction_span = Instruction.NONE, None
-        elif field in ("account", "ifsc", "vpa"):
-            setattr(c.payee, field, None)
-        elif field == "claimed_owner":
-            c.payee.claimed_owner, c.payee.claimed_owner_span = ClaimedOwner.UNKNOWN, None
-        elif field == "digital_arrest":
-            c.digital_arrest_span = None
-        self.decide(case, actor=actor, action="strike_field", note=f"struck {field}")
+        if field not in STRIKABLE:
+            raise ValueError(f"'{field}' is not a field that can be struck. These can: {', '.join(STRIKABLE)}.")
+        if not _has_field(c, field):
+            raise ValueError(f"This case has no {field.replace('_', ' ')} to strike: it was not read from the message.")
         inp = self._inputs[case.id]
+        on_red = bool(case.verdict and case.verdict.outcome == Outcome.RED)
+        if on_red:
+            inp["red_before_strike"] = True
+        _strike(c, field)
+        # Kept, so every later run of the case (re-encode, run again) applies it too. A re-run used to re-extract the
+        # struck field from the raw text while the decision log and the signed pack still said the strike stood.
+        inp.setdefault("struck", []).append(field)
+        self.decide(case, actor=actor, action="strike_field", note=f"struck {field}" + (" on a RED case" if on_red else ""))
         inp["picklist"] = None
         # Re-run on the corrected claim, passed explicitly. It used to be patched onto the shared engine for the length
         # of the re-run; with the finale forensics call in run() that window lasts seconds, and another case run in it

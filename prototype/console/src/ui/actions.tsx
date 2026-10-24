@@ -53,6 +53,7 @@ export function Actions({ view, onView }: Props) {
   const c = view.case
   const outcome = c.verdict?.outcome
   const id = c.id
+  const needsCoSign = outcome === 'RED' || Boolean(view.inputs.release_needs_co_sign)
 
   const run = async (name: string, fn: () => Promise<CaseView>) => {
     setBusy(name)
@@ -178,7 +179,7 @@ export function Actions({ view, onView }: Props) {
             Help the customer report
           </button>
         </div>
-        {outcome === 'RED' ? (
+        {needsCoSign ? (
           <button
             className="btn btn-sm btn-ghost act-quiet"
             disabled={stop || releasing || c.status === 'released'}
@@ -198,14 +199,18 @@ export function Actions({ view, onView }: Props) {
 
         {releasing && (
           <div className="act-confirm" role="group" aria-label="Co-sign a release">
-            <p className="act-confirm-lead">Releasing a RED case needs a manager's co-sign.</p>
+            <p className="act-confirm-lead">
+              {outcome === 'RED'
+                ? "Releasing a RED case needs a manager's co-sign."
+                : "This case was RED before a field was struck, so releasing it still needs a manager's co-sign."}
+            </p>
             <input className="input" placeholder="manager id" value={coSigner} onChange={(e) => setCoSigner(e.target.value)} aria-label="Co-signing manager id" />
             <div className="act-confirm-row">
               <button
                 className="btn btn-sm btn-primary"
                 disabled={busy !== null}
                 onClick={async () => {
-                  if (await decide('release', 'released against RED', coSigner || null)) setReleasing(false)
+                  if (await decide('release', outcome === 'RED' ? 'released against RED' : 'released after a strike on a RED case', coSigner || null)) setReleasing(false)
                 }}
               >
                 Release with co-sign
@@ -233,7 +238,7 @@ export function Actions({ view, onView }: Props) {
         {/* Ghost, like the release beside it. The judge counted a block of equal-weight grey buttons as a generic
             tell, and these were not equals: the two onward routes are a pair, the release and the strike are the
             quiet ways back. Weight now says which is which, so the filled grey is spent on the pair alone. */}
-        <button className="btn btn-sm btn-ghost act-quiet" aria-describedby="act-fix-note" disabled={stop || striking || present.length === 0} onClick={() => setStriking(true)}>
+        <button className="btn btn-sm btn-ghost act-quiet" aria-describedby="act-fix-note" disabled={stop || striking || present.length === 0} onClick={() => { setField(present[0][0]); setStriking(true) }}>
           Strike a wrong field
         </button>
 

@@ -104,7 +104,8 @@ def case_view(case: Case) -> dict:
         out["review_triggers"] = engine.review_triggers(case)
     inp = engine._inputs.get(case.id, {})
     out["inputs"] = {"sender_number": inp.get("sender_number"), "bank_signature_present": bool(inp.get("signature")),
-                     "forensics_simulated": bool(inp.get("forensics_sim")), "mode": "claim-only" if inp.get("picklist") else "media"}
+                     "forensics_simulated": bool(inp.get("forensics_sim")), "mode": "claim-only" if inp.get("picklist") else "media",
+                     "release_needs_co_sign": engine.release_needs_co_sign(case)}
     if inp.get("scenario"):   # a case opened from a scenario keeps that context when reopened by URL or from the list
         out["scenario"] = inp["scenario"]
     return out
@@ -375,7 +376,11 @@ def decide(case_id: str, body: DecisionIn):
 
 @app.post("/api/cases/{case_id}/strike")
 def strike(case_id: str, field: str = Body(...), actor: str = Body(...)):
-    return case_view(engine.strike_field(get_case(case_id), field, require_actor(actor)))
+    case, name = get_case(case_id), require_actor(actor)
+    try:
+        return case_view(engine.strike_field(case, field, name))
+    except ValueError as e:
+        raise HTTPException(422, str(e)) from e
 
 
 @app.post("/api/cases/{case_id}/forensics/simulate")
@@ -445,7 +450,11 @@ def propose(case_id: str = Body(...), analyst: str = Body(...), note: str = Body
 
 @app.post("/api/memory/{entry_id}/approve")
 def approve(entry_id: str, analyst: str = Body(..., embed=True)):
-    e = engine.memory.approve(entry_id, require_actor(analyst, ANALYST_REQUIRED))
+    try:
+        e = engine.memory.approve(entry_id, require_actor(analyst, ANALYST_REQUIRED))
+    except KeyError:
+        raise HTTPException(404, f"There is no campaign-memory entry {entry_id}. Reload the Memory page to see the "
+                                 "current list.") from None
     return {k: v for k, v in e.items() if k != "tokens"}
 
 

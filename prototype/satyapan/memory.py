@@ -30,7 +30,7 @@ from pathlib import Path
 from typing import Optional
 
 from .extract import DESPACE_LEXICON, RE_ACCOUNT, RE_ACCOUNT_BARE, RE_PHONE, RE_URL, RE_VPA
-from .models import Claim
+from .models import Claim, identity_key
 from .normalize import normalise
 
 STOP = set("the a an to of and or is are be in on at for this that you your with from by will please our we us it "
@@ -284,10 +284,14 @@ class CampaignMemory:
         return e
 
     def approve(self, entry_id: str, analyst: str) -> dict:
-        e = next(x for x in self.entries if x["id"] == entry_id)
-        if analyst not in e["approvals"]:
+        e = next((x for x in self.entries if x["id"] == entry_id), None)
+        if e is None:
+            raise KeyError(entry_id)
+        # The same analyst under another spelling ("Analyst.Aman", a Cyrillic а, an invisible mark) counts once, the
+        # way the RED co-sign compares names. A raw-string compare let one person confirm their own entry.
+        if identity_key(analyst) not in {identity_key(a) for a in e["approvals"]}:
             e["approvals"].append(analyst)
-        if len(set(e["approvals"])) >= 2:
+        if len({identity_key(a) for a in e["approvals"]} - {None}) >= 2:
             e["status"] = "confirmed"
         self.save()
         return e

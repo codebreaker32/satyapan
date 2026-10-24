@@ -76,9 +76,43 @@ def visible_name(value: Optional[str]) -> Optional[str]:
     """
     if not value:
         return None
-    kept = "".join(ch for ch in value if unicodedata.category(ch) not in ("Cf", "Cc", "Zl", "Zp"))
+    kept = "".join(ch for ch in value if unicodedata.category(ch) not in ("Cf", "Cc", "Zl", "Zp") and ch not in _BLANKS)
     kept = kept.strip()
-    return kept or None
+    # Some blanks are letters to Unicode (the Hangul fillers are Lo) or symbols (the Braille blank is So), and a lone
+    # combining mark or variation selector has no glyph of its own. A name needs at least one letter or digit.
+    if not any(ch.isalnum() and ch not in _BLANKS for ch in kept):
+        return None
+    return kept
+
+
+# Characters that render as nothing but are not format characters: Hangul fillers (U+115F, U+1160, U+3164, U+FFA0)
+# and the Braille blank (U+2800). The bug hunt released a RED with each of them as the co-signer.
+_BLANKS = frozenset("\u115f\u1160\u3164\uffa0\u2800")
+
+# Letters from other scripts that look like Latin ones in a staff id: "оfficer.bhawna" with a Cyrillic о co-signed
+# officer.bhawna's own release. Only lookalikes of Latin letters; nothing else is folded.
+_CONFUSABLES = str.maketrans({
+    "а": "a", "в": "b", "е": "e", "ё": "e", "к": "k", "м": "m", "н": "h", "о": "o", "р": "p", "с": "c",
+    "т": "t", "у": "y", "х": "x", "і": "i", "ї": "i", "ј": "j", "ѕ": "s", "ԁ": "d", "һ": "h", "ӏ": "l",
+    "ԛ": "q", "ԝ": "w", "ү": "y", "ɡ": "g", "ı": "i",
+    "α": "a", "β": "b", "ε": "e", "η": "n", "ι": "i", "κ": "k", "ν": "v", "ο": "o", "ρ": "p", "τ": "t",
+    "υ": "u", "χ": "x", "ω": "w",
+})
+
+
+def identity_key(value: Optional[str]) -> Optional[str]:
+    """Who a name refers to, for "is this a different person" checks (the RED co-sign, the memory two-person rule).
+
+    The record keeps the name as typed (visible_name); this key only compares. Full-width letters fold through NFKC,
+    case through casefold, combining marks and variation selectors are dropped, and Cyrillic or Greek lookalikes fold
+    to Latin. Without it "OFFICER.BHAWNA" was caught but "оfficer.bhawna" (Cyrillic о), "ｏｆｆｉｃｅｒ.ｂｈａｗｎａ" and
+    "officer.bhawna" plus an invisible mark each passed as a second person."""
+    name = visible_name(value)
+    if name is None:
+        return None
+    folded = unicodedata.normalize("NFKC", name).casefold()
+    folded = "".join(ch for ch in unicodedata.normalize("NFD", folded) if unicodedata.category(ch) not in ("Mn", "Me"))
+    return folded.translate(_CONFUSABLES)
 
 
 class Channel(str, Enum):
