@@ -62,16 +62,23 @@ live face check (run-sheet beat 4) shows one UniDataPro face-swap clip, unmodifi
 
 | Dataset | Used for | Format | Licence / access | How much we use |
 |---|---|---|---|---|
-| `google/fleurs`, Hindi (Hugging Face) | Real Hindi speech (audio detector; also to measure Whisper's Hindi accuracy). Kathbath was planned but is gated, so it is not used | Audio | CC-BY-4.0, open | 239 clips available; about 60 used |
-| `vdivyasharma/IndicSynth` (Hugging Face) | Synthetic Hindi speech (audio detector) | Audio | CC-BY-NC-4.0 (non-commercial; this is a non-commercial hackathon prototype) | about 30 Hindi clips |
-| `mueller91/In-The-Wild` (Hugging Face) | Real and fake speech recorded in the wild, as a cross-check (audio detector) | Audio | CC-BY-SA-4.0 | a sample of about 50 clips |
+| `mueller91/In-The-Wild` (Hugging Face) | Real and fake speech of public figures that actually circulated online, the main test of the voice detector | Audio (English) | CC-BY-SA-4.0 on Hugging Face (the project page says Apache-2.0) | 150 real + 150 fake, spread over speakers; only these clips are downloaded (range requests) |
+| OpenSLR 118, Gram Vaani | Real, spontaneous Hindi phone calls: how often real callers are wrongly flagged | Audio (8 kHz phone) | Free for academic use | the dev and eval sets, sampled |
+| `google/fleurs`, `hi_in` dev | Real, read Hindi speech (clean, then sent through simulated WhatsApp and phone channels) | Audio | CC-BY-4.0 | 120 clips |
+| `vdivyasharma/IndicSynth` (Hugging Face) | Lab-made Hindi voice clones and TTS (freevc24, xtts_v2, vits), reported separately from real circulated fakes | Audio | CC-BY-NC-4.0 (non-commercial; this is a non-commercial hackathon prototype) | 60 clips, spread over the dataset |
 | Wikimedia Commons: interviews, talks and vlogs (incl. Indian speakers) | Genuine face video for setting the video thresholds | Video | Each file's own open licence (CC BY, CC BY-SA, CC0 or public domain), uploaded before 2021; title, author, licence and link for every clip in `calibration/sources_commons.csv` | about 60 clips, first 60 s of each |
 | `UniDataPro/deepfake-videos-dataset` (Hugging Face, vendor sample) | 5 genuine clips and their face-swapped versions: a first check that face swaps score higher | Video | CC-BY-NC-ND-4.0 (non-commercial, no derivatives distributed) | 10 clips |
 | `nuriachandra/Deepfake-Eval-2024` (Hugging Face) | Deepfakes circulated in 2024 (video detector catch rate) | Video | CC-BY-SA-4.0; access requested, awaiting the authors' manual approval; used only if approved | a sample, if approved |
 
-**WhatsApp cell.** To match what a bank officer actually receives, we make WhatsApp-like copies (H.264, short side
-480 px, low bitrate; `scripts/whatsappify.py`, an approximation) of the calibration clips, and forward a few real clips
-through WhatsApp between our own phones as a check. All copies stay in `clips/`.
+`scripts/fetch_audio_clips.py` downloads the audio sets above into `clips/` and writes `clips/audio_manifest.csv`;
+`scripts/calibrate_audio.py` sets the voice thresholds and writes `calibration/audio_report.md`. DF Arena did not train
+on any of these sets. No public recording of a real Indian voice-clone fraud call exists, so that case is tested only
+with real circulated fakes sent through simulated phone and WhatsApp channels, and labelled as simulated.
+
+**WhatsApp cell.** To match what a bank officer actually receives: for video, we make WhatsApp-like copies (H.264, short side
+480 px, low bitrate; `scripts/whatsappify.py`, an approximation) of the calibration clips; for voice, clean clips are
+also scored after simulated WhatsApp Opus and 8 kHz phone channels (`scripts/calibrate_audio.py`). We also forward a few real
+and fake clips through WhatsApp between our own phones as a check. All copies stay in `clips/`.
 
 **Our own recordings.** Planned, not yet made: a few genuine clips of the two of us (voice notes and phone video, both
 consenting) to check that the detectors don't flag real footage. Consent will be recorded in `docs/consent.md` before
@@ -82,4 +89,4 @@ any such clip is used. We make no deepfakes of ourselves or anyone else.
 - Synthetic, clearly labelled data only. No real official's name or likeness.
 - No automatic blocking: Satyapan advises and the bank officer decides. Releasing a held transfer needs a second person.
 - No scores shown to the customer: she gets plain reasons she can check herself.
-- Forensic signals only corroborate. A RED needs two independent checks, never one weak signal.
+- A detector never decides alone. In the main app its calibrated band counts half in a combined score with the instruction checks; the officer still decides, and releasing a held transfer needs a second person.

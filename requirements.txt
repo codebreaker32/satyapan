@@ -2,6 +2,7 @@
 av==18.1.0
 ctranslate2==4.8.3
 faster-whisper==1.2.1
+einops==0.8.2
 huggingface_hub==0.36.2
 imageio-ffmpeg==0.6.0
 numpy==2.5.2
