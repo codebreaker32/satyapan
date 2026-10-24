@@ -1,8 +1,8 @@
 # Satyapan: architecture and finale plan
 
 **Verify the instruction, not the pixels.** When a bank pauses a large, unusual transfer, Satyapan helps the officer
-check the "official" voice note, video or notice behind it. Two independent checks decide; deepfake forensics only
-back them up; the officer always decides.
+check the "official" voice note, video or notice behind it. A RED needs a cited issuer rule plus a second, independent
+check; a deepfake flag can be that second check, but never decides alone; the officer always decides.
 
 ## 1. How a case flows
 
@@ -36,6 +36,26 @@ flowchart LR
 `status` is `synthetic`, `clean` or `abstain`. Thresholds are set on **real** clips only, per calibration cell (e.g.
 `video/sd` for WhatsApp-size video). A kind of input with no calibration abstains. Every result carries the model and
 version, the cell, the score and the file hash, so it can go into the evidence record. Details: `docs/plan.md`, section 1.
+
+### Where exactly the deepfake check sits
+
+1. **When:** right after intake, on every uploaded voice note or video, in parallel with reading the instruction. It
+   looks only at the media (faces, voice), never at what the message says.
+2. **Code:** `forensics/video.py` → `GenDVideoForensics.analyse(path)`; `forensics/audio.py` → the audio detector. A
+   video gets both: faces in the frames, and the voice in its sound track.
+3. **Into the verdict:** each result becomes one "media forensics" signal (family F3) in the engine:
+
+   | Detector says | Effect on the verdict |
+   |---|---|
+   | `synthetic` | A soft signal. Alone it can raise the case to **AMBER**, never higher. Together with a cited issuer rule (and a money demand read from the message) it can be the independent second check that makes **RED**: it rests on different evidence (the media, not the words) |
+   | `clean` | Shown as "no signs found"; never lowers a verdict and never means "safe" |
+   | `abstain` | Shown as "unsure: <reason>"; counts for nothing |
+
+4. **On screen and in the record:** one plain line per detector on the officer screen; model, version, calibration
+   cell, score and file hash in the signed evidence record.
+
+**Wiring to do (Day 1, 17:00):** the engine currently maps every non-audio forensic result to the "document editing"
+rule. Video needs its own rule (`R-VIDEO-SYNTH`, "Signs of face manipulation", family F3, soft) and its own route.
 
 ### Why forensics only corroborate
 
@@ -78,7 +98,34 @@ Times are a guide; shift them to the organisers' schedule.
 3. A blurry or tiny-face forward: the detector says "unsure", with the reason. It won't guess.
 4. Our own genuine video: no signs found, and the screen says that this does not prove it is genuine.
 
-## 3. Rules we keep
+## 3. Later add-on: WhatsApp / Telegram bot
+
+A citizen forwards the suspicious voice note, video, PDF or summons to a bot and gets a verdict back. Same core, new
+door:
+
+```mermaid
+flowchart LR
+    U["Citizen forwards a voice note, video, PDF or summons"] --> BOT["Bot adapter<br/>Telegram Bot API / WhatsApp Business"]
+    BOT --> Q["Queue (one job per message)"]
+    Q --> CORE["Same core: read the instruction,<br/>issuer rules, forensics"]
+    CORE --> R["Reply: RED / AMBER / GREY,<br/>three plain reasons, what to do next"]
+```
+
+Design rules for the bot (decide before building it):
+
+- **No GREEN.** "No signs found" is not "genuine". A bot that says green on a deepfake sends money to the scammer. The
+  replies are RED (the instruction could never be real), AMBER (warning signs) and GREY (couldn't confirm), always with
+  "verify through the official channel" and the national cybercrime helpline, 1930.
+- **No bank records.** A citizen bot has no access to the bank's own records, so RED rests on a cited issuer rule plus
+  forensics or campaign memory; more cases will end GREY. That is honest.
+- **No scores, rate limits.** A scammer could keep re-sending a deepfake until it passes. Coarse verdicts, no numbers,
+  per-user limits.
+- **Privacy.** Ask consent in the first message, analyse and delete the media, keep only hashes and the verdict.
+- **Cost.** Telegram's Bot API is free. WhatsApp's Business Platform charges by message type; check current pricing
+  before choosing it, given the no-paid-services rule for this event.
+- **Load.** About 15 s of CPU per video; a queue keeps the bot responsive.
+
+## 4. Rules we keep
 
 - Only synthetic, public or consented data; no real official's face or voice in the demo.
 - No paid APIs at run time; everything runs on the laptop.
