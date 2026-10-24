@@ -174,10 +174,12 @@ and watch it pass (`.verify-ok`, green); re-encode the media and watch the finge
 
 ## Invariants the screen must never contradict
 
-From PRODUCT.md and the engine: the four verdict words RED / AMBER / GREY / MATCHES are fixed; RED rests on two
-independent families and the band names both; a RED also needs a money demand to have been read, so with no
-instruction and no payee the pair is capped at AMBER and the band says so; a lone hard rule is AMBER; forensics
-alone never exceed AMBER;
+From PRODUCT.md and the engine: the four verdict words RED / AMBER / GREY / MATCHES are fixed; with no judged
+media, RED rests on two independent families and the band names both, and a lone hard rule is AMBER; with judged
+media the combined score decides (half instruction checks, half deepfake check, RED from 40%, AMBER from 15%) and the
+band shows the three numbers; a RED also needs a money demand to have been read, so with no instruction and no payee
+it is capped at AMBER and the band says so; a voice flag in a calibration cell with a 1% line can reach "high", which
+alone gives 50%, RED when money is asked, while a face flag is at most "moderate", which alone gives 35%, AMBER;
 GREY is never shown as safe, and since pass 2 the GREY band never claims the message looks clean either: it prints
 the engine's own account of what was read out of the message and says nothing could check it, because "No warning
 signs found" was false whenever the extractor had taken an authority, an instruction, a payee or a pressure cue out

@@ -4,15 +4,16 @@
 
 When a bank's own controls pause a large, unusual transfer, Satyapan helps the fraud-response officer check the
 "official" voice note, video or notice behind it, in about ten seconds, against issuer rules and the bank's own
-records. Deepfake forensics only corroborate. The customer hears three reasons she can check herself, in Hindi or
-English, and every decision lands in a signed evidence pack.
+records. When a detector can judge the media, its calibrated deepfake check counts half, next to those checks. The
+customer hears three reasons she can check herself, in Hindi or English, and every decision lands in a signed
+evidence pack.
 
 Team "Team" (Aman Bihari, Bhawna), RAKSHAM AI Cybersecurity Hackathon (Amazon × IIT Delhi), Track 03.
 
 ## Run it
 
 ```bash
-cd satyapan
+cd prototype                        # in the satyapan-finale repository
 python3 -m venv .venv && . .venv/bin/activate
 pip install -e ".[dev]"             # engine + API + tests
 python -m pytest -q                 # must pass clean: extraction, every rule, fusion, card, evidence, memory, scenarios
@@ -45,13 +46,22 @@ satyapan setup-models                                               # weights an
 - **Speech to text**: Whisper small (faster-whisper, CPU int8) reads uploads and recordings in Hindi and English. The
   engine's name is stored with the text it produced (`derived_text_engine`).
 - **OCR**: tesseract 5.4 with English and Hindi data from `vendor/tessdata`. A PDF's own text layer is read directly.
-- **Voice detector**: AASIST-L scores real uploads and recordings against thresholds measured on 150 genuine FLEURS
-  clips per language and channel (`data/forensics/aasist_calibration.json`); clips under 3 s abstain. It flagged the
-  Windows built-in synthetic voice 6 times out of 6 in every channel; how well it catches modern Indian-language voice
-  clones is not measured. It stays soft: it can raise AMBER, never RED.
+- **Voice detector**: DF Arena 500M (`Speech-Arena-2025/DF_Arena_500M_V_1`, non-commercial licence), calibrated per
+  language and channel on 630 public clips (`../calibration/audio.json`, `../calibration/audio_report.md`). In the
+  demo it runs in the local forensics service of the parent repository (`../forensics/`, started by
+  `../scripts/demo_up.sh`), next to the GenD face check. Without the service, the engine can run it in-process, given
+  torch, the parent repository's detector packages (`../requirements.txt`) and the downloaded model. Under 2 s of
+  speech it abstains. A voice flag counts half in the combined score: where the
+  calibration has a 1% line (among the cells by channel, only 8 kHz Hindi phone audio), a "high" flag alone gives
+  50%, RED when the message asks for money; elsewhere a flag is at most "moderate", 35% alone, AMBER.
+  AASIST-L is the older fallback, used only when DF Arena is not available: thresholds measured on 150 genuine FLEURS
+  clips per language and channel (`data/forensics/aasist_calibration.json`), clips under 3 s abstain, and it flagged
+  the Windows built-in synthetic voice 6 times out of 6 in each English channel; how well it catches modern
+  Indian-language voice clones is not measured.
 - **Website check**: a link in an official-looking message is looked up live in the domain's registry (RDAP).
   Offline, and in the tests, the answers recorded in `data/mocks/web_registry.json` are used; `SATYAPAN_LIVE_WEB=0`
-  makes the server use only those.
+  makes the server use only those. `../scripts/demo_up.sh` sets it unless started with `SATYAPAN_LIVE_WEB=1`, so in
+  the demo nothing leaves the laptop.
 - **Meaning-level memory**: a multilingual sentence model matches reworded, Hindi and Hinglish copies of a confirmed
   case, only when they name the same body. It catches 8 of the 14 labelled copies at a threshold with no false match
   among the repo's other messages (`data/eval/memory_calibration.json`).
@@ -68,10 +78,11 @@ the KMS signer; a Bedrock extractor is specified but not built.
 156 messages, each labelled scam or genuine by what it really is: the 22 scenarios, the variant corpus and 64 new
 messages in `data/eval/labelled.json`. They are synthetic, not field data. The run writes `data/eval/results.json` and
 `../docs/evaluation.md`, and the console's **Evaluation** page shows the same file. Latest run: of 79 in-scope scams,
-94.9% flagged (36 RED, 39 AMBER) and 4 missed; of 63 genuine messages, none stopped and 7 asked to verify first
+94.9% flagged (34 RED, 41 AMBER) and 4 missed; of 63 genuine messages, none stopped and 7 asked to verify first
 (11.1%); of 14 scams outside scope (family emergency, lottery, jobs), 2 flagged. The set helped find three general
-fixes, so these numbers are optimistic. `tests/test_evaluation.py` fails if a genuine message is ever stopped or the
-committed report drifts from a fresh run.
+fixes, so these numbers are optimistic. `tests/test_evaluation.py` fails if a genuine message is ever stopped. It
+also compares the committed report with a fresh run, but only when the same optional models are installed as for the
+committed run; otherwise that comparison is skipped (it is skipped in the finale laptop's engine environment).
 
 ## How a case flows
 
@@ -86,10 +97,11 @@ committed report drifts from a fresh run.
         ▼         ▼          ▼          ▼         ▼
        F1        F2         F3         F4        F5
      issuer     bank     forensics   campaign  context
-    rulebook   truth    (soft only)   memory  (never counts)
+    rulebook   truth    (half score)  memory  (never counts)
         └─────────┴──────────┼──────────┴─────────┘
                               ▼
-   fusion: RED only with a hard rule plus a second family on other evidence
+   fusion: no judged media, RED only with a hard rule plus a second family on other evidence;
+           judged media, half instruction checks + half deepfake check, RED from 40%
                               ▼
      verdict (RED / AMBER / GREY / MATCHES) + customer card (hi / en)
                               ▼
@@ -100,15 +112,17 @@ committed report drifts from a fresh run.
 |---|---|---|
 | F1 issuer rulebook | `data/rules/rulebook.yaml`: no "digital arrest" in law, ED passcodes, RBI gives no investment advice, @valid, 1600xx, .bank.in, new or suspended websites, suspect registry | yes, with a verified citation |
 | F2 bank truth | the bank's own records: we never sent this; whose account is this; that credit never arrived; our own signature | yes, with a verified citation |
-| F3 forensics | voice-clone detector, document ELA and AI-tool labels; calibrated, abstains | no; counts through the 50/50 combined score |
+| F3 forensics | face check (GenD) and voice-clone check (DF Arena 500M), calibrated, abstain when unsure; documents: error-level analysis, editing-app names and AI-tool labels, not calibrated | yes, through the 50/50 combined score: a high voice flag alone with a money demand gives 50%, RED; a lone hard rule plus a moderate face flag gives 70%, RED |
 | F4 campaign memory | fingerprints of cases two analysts confirmed, and reworded or translated copies of them (meaning model) | no, soft only |
 | F5 context | pressure cues, the bank's flag | never counts |
 
-**Fusion** (`satyapan/fusion.py`): RED needs a hard rule plus a signal from a different family resting on different
-evidence, **and a money demand must have been read out of the message** — with no instruction and no payee, a RED
-pair is capped at AMBER, because a verdict that stops a payment the engine never saw contradicts "verify the
-instruction, not the pixels". One hard rule alone gives AMBER. When media was attached and the detector could judge it, the instruction checks and the deepfake check count half each, and 40% or more is RED (a very strong deepfake alone reaches it). "Could not
-confirm" is never shown as "safe". The card never says "fake", "genuine" or "fraud" (tests enforce it).
+**Fusion** (`satyapan/fusion.py`): with no judged media, RED needs a hard rule plus a signal from a different family
+resting on different evidence, and one hard rule alone gives AMBER. When media was attached and the detector could
+judge it, the instruction checks and the deepfake check count half each, and 40% or more is RED (a very strong
+deepfake alone reaches it). Either way, **a money demand must have been read out of the message**: with no
+instruction and no payee, a RED is capped at AMBER, because a verdict that stops a payment the engine never saw
+contradicts "verify the instruction, not the pixels". "Could not confirm" is never shown as "safe". The card never
+says "fake", "genuine" or "fraud" (tests enforce it).
 
 **Rulebook** (`data/rules/rulebook.yaml`): every rule has a primary citation, the date it was checked, sign-off
 and a test. A rule whose citation is not verified is demoted to soft at load time, so it can never anchor a RED.
@@ -163,12 +177,15 @@ the labels and the console shows them, so nothing mocked is ever presented as li
 | Ledger credits | the customer's last-72-hour credits from `data/mocks/ledger.json` | the core banking ledger, read-only |
 | I4C suspect registry | account / UPI ID / phone checked against `data/mocks/suspect_registry.json` | NCRP "Report & Check Suspect" / the I4C Suspect Registry feed banks already receive |
 | Bank content signature | HMAC-SHA256 with a shared demo key over the message text | C2PA content credentials on bank-issued notices, verified with the bank's public key |
-| Website registration look-up | live RDAP query to the domain's registry when online (3 s timeout); the real answers recorded on 23 Oct 2026 in `data/mocks/web_registry.json` offline and in tests | the same public registries; a bank would run its own RDAP client and cache |
+| Website registration look-up | live RDAP query to the domain's registry when online (3 s timeout); the real answers recorded on 23 Oct 2026 in `data/mocks/web_registry.json` offline, in tests and in the demo (`SATYAPAN_LIVE_WEB=0`) | the same public registries; a bank would run its own RDAP client and cache |
 
-`/api/meta` also labels the forensics and the signer. Audio forensics runs the calibrated AASIST-L detector on real
-uploads and recordings once `satyapan setup-models` has fetched it, and abstains otherwise; the scenario-scripted
-results used in rehearsal are marked SIMULATED on every surface. Document forensics
-(error-level analysis) runs in-process. The evidence signer is a local Ed25519 key standing in for an AWS KMS
+`/api/meta` also labels the forensics and the signer. In the demo, voice notes and videos go to the local forensics
+service (`SATYAPAN_FORENSICS_URL`, set by `../scripts/demo_up.sh`): the GenD face check and the DF Arena 500M voice
+check, each calibrated per kind of input and abstaining when unsure. Without the service, audio forensics runs
+in-process when torch is installed (DF Arena 500M when its files are present, else the older AASIST-L once
+`satyapan setup-models` has fetched it) and abstains otherwise; the scenario-scripted results used in rehearsal are marked SIMULATED on every surface.
+Document forensics (error-level analysis, editing-app names in the metadata and AI-tool labels; not calibrated on
+genuine documents) runs in-process. The evidence signer is a local Ed25519 key standing in for an AWS KMS
 asymmetric key with S3 Object Lock. The one-page path from these mocks to a bank deployment, with the stepped
 pilot, is `../docs/deployment-path.md`.
 

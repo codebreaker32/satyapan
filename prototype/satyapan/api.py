@@ -37,9 +37,10 @@ from .rules import ISSUER_EN
 app = FastAPI(title="Satyapan", version=__version__, description="Verify the instruction, not the pixels.")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"], allow_methods=["*"], allow_headers=["*"])
 
-# The website check asks the domain registries live when the server runs (SATYAPAN_LIVE_WEB=0 turns that off, and
-# the test suite does); offline it falls back to the recorded answers, so a dead venue network changes nothing.
-engine = Satyapan(adapters=Adapters.mocks(live_web=os.environ.get("SATYAPAN_LIVE_WEB", "1") != "0"))
+# The website check answers from the registry records saved on 23 Oct unless SATYAPAN_LIVE_WEB=1, which asks the
+# domain registries live (rdap.org) and still falls back to the recorded answers when the network fails. Off by
+# default, so nothing leaves the laptop unless someone chose that (the docs and the run-sheet say so).
+engine = Satyapan(adapters=Adapters.mocks(live_web=os.environ.get("SATYAPAN_LIVE_WEB", "0") == "1"))
 if os.environ.get("SATYAPAN_WHISPER_PRELOAD"):
     # demo_up.sh sets this: load the speech-to-text model in the background at start-up, so the first voice note of
     # the demo does not also wait 15-60 s for the model to load. Failure here only means the first note loads it.

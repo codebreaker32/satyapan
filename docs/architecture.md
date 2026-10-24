@@ -47,15 +47,17 @@ version, the cell, the score and the file hash, so it can go into the evidence r
 
    | Detector says | Effect on the verdict |
    |---|---|
-   | `synthetic` | Deepfake % from the calibrated band: high 100, moderate 70. It counts half in the combined score. Video has no high band (too few genuine clips for a 1% line), so a face flag alone reaches 35% (AMBER); a high voice flag alone reaches 50%, RED when a money demand was read |
+   | `synthetic` | Deepfake % from the calibrated band: high 100, moderate 70. It counts half in the combined score. Video has no high band (too few genuine clips for a 1% line), so a face flag alone reaches 35% (AMBER). A voice flag can be high only in a cell with a 1% line (among the cells by channel, only 8 kHz Hindi phone audio): there it alone reaches 50%, RED when a money demand was read; elsewhere it is at most moderate, 35% alone (AMBER) |
    | `clean` | Deepfake 0%: the combined score is half the instruction %, which keeps the rules' verdict; shown as "no signs found", never "safe" |
    | `abstain` | Shown as "unsure: <reason>"; counted as no media, so the rules decide alone |
 
 4. **On screen and in the record:** one plain line per detector on the officer screen; model, version, calibration
    cell, score and file hash in the signed evidence record.
 
-**Wiring to do (Day 1, 17:00):** the engine currently maps every non-audio forensic result to the "document editing"
-rule. Video needs its own rule (`R-VIDEO-SYNTH`, "Signs of face manipulation", family F3, soft) and its own route.
+**Wiring (done, 24 Oct):** each kind of media has its own rule and route (`rule_for` in
+`prototype/satyapan/forensics.py`): a face result maps to `R-VIDEO-SYNTH` ("Signs of face manipulation", family F3,
+soft), a voice result to `R-AUDIO-SYNTH`, and a document to `R-DOC-TAMPER`, or to `R-DOC-AI` when the file's own label
+names an AI tool.
 
 ### Why the deepfake check counts half, and only through calibration
 

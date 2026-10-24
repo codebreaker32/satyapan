@@ -17,7 +17,7 @@ The Satyapan officer console: one React + Vite single-page app served by the Fas
 - Job: when the bank's flag pauses a transfer, check the instruction behind the voice note, video or notice; see what it rests on; decide; read the customer three reasons; leave a signed pack.
 - Primary action: run the check (a scenario at the finale, a pasted text / upload / picklist in use), then decide: hold, escalate, help report, or release (co-sign on RED).
 - Proof/content: the engine's output only. Claim spans, signals with evidence keys and citations, verdict with anchor and second, Hindi/English card, evidence pack, mock labels, SIMULATED labels.
-- Constraints (from PRODUCT.md, never contradicted on screen): RED rests on two independent families and the screen names both; a lone hard rule is AMBER; forensics alone never exceed AMBER; GREY is never "safe"; no "fake/genuine/fraud"; no score for the customer; nothing auto-blocked; every mock labelled; verdict colour always paired with the word and a mark.
+- Constraints (from PRODUCT.md, never contradicted on screen): RED rests on two independent families and the screen names both; a lone hard rule is AMBER; with judged media the 50/50 combined score decides (a face flag alone stays AMBER, a high voice flag with a money demand can be RED); GREY is never "safe"; no "fake/genuine/fraud"; no score for the customer; nothing auto-blocked; every mock labelled; verdict colour always paired with the word and a mark.
 
 ## Direction contract
 

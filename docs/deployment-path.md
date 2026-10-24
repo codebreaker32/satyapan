@@ -23,9 +23,11 @@ proposed to take effect by 1 Apr 2027. Those are draft rules today, and we say s
 
 ## Every mock has a named production route
 
-The engine's six adapters are mocks today, and each carries a label naming its production source, owner and
-access route. `GET /api/meta` returns the labels and the console shows them. Swapping a mock for the real system
-replaces one adapter and leaves the engine alone. One row per adapter, labels word for word:
+The engine has seven adapters, and each carries a label naming its production source, owner and access route. Six
+are mocks today. The seventh, the website registration look-up, reads public domain registries: answers recorded
+on 23 Oct 2026 in the demo (`SATYAPAN_LIVE_WEB=0`), a live RDAP query with `SATYAPAN_LIVE_WEB=1`. `GET /api/meta`
+returns the labels and the console shows them. Swapping a mock for the real system replaces one adapter and leaves
+the engine alone. One row per adapter, labels word for word:
 
 | Adapter | Owner | Production system and access route |
 |---|---|---|
@@ -37,7 +39,7 @@ replaces one adapter and leaves the engine alone. One row per adapter, labels wo
 | Bank content signature | Bank InfoSec | C2PA content credentials on bank-issued notices (bank signing key); public-key verification; demo uses HMAC with a shared demo key |
 | Website registration look-up | Public internet (domain registries) | Domain registry RDAP records (rdap.org bootstrap to each registry); HTTPS query when online; recorded answers when offline |
 
-Three of the six are read-only calls on systems the bank already runs, and the name lookup has been mandatory for
+Three of the seven are read-only calls on systems the bank already runs, and the name lookup has been mandatory for
 RTGS and NEFT since RBI/2024-25/99 (offered by 1 Apr 2025). The suspect registry is a feed banks already receive:
 I4C launched it with banks and financial institutions on 10 Sep 2024. ED verification starts as a guided manual
 check because the real page has a CAPTCHA and no API. The content signature is the one genuinely new build, and
@@ -56,7 +58,7 @@ it only strengthens the positive path.
    officer reports.
 
 Honest prerequisites before any customer hears a card: an asymmetric AWS KMS signing key in place of the local
-Ed25519 key; S3 Object Lock for escalated evidence packs; the six adapter integrations above; officer training on
+Ed25519 key; S3 Object Lock for escalated evidence packs; the seven adapter integrations above; officer training on
 the console and the read-aloud consent; and the Hindi and English customer cards reviewed by the bank's own
 compliance team.
 
