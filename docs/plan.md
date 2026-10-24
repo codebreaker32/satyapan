@@ -111,6 +111,9 @@ threshold logic to mirror; `forensics/common.py` has `threshold_at_fpr` and the 
 
 ## 6. Checkpoints
 
+Progress on Day 1: see `docs/status.md` (video track, integration, Whisper and calibration done; audio pending).
+
+
 | When | Aman (video) | Bhawna (audio) |
 |---|---|---|
 | Day 1, +15 min | Contract and `forensics/common.py` agreed | same |
