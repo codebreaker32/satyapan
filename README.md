@@ -80,7 +80,7 @@ More on the engine's optional models: `prototype/README.md`.
 | Path | What it is |
 |---|---|
 | `MODELS.md` | Declaration of every pre-trained model and third-party API, with checkpoint state and licence |
-| `forensics/` | The detectors (built at the finale): shared contract, GenD face check, DF Arena 500M voice check, joined entry point, local service |
+| `forensics/` | The detectors: shared contract, GenD face check, DF Arena 500M voice check, joined entry point, local service |
 | `prototype/` | The demo engine and officer console (Python + React), with the combined score: Bhawna's copy merged with Aman's integration on 24 Oct. This is what the demo runs; its data is in `prototype/data/` |
 | `synthetic/` | The generators for every synthetic file we used, and `validate_fixtures.py` for the hand-written text data |
 | `scripts/` | Model fetch, scoring, calibration, dataset download, WhatsApp-like re-encoding, demo start-up and checks |
