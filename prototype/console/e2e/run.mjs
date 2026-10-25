@@ -263,10 +263,10 @@ try {
     await runScenario(page, titleById, id)
     await checkBand(page, id, outcome)
   }
-  // Still on the S8 case: the invariant is spelled out on the band.
+  // Still on the S8 case: the band names the one rule that fired, under its own heading.
   check(
-    (await page.getByText('One rule alone never gives RED').count()) > 0,
-    'S8-rbi-bond-no-payee: page shows "One rule alone never gives RED"',
+    (await page.locator('.band h3', { hasText: 'What fired' }).count()) > 0,
+    'S8-rbi-bond-no-payee: the band shows "What fired" above the lone hard rule',
   )
 
   // The Scenarios page itself lists every fixture: five beats in the first frame, the rest behind the disclosure.

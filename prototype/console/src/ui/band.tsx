@@ -109,7 +109,7 @@ export function VerdictBand({ view, titles }: Props) {
           </>
         )}
         {/* A capped AMBER: two independent checks agreed, but no money demand was read, so the engine stopped at
-            AMBER. The one-rule heading below was false here; the engine's own sentence says what happened. */}
+            AMBER. The lone-rule heading below would be wrong here; the engine's own sentence says what happened. */}
         {!sc && v.outcome === 'AMBER' && anchor && v.no_money_cap && (
           <>
             <h3>Two independent checks agree, and nothing here asked for money</h3>
@@ -118,7 +118,7 @@ export function VerdictBand({ view, titles }: Props) {
         )}
         {!sc && v.outcome === 'AMBER' && anchor && !v.no_money_cap && (
           <>
-            <h3>One hard rule fired. One rule alone never gives RED.</h3>
+            <h3>What fired</h3>
             <ul>
               <li>
                 <b>{FAMILY_WORD[anchor.family]}</b>
