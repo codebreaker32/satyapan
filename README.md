@@ -12,7 +12,7 @@ Track 3: Deepfake Detection for Financial Communications. Team "Team": Aman Biha
 | Read this | For |
 |---|---|
 | [Run the demo](#run-the-demo) | the commands that start, check and stop the demo |
-| [Evidence](#evidence-what-we-measured) | measured accuracy, the labelled evaluation, calibration reports, the change reports |
+| [Evidence](#evidence-what-was-measured) | measured accuracy, the labelled evaluation, calibration reports, the change reports |
 | [`synthetic/`](synthetic/README.md) | the code that made every synthetic file in use, and the validator for the hand-written data |
 | [`MODELS.md`](MODELS.md) | every pre-trained model and third-party API, with checkpoint, licence and why it was chosen |
 | [`docs/jury-defence.md`](docs/jury-defence.md) | the pitch, the demo walkthrough and answers to anticipated questions, each with its source |
@@ -63,7 +63,7 @@ SATYAPAN_WHISPER_MODEL=large-v3-turbo prototype/.venv/bin/satyapan setup-models 
 
 More on the engine's optional models: `prototype/README.md`.
 
-## Evidence: what we measured
+## Evidence: what was measured
 
 | File | What it shows |
 |---|---|

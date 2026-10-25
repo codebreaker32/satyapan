@@ -17,7 +17,7 @@ cd prototype                        # in the satyapan-finale repository
 python3 -m venv .venv && . .venv/bin/activate
 pip install -e ".[dev]"             # engine + API + tests
 python -m pytest -q                 # must pass clean: extraction, every rule, fusion, card, evidence, memory, scenarios
-satyapan demo --lang hi             # the finale scenarios, with cards and signed packs
+satyapan demo --lang hi             # the demo scenarios, with cards and signed packs
 satyapan check "paste a message"    # check any text
 satyapan serve                      # API on :8000 (serves the console once console/dist exists)
 ```

@@ -135,7 +135,7 @@ Design rules for the bot:
   before choosing it, given the no-paid-services rule below.
 - **Load.** About 15 s of CPU per video; a queue keeps the bot responsive.
 
-## 4. Rules we keep
+## 4. Standing rules
 
 - Only synthetic, public or consented data; no real official's face or voice in the demo.
 - No paid APIs at run time; everything runs on the laptop.
