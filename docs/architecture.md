@@ -100,10 +100,18 @@ Times are a guide; shift them to the organisers' schedule.
 3. A blurry or tiny-face forward: the detector says "unsure", with the reason. It won't guess.
 4. Our own genuine video: no signs found, and the screen says that this does not prove it is genuine.
 
-## 3. Later add-on: WhatsApp / Telegram bot
+## 3. Citizen bot: Telegram (built) and WhatsApp (later)
 
 A citizen forwards the suspicious voice note, video, PDF or summons to a bot and gets a verdict back. Same core, new
 door:
+
+**Built (25 Oct): the Telegram bot**, in `bot/` (standard library only; setup, privacy and limits in `bot/README.md`).
+`scripts/run_tg_bot.sh` starts its own engine on port 8100, connected to the forensics service when that answers,
+then the bot. It follows the design rules below: consent first, RED / AMBER / GREY with no GREEN (a MATCHES case gets
+GREY's words), no scores, 10 checks per user per hour, and the file and the engine's copy deleted after the reply.
+Reasons resting on the bank's own records or on a mocked look-up (the I4C suspect registry, ED's verify-summon page)
+are not shown to a citizen. Open: the verdict itself still comes from the engine with the demo bank's mocked records
+switched on, so a RED can lean on them (bot/README.md, "Limits"). WhatsApp is not built.
 
 ```mermaid
 flowchart LR
