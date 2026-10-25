@@ -162,6 +162,15 @@ try {
     check(got.manifest_sha256 === shownHash, 'S1 pack: Download JSON is the pack on screen (same manifest hash)', `${got.manifest_sha256} vs ${shownHash}`)
   }
 
+  // -- d3. Save report as PDF: offered on the case, and the print layout keeps the case and drops the screen chrome ----
+  check((await page.getByRole('button', { name: 'Save report as PDF' }).count()) === 1, 'S1 report: Save report as PDF is offered')
+  await page.emulateMedia({ media: 'print' })
+  check(
+    !(await page.locator('.rail').isVisible()) && (await page.locator('.band').isVisible()) && (await page.locator('.report-meta').isVisible()),
+    'S1 report: the print layout hides the rail and keeps the report header and the verdict band',
+  )
+  await page.emulateMedia({ media: 'screen' })
+
   // -- e. evidence round-trip over the API -----------------------------------
   const packRes = await fetch(`${base}/api/cases/${caseId}/evidence?download=true`)
   check(packRes.ok, `GET /api/cases/${caseId}/evidence?download=true answers 200`, `got ${packRes.status}`)

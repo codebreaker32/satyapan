@@ -3,6 +3,21 @@ import { api, type EvidencePack, type Label } from '../lib/api'
 import { rupees, when } from '../lib/format'
 
 // The signed evidence pack, with its tamper check: flip one byte, watch it fail, restore it, watch it pass.
+// The case report is the case screen laid out for paper by the print rules in index.css; the browser's own
+// "Save as PDF" writes the file, so the Hindi card keeps its fonts and nothing leaves the laptop. Folded detail is
+// opened for the print and closed again afterwards; window.print() returns when the dialog closes.
+function saveReport(caseId: string) {
+  const meta = document.querySelector('.report-meta')
+  if (meta) meta.textContent = `Satyapan case report · ${caseId} · ${new Date().toLocaleString('en-IN')} · every case, name and record in this demo is synthetic`
+  const folded = Array.from(document.querySelectorAll('details:not([open])'))
+  folded.forEach((d) => d.setAttribute('open', ''))
+  const title = document.title
+  document.title = `Satyapan report ${caseId}`
+  window.print()
+  document.title = title
+  folded.forEach((d) => d.removeAttribute('open'))
+}
+
 export function EvidencePanel({ caseId, signer, version }: { caseId: string; signer: Label | null; version: string | number }) {
   const [original, setOriginal] = useState<EvidencePack | null>(null)
   const [shown, setShown] = useState<EvidencePack | null>(null)
@@ -130,6 +145,9 @@ export function EvidencePanel({ caseId, signer, version }: { caseId: string; sig
         <a className="btn" href={downloadUrl ?? api.evidenceDownloadUrl(caseId)} download={`${caseId}.evidence.json`}>
           Download JSON
         </a>
+        <button className="btn" onClick={() => saveReport(caseId)}>
+          Save report as PDF
+        </button>
       </div>
     </div>
   )

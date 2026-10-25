@@ -1765,3 +1765,63 @@ mark.span:hover .callout-no {
 .table th:nth-child(n + 3) {
   text-align: right;
 }
+
+/* The case report (Save report as PDF): the case screen on A4. The rail, the step links, the officer's action pane
+   and every button are screen-only; the report keeps the verdict, the customer's card, the message with its checks,
+   the record and the signed pack. Colours print as on screen, and a block is not split across pages. */
+.print-only {
+  display: none;
+}
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  body {
+    background: #fff;
+  }
+  .app {
+    display: block;
+    min-height: 0;
+  }
+  .rail,
+  .banner,
+  .steps,
+  .counter-act,
+  button,
+  .btn {
+    display: none !important;
+  }
+  .print-only {
+    display: block;
+  }
+  .report-meta {
+    margin: 0 0 8px;
+    font-size: 11px;
+    color: #444;
+  }
+  .counter {
+    display: block;
+  }
+  li,
+  .band,
+  .counter-col,
+  .check-row,
+  .signal,
+  table,
+  .verify {
+    break-inside: avoid;
+  }
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}

@@ -117,6 +117,8 @@ export function CaseView({ id, view, onView, meta, reload = 0 }: Props) {
 
   return (
     <>
+      {/* Paper only: the report's own header (Save report as PDF fills in the time). */}
+      <p className="report-meta print-only">Satyapan case report · {c.id} · every case, name and record in this demo is synthetic</p>
       {c.verdict && <VerdictBand view={view} titles={titles} />}
 
       {/* The counter pane. What the customer hears and what the officer does next sit together, above the fold at
