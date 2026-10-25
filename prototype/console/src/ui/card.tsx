@@ -52,7 +52,6 @@ export function CustomerCard({ hi, en }: { hi: Card; en: Card }) {
       </div>
       <div className={`card card-${card.outcome}`} lang={lang === 'hi' ? 'hi' : 'en'}>
         <p className="card-stop">{card.stop_line}</p>
-        <p className="card-head">{card.headline}</p>
         {card.reasons.length > 0 && (
           <ol>
             {card.reasons.map((r) => (

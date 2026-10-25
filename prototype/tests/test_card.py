@@ -149,14 +149,17 @@ def test_say_next_is_bound_by_the_forbidden_word_lint():
         lint_card(bad)
 
 
-def test_read_aloud_is_the_stop_line_the_headline_the_reasons_and_one_instruction(engine):
+def test_read_aloud_is_the_stop_line_the_reasons_and_one_instruction(engine):
+    """The verdict's headline stays on the officer's band. On the card it repeated the stop line above it and the
+    instruction below it ("We could not confirm this." / "Could not confirm. Check via the official channel" / "Check
+    this here before you act on it")."""
     for sid in sorted(SCENARIOS):
         case = run_scenario_id(engine, sid)
         for lang in ("hi", "en"):
             card = engine.card(case, lang)
             lines = card.read_aloud.splitlines()
             assert lines[0] == card.stop_line, f"{sid} ({lang}): read_aloud does not open on the stop line"
-            assert lines[1] == card.headline, f"{sid} ({lang}): read_aloud does not carry the headline"
+            assert card.headline not in lines, f"{sid} ({lang}): the headline is repeated on the card"
             numbered = [l for l in lines if re.match(r"^\d+\. ", l)]
             assert numbered == [f"{i + 1}. {r.text}" for i, r in enumerate(card.reasons)]
             assert card.do_now in lines, f"{sid} ({lang}): the one instruction is not in read_aloud"

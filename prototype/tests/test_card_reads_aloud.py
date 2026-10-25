@@ -369,3 +369,4 @@ def test_a_suspect_signal_with_no_identifier_drops_the_reason_rather_than_guessi
                                                span=Span(text="50100248891776", start=17, end=31))))
     card = build_card(_verdict(Outcome.AMBER, [bare]), claim, lang)
     assert [r.rule_id for r in card.reasons] == []
+

@@ -496,9 +496,12 @@ def build_card(verdict: Verdict, claim: Claim, lang: str = "hi") -> Card:
     coach = COACHING if pays else COACHING_NO_PAYMENT
     coaching = coach[1 if hi else 0] if verdict.outcome in (Outcome.RED, Outcome.AMBER) else None
 
-    # What she hears is exactly what is on the card: the stop line, the headline, the numbered reasons, one
-    # instruction, and the coaching line on RED and AMBER. say_next is the officer's and stays out of this.
-    lines = ([stop, headline] + [f"{i + 1}. {r.text}" for i, r in enumerate(reasons)]
+    # What she hears is exactly what is on the card: the stop line, the numbered reasons, one instruction, and the
+    # coaching line on RED and AMBER. say_next is the officer's and stays out of this. The verdict's headline stays on
+    # the officer's band (and in `headline` for other surfaces): on the card it repeated the stop line above it and
+    # the instruction below it ("We could not confirm this." / "Could not confirm. Check via the official channel" /
+    # "Check this here before you act on it").
+    lines = ([stop] + [f"{i + 1}. {r.text}" for i, r in enumerate(reasons)]
              + [do_now] + ([coaching] if coaching else []))
     card = Card(lang=lang, outcome=verdict.outcome, headline=headline, stop_line=stop, reasons=reasons, do_now=do_now,
                 say_next=say_next, coaching=coaching, read_aloud="\n".join(lines))
