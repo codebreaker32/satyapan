@@ -1,4 +1,4 @@
-"""The contract both detectors share (docs/plan.md, section 1).
+"""The contract both detectors share.
 
 Every detector returns a ForensicResult whose status is one of: synthetic, clean, abstain. A detector never decides on
 its own; the result is one piece of evidence an officer sees, with a plain reason.

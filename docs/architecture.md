@@ -2,7 +2,7 @@
 
 **Verify the instruction, not just the pixels.** When a bank pauses a large, unusual transfer, Satyapan helps the officer
 check the "official" voice note, video or notice behind it. The instruction checks and the deepfake check count half
-each in a combined score (`docs/changes-2026-10-24.md`); the officer always decides.
+each in a combined score (`docs/design-decisions.md`); the officer always decides.
 
 ## 1. How a case flows
 
@@ -28,14 +28,14 @@ flowchart LR
 | Read the instruction | OCR for notices (Tesseract). Voice/video: speech-to-text with Whisper (faster-whisper, local CPU, declared in `MODELS.md`); the officer can always correct or type it | engine |
 | Two independent checks | Issuer rules with citations; the bank's own records (labelled mocks in the demo) | engine, `datasets/rules`, `datasets/mocks` |
 | **Forensics (this repo)** | `forensics/video.py`: GenD on aligned faces. `forensics/audio.py`: DF Arena. Both calibrated on real clips, both abstain with a plain reason when unsure | **built in this repository** |
-| Verdict | No media, or media no detector could judge: the rules decide (RED needs a cited hard rule plus an independent second check). Judged media: 50% instruction + 50% deepfake, RED from 40%, AMBER from 15%; a RED still needs a money demand read (`docs/changes-2026-10-24.md`) | engine |
+| Verdict | No media, or media no detector could judge: the rules decide (RED needs a cited hard rule plus an independent second check). Judged media: 50% instruction + 50% deepfake, RED from 40%, AMBER from 15%; a RED still needs a money demand read (`docs/design-decisions.md`) | engine |
 | Outputs | Officer screen, Hindi customer card, signed evidence record | engine, console |
 
 ### The forensics contract (both detectors)
 
 `status` is `synthetic`, `clean` or `abstain`. Thresholds are set on **real** clips only, per calibration cell (e.g.
 `video/sd` for WhatsApp-size video). A kind of input with no calibration abstains. Every result carries the model and
-version, the cell, the score and the file hash, so it can go into the evidence record. Details: `docs/plan.md`, section 1.
+version, the cell, the score and the file hash, so it can go into the evidence record.
 
 ### Where exactly the deepfake check sits
 
@@ -63,7 +63,7 @@ names an AI tool.
 
 Open detectors lose about half their accuracy on deepfakes circulated in 2024 (Deepfake-Eval-2024, arXiv 2503.02857).
 So the deepfake % comes from calibrated bands, never a raw model score; "unsure" counts as no media; and the officer
-sees the three numbers and a sentence on the band, never a score on the customer's card. Worked examples: `docs/changes-2026-10-24.md`.
+sees the three numbers and a sentence on the band, never a score on the customer's card. Worked examples: `docs/design-decisions.md`.
 
 ## 2. Citizen bot: Telegram
 

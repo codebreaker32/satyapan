@@ -1,4 +1,4 @@
-"""One entry point for both detectors (docs/plan.md, section 4).
+"""One entry point for both detectors.
 
   analyse(path) -> list[ForensicResult]
 

@@ -1,14 +1,13 @@
-# Changes of 24 October 2026
+# Design decisions
 
-This document records the changes of 24 October 2026, the first day of the finale. It is written for the team and
-for any judge. Each change gives the previous behaviour, the present behaviour and the reason. Paths are relative to
-the root of this repository; the engine and console are in `prototype/`.
+Four decisions that shape how a verdict is reached. Each gives the earlier behaviour, the present behaviour and
+the reason. Paths are relative to the root of this repository; the engine and console are in `prototype/`.
 
-## 1. Lane 1: the instruction checks and the deepfake check, combined
+## 1. The instruction checks and the deepfake check, combined
 
 - **Before.** The deepfake check on media (family F3) could raise a case to AMBER at most. A RED needed a cited hard
   rule plus an independent second family.
-- **Now** (set by Bhawna). Lane 1 has two tests: the instruction checks (Comparisons 1–4) and the deepfake check (a
+- **Now.** Two tests decide: the instruction checks (Comparisons 1–4) and the deepfake check (a
   voice note, the sound of a video, or a document, which can also be AI-made).
   - With no media, or with media the detector could not judge, the instruction checks decide alone. The verdict is
     the same as before.
@@ -67,7 +66,7 @@ the root of this repository; the engine and console are in `prototype/`.
   - The verdict carries `scores` (instruction %, deepfake %, combined %) into the case record and the evidence pack.
   - The officer's band shows the three numbers (`prototype/console/src/ui/band.tsx`).
   - The customer card shows no score.
-- **Why it is better.** The two Lane 1 tests are weighed together, as Bhawna asked. A cloned voice now strengthens
+- **Why it is better.** The two tests are weighed together. A cloned voice now strengthens
   a weak instruction finding to RED, and a strong clone is stopped even when the text alone says little.
 - **What to watch.** A very strong deepfake alone now reaches RED. The voice detector wrongly flags about 5% of real
   voices at the "moderate" line (section 3), and the face check is set the same way. When the message checks find
@@ -122,10 +121,10 @@ the root of this repository; the engine and console are in `prototype/`.
 
   | Case | Verdict |
   |---|---|
-  | Bhawna's challan message, text only | RED, as before (no score: no media) |
+  | A traffic-challan scam message, text only | RED, as before (no score: no media) |
   | The same message + a real Hindi voice (FLEURS) | RED, 90% + 0% → 45% |
   | An ordinary "please send money" + a cloned Hindi voice (IndicSynth XTTS-v2) | AMBER, 0% + 70% → 35% |
-  | Bhawna's challan message + a cloned Hindi voice | RED, 90% + 70% → 80% |
+  | A traffic-challan scam message + a cloned Hindi voice | RED, 90% + 70% → 80% |
   | An AI-labelled PNG + the challan message | RED, 90% + 100% → 95% |
   | An AI-labelled PNG + "your bill is attached" | AMBER: 50%, but no money demand, so the guard caps it |
 
@@ -138,7 +137,7 @@ the root of this repository; the engine and console are in `prototype/`.
 
 ## 4. "You are digitally arrested": a rule, and an offline helper reader that stays off
 
-- **Before.** A judge recorded "You are digitally arrested. You have to transfer all your bank account money to me.
+- **Before.** A test message read "You are digitally arrested. You have to transfer all your bank account money to me.
   I am Prime Minister of India." It came out GREY. No law-enforcement body was named, so `R-AGENCY-PAY` could not
   fire; "arrested" was read only as a pressure cue, and pressure never counts.
 - **Now: `R-DIGITAL-ARREST-PAY`** (F1, hard, the verified I4C advisory TAU/ADV/003: "There is no concept of Digital
@@ -152,7 +151,7 @@ the root of this repository; the engine and console are in `prototype/`.
   awareness messages use the same words. Alone it gives AMBER; it never makes a RED on its own.
 - **Effect on the evaluation** (`docs/evaluation.md`): two in-scope scams that were GREY are now AMBER
   (V14-whatsapp-trnsfr and E-S29), so 77 of 79 are flagged (97.5%, was 94.9%); the 63 genuine messages are
-  unchanged (none stopped, 7 asked to verify). The judge's message is AMBER, and the card's first reason reads
+  unchanged (none stopped, 7 asked to verify). That message is now AMBER, and the card's first reason reads
   "There is no “digital arrest” in Indian law. This message says you are under one and asks for a transfer to an
   account."
 - **An offline helper reader, built and measured, OFF in the demo.** `prototype/satyapan/llm_reader.py` runs Meta's

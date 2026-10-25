@@ -2,7 +2,7 @@
 
 Pipeline:
   1. Decode any audio or video file with PyAV (FFmpeg inside) to 16 kHz mono float32. A video's soundtrack is read
-     the same way, so the same detector checks the voice in a video (docs/plan.md, section 2, step 4).
+     the same way, so the same detector checks the voice in a video.
   2. Find speech with a simple energy detector: 30 ms frames that are clearly above the clip's own noise floor and
      above an absolute floor (a muted microphone stays far below it).
   3. Windows: up to `max_windows` windows of 64,600 samples (4.04 s, the model's own input length), spread over the
@@ -329,7 +329,7 @@ CALIBRATION = Path(__file__).resolve().parent.parent / "calibration" / "audio.js
 def default_detector() -> DFArenaAudioForensics:
     """The detector forensics/analyse.py and the service pick up: DF Arena 500M with the committed calibration. The
     model itself loads on the first clip, not here. Without the calibration file every result abstains ("not
-    calibrated"), never an uncalibrated score (docs/plan.md, fallback)."""
+    calibrated"), never an uncalibrated score."""
     cal = Calibration.load(CALIBRATION) if CALIBRATION.exists() else None
     return DFArenaAudioForensics(calibration=cal)
 

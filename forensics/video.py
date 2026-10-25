@@ -336,7 +336,7 @@ class GenDVideoForensics:
         reason = self.gate(m)
         if reason:
             return "abstain", "", reason, m.get("median"), cell
-        # Only the clip's own cell: an uncalibrated kind of video abstains (docs/plan.md, section 1).
+        # Only the clip's own cell: an uncalibrated kind of video abstains.
         status, band, reason = classify(m["median"], self.calibration.cells.get(cell))
         return status, band, reason, m["median"], cell
 

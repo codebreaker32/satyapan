@@ -473,7 +473,7 @@ rules:
     reason_en: "This voice shows signs of being computer-generated ({band}). It is one of the checks, not proof on its own."
     reason_hi: "इस आवाज़ में कंप्यूटर से बनी होने के संकेत मिले हैं ({band_hi})। यह जाँचों में से एक है, अपने आप में सबूत नहीं।"
     citation:
-      source: "Calibrated audio anti-spoofing model (per language × codec); counts half with the instruction checks (docs/changes-2026-10-24.md)"
+      source: "Calibrated audio anti-spoofing model (per language × codec); counts half with the instruction checks (docs/design-decisions.md)"
       url: "internal://forensics/audio"
       quote: "counts half with the instruction checks"
       checked: "2026-10-16"
@@ -488,7 +488,7 @@ rules:
     reason_en: "The face in this video shows signs of manipulation ({band}). It is one of the checks, not proof on its own."
     reason_hi: "इस वीडियो में चेहरे से छेड़छाड़ के संकेत मिले हैं ({band_hi})। यह जाँचों में से एक है, अपने आप में सबूत नहीं।"
     citation:
-      source: "Calibrated video deepfake model (GenD CLIP-L/14, thresholds per kind of video); counts half with the instruction checks (docs/changes-2026-10-24.md)"
+      source: "Calibrated video deepfake model (GenD CLIP-L/14, thresholds per kind of video); counts half with the instruction checks (docs/design-decisions.md)"
       url: "internal://forensics/video"
       quote: "counts half with the instruction checks"
       checked: "2026-10-24"

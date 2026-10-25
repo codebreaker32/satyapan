@@ -1,10 +1,7 @@
 # Design record — Satyapan officer console
 
-<!-- impeccable:design-schema 1 · sidecar: .impeccable/design.json -->
-
 Documented from the built console (`console/src`, served from `console/dist`) on 17 Oct 2026, after the finish
-review's verdict pass. The direction contract lives in `console/.impeccable/surfaces/console-src-app-tsx.md`;
-this file records what is actually shipped. Mode: Operate — the officer completes a check in 2–5 minutes, and at
+review's verdict pass. This file records what is actually shipped. Mode: Operate — the officer completes a check in 2–5 minutes, and at
 the finale the same screen is read by judges from five metres.
 
 ## Direction

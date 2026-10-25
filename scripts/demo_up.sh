@@ -63,7 +63,7 @@ export SATYAPAN_WHISPER_PRELOAD=1   # load speech-to-text at start-up, not on th
 export SATYAPAN_LIVE_WEB="${SATYAPAN_LIVE_WEB:-0}"
 # The offline helper reader (prototype/satyapan/llm_reader.py, Llama 3.2 3B through Ollama) stays OFF for the demo:
 # on this laptop's CPU each read takes about half a minute, which would hold up Run on any message the rules read
-# only in part (docs/changes-2026-10-24.md, section 4). To try it: ollama pull llama3.2:3b, then
+# only in part (docs/design-decisions.md, section 4). To try it: ollama pull llama3.2:3b, then
 # SATYAPAN_LLM_READER=llama3.2:3b scripts/demo_up.sh
 export SATYAPAN_LLM_READER="${SATYAPAN_LLM_READER:-}"
 echo "engine: forensics at $SATYAPAN_FORENSICS_URL, speech-to-text: Whisper $SATYAPAN_WHISPER_MODEL, live website look-up: $([ "$SATYAPAN_LIVE_WEB" = 1 ] && echo on || echo off)"

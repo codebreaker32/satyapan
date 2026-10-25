@@ -12,10 +12,9 @@ Track 3: Deepfake Detection for Financial Communications. Team "Team": Aman Biha
 | Read this | For |
 |---|---|
 | [Run the demo](#run-the-demo) | the commands that start, check and stop the demo |
-| [Evidence](#evidence-what-was-measured) | measured accuracy, the labelled evaluation, calibration reports, the change reports |
+| [Evidence](#evidence-what-was-measured) | measured accuracy, the labelled evaluation, calibration reports, the design decisions |
 | [`synthetic/`](synthetic/README.md) | the code that made every synthetic file in use, and the validator for the hand-written data |
 | [`MODELS.md`](MODELS.md) | every pre-trained model and third-party API, with checkpoint, licence and why it was chosen |
-| [`docs/jury-defence.md`](docs/jury-defence.md) | the pitch, the demo walkthrough and answers to anticipated questions, each with its source |
 | [`docs/architecture.md`](docs/architecture.md) | how it fits together, and where the deepfake check sits in a case |
 
 ## Run the demo
@@ -72,8 +71,7 @@ More on the engine's optional models: `prototype/README.md`.
 | `calibration/audio_report.md`, `calibration/video_report.md` | how the thresholds were set, per calibration cell, with AUC and catch rate at each threshold |
 | `calibration/whisper_eval.md`, `calibration/whisper_eval_fast.md` | speech-to-text word error rates on Hindi clips |
 | `scripts/pipeline_check.py` | the live end-to-end check against a running demo (a smoke test, not an accuracy measurement) |
-| `docs/overnight-report.md` | the final changes before the demo, the checks they passed and the open items |
-| `docs/changes-2026-10-24.md` | the merge of the two development copies: the combined score and why the offline LLM reader ships OFF |
+| `docs/design-decisions.md` | the combined score, AI-made documents, the voice detector's calibration and the digital-arrest rule, each with the reason |
 
 ## What is in this repository
 
@@ -85,7 +83,7 @@ More on the engine's optional models: `prototype/README.md`.
 | `synthetic/` | The generators for every synthetic file in use, and `validate_fixtures.py` for the hand-written text data |
 | `scripts/` | Model fetch, scoring, calibration, dataset download, WhatsApp-like re-encoding, demo start-up and checks |
 | `calibration/` | Thresholds, calibration reports and dataset attribution (numbers only, never clips) |
-| `docs/` | Architecture, accuracy, evaluation, deployment path, the Q&A defence and the status reports |
+| `docs/` | Architecture, design decisions, accuracy, evaluation, deployment path and the consent record |
 | `tests/` | Detector and generator tests with stub models; slow real-model tests behind `RUN_SLOW=1` |
 | `datasets/` | The synthetic datasets and the rulebook as first declared, described below |
 | `LICENSE` | GPL-3.0 |
@@ -134,7 +132,7 @@ live face check (demo step 4) shows one UniDataPro face-swap clip, unmodified, a
 | `vdivyasharma/IndicSynth` (Hugging Face) | Lab-made Hindi voice clones and TTS, reported separately from real circulated fakes | Audio | CC-BY-NC-4.0 (non-commercial; this is a non-commercial prototype) | 60 clips, spread over the dataset |
 | Wikimedia Commons: interviews, talks and vlogs (incl. Indian speakers) | Genuine face video for setting the video thresholds | Video | Each file's own open licence (CC BY, CC BY-SA, CC0 or public domain), uploaded before 2021; title, author, licence and link for every clip in `calibration/sources_commons.csv` | 59 clips listed, first 60 s of each |
 | `UniDataPro/deepfake-videos-dataset` (Hugging Face, vendor sample) | 5 genuine clips and their face-swapped versions: a first check that face swaps score higher | Video | CC-BY-NC-ND-4.0 (non-commercial, no derivatives distributed) | 10 clips |
-| `nuriachandra/Deepfake-Eval-2024` (Hugging Face) | Would have measured the video detector on deepfakes circulated in 2024 | Video | CC-BY-SA-4.0; access requested, still awaiting the authors' approval (`docs/status.md`) | not used |
+| `nuriachandra/Deepfake-Eval-2024` (Hugging Face) | Would have measured the video detector on deepfakes circulated in 2024 | Video | CC-BY-SA-4.0; access requested, still awaiting the authors' approval | not used |
 
 `scripts/fetch_audio_clips.py` downloads the audio sets above into `clips/` and writes `clips/audio_manifest.csv`;
 `scripts/calibrate_audio.py` sets the voice thresholds and writes `calibration/audio_report.md`. DF Arena did not train
@@ -159,7 +157,7 @@ such clip is used; it lists none. No deepfakes of the team or of anyone else are
   a second, different person to co-sign; an AMBER release needs one officer.
 - No scores shown to the customer: she gets plain reasons she can check herself.
 - A detector counts only through its calibrated band (never a raw score), as half of a combined score with the
-  instruction checks: 40% or more is RED, 15% or more AMBER (`fusion.py` in `prototype/satyapan`, `docs/changes-2026-10-24.md`).
+  instruction checks: 40% or more is RED, 15% or more AMBER (`fusion.py` in `prototype/satyapan`, `docs/design-decisions.md`).
   With nothing else found, a high-confidence voice flag reaches 50%, RED only when the message asks for money (only
   cells with a 1% line can give "high"; among the voice cells by channel, only 8 kHz Hindi phone audio has one); a
   face flag is at most "moderate" (35% alone, AMBER). "Unsure" counts as no media. The officer decides.

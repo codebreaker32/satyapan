@@ -30,6 +30,6 @@ No model has been trained, fine-tuned or adapted by the team. No weights file is
   no media, or none a detector could judge, the instruction checks decide alone. With judged media:
   50% instruction + 50% deepfake, RED from 40%, AMBER from 15%. The deepfake % comes from the calibrated band (high
   100, moderate 70), never the raw score. A document's band is not calibrated: it comes from error-level analysis
-  heuristics, editing-app names in the file's metadata and AI-provenance labels (`docs/changes-2026-10-24.md`).
+  heuristics, editing-app names in the file's metadata and AI-provenance labels (`docs/design-decisions.md`).
   A RED still needs a money demand to have been read, and the officer decides.
   Wherever a forensic result is simulated it is labelled SIMULATED.

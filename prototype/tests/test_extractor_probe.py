@@ -15,11 +15,11 @@ import pytest
 from satyapan.models import Outcome
 from tests.conftest import run_text
 
-PROBE = json.loads((Path(__file__).parent / "fixtures" / "overnight_probe.json").read_text(encoding="utf-8"))["messages"]
+PROBE = json.loads((Path(__file__).parent / "fixtures" / "extractor_probe.json").read_text(encoding="utf-8"))["messages"]
 
 
 @pytest.mark.parametrize("m", [m for m in PROBE if m["floor"] != "known_gap"], ids=lambda m: m["id"])
-def test_overnight_probe_floor(engine, m):
+def test_extractor_probe_floor(engine, m):
     outcome = run_text(engine, m["text"]).verdict.outcome
     if m["floor"] == "not_red":
         assert outcome is not Outcome.RED, m["text"]
