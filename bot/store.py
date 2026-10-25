@@ -1,7 +1,8 @@
 """The bot's only state on disk: per chat, whether its consent was given and which language it reads.
 
-One small JSON file in a directory only this user can open (mode 700; the file 600). No message, file, transcript
-or verdict is ever written here.
+One small JSON file in a directory only this user can open (mode 700; the file 600). No message, transcript or
+verdict is ever written here. Two other things share the directory: pending-cleanup.json (case ids whose engine copy
+still has to be deleted) and incoming/, where a forwarded file sits only while its check runs.
 """
 from __future__ import annotations
 
@@ -84,6 +85,44 @@ class ChatStore:
         with self._lock:
             self._chats.pop(str(chat_id), None)
             self._save()
+
+
+class PendingCleanup:
+    """Case ids whose kept upload in the engine has not been deleted yet. Written before a file goes to the engine and
+    cleared once it is deleted, so a crash or a second Ctrl-C mid-check is cleaned up at the next start. Case ids
+    only (they say nothing about the message)."""
+
+    def __init__(self, path: Optional[Path] = None):
+        self.path = Path(path) if path else state_dir() / "pending-cleanup.json"
+        private_dir(self.path.parent)
+        self._lock = threading.Lock()
+
+    def _load(self) -> list[str]:
+        try:
+            data = json.loads(self.path.read_text(encoding="utf-8"))
+            return [str(x) for x in data] if isinstance(data, list) else []
+        except (OSError, ValueError):
+            return []
+
+    def _write(self, ids: list[str]) -> None:
+        fd, tmp = tempfile.mkstemp(prefix=".pending-", dir=self.path.parent)
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(ids, f)
+        os.replace(tmp, self.path)
+
+    def add(self, case_id: str) -> None:
+        with self._lock:
+            ids = self._load()
+            if case_id not in ids:
+                self._write(ids + [case_id])
+
+    def done(self, case_id: str) -> None:
+        with self._lock:
+            self._write([x for x in self._load() if x != case_id])
+
+    def all(self) -> list[str]:
+        with self._lock:
+            return self._load()
 
 
 class RateLimiter:
