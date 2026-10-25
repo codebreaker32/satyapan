@@ -74,8 +74,8 @@ def test_traffic_police_is_never_read_as_the_police():
     ("Nagar Nigam se suchna: aapka house tax bakaya hai, jaldi jama karein.", Instruction.PAY_LOCAL_TAX),
     # a traffic FINE with no "challan" in it: two messages typed into the console, verbatim
     ("You have broken signal at traffic light, your vehicle number dl04-110 will be charged a fine for 500000, "
-     "pay at 9354209849@slc", Instruction.PAY_CHALLAN),
-    ("pay your vehicle driving fine , you passes a red light at traffic signal, \npay at 9354209849@slc ",
+     "pay at bhawna.demo@demoupi", Instruction.PAY_CHALLAN),
+    ("pay your vehicle driving fine , you passes a red light at traffic signal, \npay at bhawna.demo@demoupi ",
      Instruction.PAY_CHALLAN),
     ("आपके वाहन ने लाल बत्ती पार की है। ₹1,000 का जुर्माना तुरंत भरें।", Instruction.PAY_CHALLAN),
 ])

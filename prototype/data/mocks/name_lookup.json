@@ -1,5 +1,5 @@
 {
-  "_note": "Mock bank directory: the registered name and kind of holder the bank's own systems return for an account number (core banking / NPCI name look-up) or a UPI ID (the name a UPI app shows before paying). Every name and number is synthetic; 9354209849@slc was added at Bhawna's request as her own test ID. An ID not listed here comes back UNKNOWN and is never guessed. official_allow_list holds the government collection accounts the bank knows.",
+  "_note": "Mock bank directory: the registered name and kind of holder the bank's own systems return for an account number (core banking / NPCI name look-up) or a UPI ID (the name a UPI app shows before paying). Every name and number is synthetic. An ID not listed here comes back UNKNOWN and is never guessed. official_allow_list holds the government collection accounts the bank knows.",
   "accounts": {
     "30011223344556": {"holder_name": "Shiv Shakti Traders", "holder_type": "PRIVATE_FIRM"},
     "20098765432109": {"holder_name": "Rajesh Kumar", "holder_type": "INDIVIDUAL"},
@@ -19,7 +19,7 @@
   "vpas": {
     "challan.clear@okicici": {"holder_name": "Vikram Singh", "holder_type": "INDIVIDUAL"},
     "mcd.propertytax@sbi": {"holder_name": "Municipal Corporation of Delhi", "holder_type": "GOVT"},
-    "9354209849@slc": {"holder_name": "Bhawna", "holder_type": "INDIVIDUAL"},
+    "bhawna.demo@demoupi": {"holder_name": "Bhawna", "holder_type": "INDIVIDUAL"},
     "priya.sharma@okhdfcbank": {"holder_name": "Priya Sharma", "holder_type": "INDIVIDUAL"},
     "arjun.mehta@oksbi": {"holder_name": "Arjun Mehta", "holder_type": "INDIVIDUAL"},
     "kavita.singh21@okaxis": {"holder_name": "Kavita Singh", "holder_type": "INDIVIDUAL"},

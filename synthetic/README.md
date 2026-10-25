@@ -145,7 +145,6 @@ What it reports today (25 Oct 2026), left as it is and pinned in `tests/test_syn
 | IFSC `SBIN0004321` | scenario S2 | a real bank prefix (SBI) with a branch code we did not check |
 | IFSC `HDFC0000213` | S3, S5d, S9, S9b, the labelled set, campaign memory | a real bank prefix (HDFC) with a branch code we did not check |
 | IFSC `SBIN0000691` | scenario S7 | a real bank prefix (SBI) with a branch code we did not check |
-| `9354209849` and UPI `9354209849@slc` | `mocks/name_lookup.json`, the labelled set | Bhawna's own test ID, added at her request (the file's `_note` says so); it is a real, consented ID, not synthetic |
 
 The three IFSCs appear in scam messages as the account a fraudster names, and `HDFC0000213` also in one control
 (S9b, where it stands for the corporation's own collection account). A bank's IFSC directory would say whether

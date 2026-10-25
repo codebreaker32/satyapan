@@ -417,9 +417,7 @@ docs/changes-2026-10-24.md].
 - Evidence: `python synthetic/validate_fixtures.py` checks every file parses and every IFSC, account, UPI ID and phone
   number is visibly invented [synthetic/validate_fixtures.py].
 - Limits: the validator reports what it finds: three IFSCs use real bank prefixes (SBIN0004321, HDFC0000213,
-  SBIN0000691) with branch codes we did not check, and one UPI ID (9354209849@slc) is Bhawna's own test ID, added at her
-  request [synthetic/README.md; prototype/data/mocks/name_lookup.json]. Apart from that
-  consented ID, the one real record set is `web_registry.json`: public RDAP answers for 16 domains, recorded on 23 Oct
+  SBIN0000691) with branch codes we did not check [synthetic/README.md]. The one real record set is `web_registry.json`: public RDAP answers for 16 domains, recorded on 23 Oct
   [prototype/data/mocks/web_registry.json].
 - Say it: "Every message in our evaluation was written for the repo and labelled by what it really is. Our own
   validator shows the exceptions instead of hiding them."

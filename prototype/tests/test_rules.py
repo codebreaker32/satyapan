@@ -474,7 +474,7 @@ def test_a_fake_traffic_fine_is_checked_against_the_banks_own_name_for_the_upi_i
     """A message typed into the console, verbatim. Two steps: first, is the message trying to look official (a
     traffic fine is); only then, does the receiver's registered name, as the bank's own directory returns it, match
     the government. The mock directory's holder of this UPI ID ("Bhawna", an individual) does not."""
-    paid = run_paying(engine, FINE.format(upi="9354209849@slc"), payee_vpa="9354209849@slc")
+    paid = run_paying(engine, FINE.format(upi="bhawna.demo@demoupi"), payee_vpa="bhawna.demo@demoupi")
     assert paid.claim.instruction.value == "PAY_CHALLAN"
     s = signal(paid, "R-RECEIVER-NAME")
     assert s and "Bhawna" in s.reason_en and s.detail["holder_type_en"] == "an individual"
@@ -482,7 +482,7 @@ def test_a_fake_traffic_fine_is_checked_against_the_banks_own_name_for_the_upi_i
     assert paid.verdict.outcome == Outcome.RED
     assert "Bhawna" in engine.card(paid, "en").read_aloud and "Bhawna" in engine.card(paid, "hi").read_aloud
     # before any payment, the UPI ID written in the message is looked up the same way
-    shown = run_text(engine, FINE.format(upi="9354209849@slc"))
+    shown = run_text(engine, FINE.format(upi="bhawna.demo@demoupi"))
     s = signal(shown, "R-PAYEE-NOT-SENDER")
     assert s and "UPI ID" in s.reason_en and "Bhawna" in s.reason_en and "दी गई UPI आईडी" in s.reason_hi
     assert shown.verdict.outcome == Outcome.RED
@@ -498,7 +498,7 @@ def test_an_ordinary_transfer_is_never_compared_with_the_government(engine):
     """The same UPI ID, paid for something ordinary. Nothing in the message tries to look official, so the receiver
     is never compared with anything and nothing fires."""
     sister = run_paying(engine, "Didi, sending you the money for your books and bus pass. Pay the college fee before "
-                                "Friday.", payee_vpa="9354209849@slc")
+                                "Friday.", payee_vpa="bhawna.demo@demoupi")
     assert not {"R-RECEIVER-NAME", "R-PAYEE-NOT-SENDER", "R-CHALLAN-OFFICIAL"} & {x.rule_id for x in sister.verdict.signals}
     assert sister.verdict.outcome == Outcome.GREY
 
@@ -522,7 +522,7 @@ def test_the_bank_directory_names_every_holder():
     for key in d.allow_list:
         rec = d.accounts.get(key) or d.vpas.get(key)
         assert rec and rec["holder_type"] == "GOVT", f"{key} is on the official list but is not a government account"
-    assert d.lookup_vpa("9354209849@SLC")["holder_name"] == "Bhawna", "UPI IDs are matched without case"
+    assert d.lookup_vpa("BHAWNA.DEMO@DEMOUPI")["holder_name"] == "Bhawna", "UPI IDs are matched without case"
     assert d.lookup_vpa("nobody.listed@okicici")["status"] == "UNKNOWN", "an ID the bank does not hold is never guessed"
 
 
