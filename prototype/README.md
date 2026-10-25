@@ -22,11 +22,11 @@ satyapan check "paste a message"    # check any text
 satyapan serve                      # API on :8000 (serves the console once console/dist exists)
 ```
 
-A cold clone was smoke-tested on 17 Oct 2026: `git clone` of this repo is instant on a local disk, and the
-full test suite runs green from the cloned tree (151 passed, 8 skipped — the skips are the optional OCR/PDF
+A fresh clone was smoke-tested on 17 Oct 2026: `git clone` of this repo is instant on a local disk, and the
+full test suite passes from the cloned tree (151 passed, 8 skipped; the skips are the optional OCR/PDF
 extras and the preflight checks that need `console/dist`, which is build output and not tracked). Two things
 need the network once: `pip install -e ".[dev]"` into a fresh venv (PyPI) and `npm install && npm run build`
-in `console/` (the npm registry). Budget a few minutes for each on conference Wi-Fi; after that everything
+in `console/` (the npm registry). Each can take a few minutes on a slow connection; after that everything
 runs offline.
 
 ### Real models (optional; once, needs the network)
@@ -70,7 +70,7 @@ The calibration results ship, so re-measuring is optional: `satyapan calibrate-m
 once FLEURS `data/hi_in/audio/dev.tar.gz` and `data/en_us/audio/dev.tar.gz` (https://huggingface.co/datasets/google/fleurs,
 CC-BY-4.0) are saved in `data/forensics/fleurs/` as `hi_in_dev.tar.gz` and `en_us_dev.tar.gz` (git-ignored).
 `tests/test_ocr.py` and `tests/test_real_models.py` run the real models and skip cleanly where one is missing. The
-finale scenarios carry their text, so nothing in the scripted demo depends on these. `".[aws]"` (boto3) is used by
+demo scenarios carry their text, so nothing in the scripted demo depends on these. `".[aws]"` (boto3) is used by
 the KMS signer; a Bedrock extractor is specified but not built.
 
 **A digital-arrest rule and an offline helper reader (24 Oct).** `R-DIGITAL-ARREST-PAY` (F1, hard, the I4C advisory
@@ -91,10 +91,10 @@ and a read takes a median of 23 s on the laptop's CPU.
 messages in `data/eval/labelled.json`. They are synthetic, not field data. The run writes `data/eval/results.json` and
 `../docs/evaluation.md`, and the console's **Evaluation** page shows the same file. Latest run: of 79 in-scope scams,
 97.5% flagged (34 RED, 43 AMBER) and 2 missed; of 63 genuine messages, none stopped and 7 asked to verify first
-(11.1%); of 14 scams outside scope (family emergency, lottery, jobs), 2 flagged. The set helped find three general
+(11.1%); of 14 scams outside scope (family emergency, lottery, jobs), 2 flagged. The set was used to find three general
 fixes, so these numbers are optimistic. `tests/test_evaluation.py` fails if a genuine message is ever stopped. It
 also compares the committed report with a fresh run, but only when the same optional models are installed as for the
-committed run; otherwise that comparison is skipped (it is skipped in the finale laptop's engine environment).
+committed run; otherwise that comparison is skipped (it is skipped in the demo laptop's engine environment).
 
 ## How a case flows
 
@@ -144,7 +144,7 @@ consent, decisions) signed with Ed25519 locally; `satyapan verify pack.json` che
 writes integral floats as integers, so a pack still verifies after a JSON round trip through a browser.
 Production: AWS KMS asymmetric key and S3 Object Lock.
 
-## The finale scenarios (`data/fixtures/scenarios.json`)
+## The demo scenarios (`data/fixtures/scenarios.json`)
 
 One row per fixture; `tests/test_docs.py` fails if this table drifts from the file.
 
@@ -176,7 +176,7 @@ One row per fixture; `tests/test_docs.py` fails if this table drifts from the fi
 Everything is synthetic. Forensics in S1 are **SIMULATED** (the scenario ships a transcript, not audio, so there is
 nothing for the detector to hear) and labelled so on every surface.
 
-## Mocks, honestly labelled
+## Mocks, labelled as mocks
 
 Every adapter carries a label with the production source, the owner and the access route. `GET /api/meta` returns
 the labels and the console shows them, so nothing mocked is ever presented as live. One row per adapter:
@@ -195,7 +195,7 @@ the labels and the console shows them, so nothing mocked is ever presented as li
 service (`SATYAPAN_FORENSICS_URL`, set by `../scripts/demo_up.sh`): the GenD face check and the DF Arena 500M voice
 check, each calibrated per kind of input and abstaining when unsure. Without the service, audio forensics runs
 in-process when torch is installed (DF Arena 500M when its files are present, else the older AASIST-L once
-`satyapan setup-models` has fetched it) and abstains otherwise; the scenario-scripted results used in rehearsal are marked SIMULATED on every surface.
+`satyapan setup-models` has fetched it) and abstains otherwise; the scenario-scripted results are marked SIMULATED on every surface.
 Document forensics (error-level analysis, editing-app names in the metadata and AI-tool labels; not calibrated on
 genuine documents) runs in-process. The evidence signer is a local Ed25519 key standing in for an AWS KMS
 asymmetric key with S3 Object Lock. The one-page path from these mocks to a bank deployment, with the stepped
