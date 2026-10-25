@@ -13,7 +13,7 @@ flowchart LR
     C --> D["What is being asked?<br/>authority claimed, action, payee"]
     D --> F1["Check 1: issuer rules<br/>(cited rulebook)"]
     D --> F2["Check 2: the bank's own records<br/>(payee name, outbound log...)"]
-    B --> F3["Deepfake check<br/>video: GenD + YuNet<br/>audio: DF Arena 500M"]
+    B --> F3["Deepfake check<br/>video: GenD (CLIP ViT-L/14) + YuNet<br/>audio: DF Arena 500M"]
     F1 --> V{"Verdict<br/>no judged media: the rules decide;<br/>judged media: 50% instruction + 50% deepfake,<br/>RED from 40%, AMBER from 15%"}
     F2 --> V
     F3 --> V
@@ -27,7 +27,7 @@ flowchart LR
 | Intake | Hash every file, check type and size | engine |
 | Read the instruction | OCR for notices (Tesseract). Voice/video: speech-to-text with Whisper (faster-whisper, local CPU, declared in `MODELS.md`); the officer can always correct or type it | engine |
 | Two independent checks | Issuer rules with citations; the bank's own records (labelled mocks in the demo) | engine, `datasets/rules`, `datasets/mocks` |
-| **Forensics (this repo)** | `forensics/video.py`: GenD on aligned faces. `forensics/audio.py`: DF Arena. Both calibrated on real clips, both abstain with a plain reason when unsure | **built in this repository** |
+| **Forensics (this repo)** | `forensics/video.py`: GenD (CLIP ViT-L/14 image encoder) on faces found and aligned by YuNet. `forensics/audio.py`: DF Arena. Both calibrated on real clips, both abstain with a plain reason when unsure | **built in this repository** |
 | Verdict | No media, or media no detector could judge: the rules decide (RED needs a cited hard rule plus an independent second check). Judged media: 50% instruction + 50% deepfake, RED from 40%, AMBER from 15%; a RED still needs a money demand read (`docs/design-decisions.md`) | engine |
 | Outputs | Officer screen, Hindi customer card, signed evidence record | engine, console |
 
