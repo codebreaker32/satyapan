@@ -29,6 +29,14 @@ SOURCES = {
     "fake": (A / "indicsynth" / "Hindi" / "train-00000-of-00107.parquet", "indicsynth-hi"),
 }
 FF = imageio_ffmpeg.get_ffmpeg_exe()
+# A WhatsApp-like voice note: Opus in Ogg, 16 kHz mono, 16 kbit/s (synthetic/channels.py exposes this too)
+WHATSAPP_OPUS = ["-ac", "1", "-ar", "16000", "-c:a", "libopus", "-b:a", "16k"]
+
+
+def whatsapp_opus(src: Path, dst: Path) -> Path:
+    """Re-encode one clip as a WhatsApp-like voice note (.ogg) with the settings above."""
+    subprocess.run([FF, "-y", "-loglevel", "error", "-i", str(src), *WHATSAPP_OPUS, str(dst)], check=True)
+    return dst
 
 
 def audio_bytes(cell) -> bytes:
@@ -74,8 +82,7 @@ def main() -> int:
                 wav = wav_dir / f"{label}_{n:03d}.wav"
                 sf.write(wav, data, sr)
                 opus = opus_dir / f"{label}_{n:03d}.ogg"
-                subprocess.run([FF, "-y", "-loglevel", "error", "-i", str(wav), "-ac", "1", "-ar", "16000", "-c:a", "libopus",
-                                "-b:a", "16k", str(opus)], check=True)
+                whatsapp_opus(wav, opus)
                 rows.append((wav, label, source, "hi/wav"))
                 rows.append((opus, label, source + "+whatsapp-like", "hi/whatsapp-opus"))
                 n += 1

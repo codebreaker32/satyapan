@@ -1,7 +1,6 @@
 """The real OCR path: render the S3 summons TEXT to a synthetic PNG (plain white page, black DejaVu text, a diagonal
 SYNTHETIC watermark — no logos, no emblems, no official's name), run tesseract through satyapan.media, and check the
 extractor still finds the fields the rules rest on. Skips cleanly where pytesseract or the tesseract binary is absent."""
-import textwrap
 from pathlib import Path
 
 import pytest
@@ -16,33 +15,15 @@ pytestmark = pytest.mark.skipif(tesseract_cmd() is None, reason="tesseract binar
 from satyapan.models import ClaimedOwner, Flag, Issuer  # noqa: E402
 from tests.conftest import SCENARIOS  # noqa: E402
 
-# DejaVu on Linux; Arial, the plain sans-serif every Windows install ships, on the finale laptop.
-FONT_PATHS = ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", "/usr/share/fonts/dejavu/DejaVuSans.ttf",
-              "/usr/share/fonts/TTF/DejaVuSans.ttf", "C:/Windows/Fonts/arial.ttf")
-
-
-def _font(size: int):
-    from PIL import ImageFont
-    for p in FONT_PATHS:
-        if Path(p).exists():
-            return ImageFont.truetype(p, size)
-    pytest.skip("no DejaVu font on this box")
+from tests.notice_render import NoFont, render_notice as _render  # noqa: E402  - shared with synthetic/make_notice_image.py
 
 
 def render_notice(text: str, path: Path) -> None:
-    """Plain synthetic notice: black text on white at a size tesseract reads reliably, SYNTHETIC watermark behind."""
-    from PIL import Image, ImageDraw
-    lines = textwrap.wrap(text, width=58)
-    width, line_h, margin = 1200, 48, 80
-    height = 2 * margin + line_h * len(lines)
-    img = Image.new("RGBA", (width, height), "white")
-    watermark = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-    ImageDraw.Draw(watermark).text((width // 2, height // 2), "SYNTHETIC", font=_font(110), fill=(0, 0, 0, 40), anchor="mm")
-    img = Image.alpha_composite(img, watermark.rotate(30, center=(width // 2, height // 2)))
-    draw, body = ImageDraw.Draw(img), _font(32)
-    for i, line in enumerate(lines):
-        draw.text((margin, margin + i * line_h), line, font=body, fill="black")
-    img.convert("RGB").save(path)
+    """The synthetic notice (tests/notice_render.py); skips where this box has no DejaVu or Arial font."""
+    try:
+        _render(text, path)
+    except NoFont as e:
+        pytest.skip(str(e))
 
 
 @pytest.fixture(scope="module")
