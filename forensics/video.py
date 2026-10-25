@@ -1,4 +1,4 @@
-"""Video deepfake detector: GenD (CLIP ViT-L/14) on aligned faces, with honest abstention.
+"""Video deepfake detector: GenD (CLIP ViT-L/14) on aligned faces, with explicit abstention.
 
 Pipeline, mirroring GenD's reference preprocessing (yermandy/GenD, detector.py) except for the face detector:
   1. Frame order: start at the middle frame, then repeatedly take the frame farthest from all frames taken so far
@@ -189,7 +189,7 @@ def read_frames(path: str, indices: Sequence[int]) -> dict[int, np.ndarray]:
         cap.release()
     if not got:
         # cv2's bundled FFmpeg has no software AV1 decoder ("Failed to get pixel format"), so an AV1 mp4 or webm
-        # gave no frames and the face check said the video could not be read. PyAV, in the same venv, decodes it
+        # yields no frames and the face check would report the video as unreadable. PyAV, in the same venv, decodes it
         # with libdav1d. Only used when cv2 decoded nothing, so every clip the calibration saw reads as before.
         got = _read_frames_av(path, want, last)
     return got
@@ -336,7 +336,7 @@ class GenDVideoForensics:
         reason = self.gate(m)
         if reason:
             return "abstain", "", reason, m.get("median"), cell
-        # Only the clip's own cell: a kind of video we have not calibrated for abstains (docs/plan.md, section 1).
+        # Only the clip's own cell: an uncalibrated kind of video abstains (docs/plan.md, section 1).
         status, band, reason = classify(m["median"], self.calibration.cells.get(cell))
         return status, band, reason, m["median"], cell
 

@@ -28,7 +28,7 @@ TEXT = ("Listen carefully. You are digitally arrested. Do not disconnect this ca
         "family. To clear your name, you must send all the money in your bank account today, to the R B I "
         "verification account. Account number: 3 0 0 1 1 2 2 3 3 4 4 5 5 6. I F S C code: D E M O 0 0 0 1 2 3 4. "
         "Send the money now, or you will be arrested.")
-# 16 kHz mono Opus in Ogg. 24 kbit/s matches the note the team made (85,722 bytes for 34.17 s; re-encoding its own
+# 16 kHz mono Opus in Ogg. 24 kbit/s matches the original test note (85,722 bytes for 34.17 s; re-encoding its own
 # audio at 24k gives 85,218 bytes, at 16k 59,350). The calibration's WhatsApp-like copies use 16k (channels.py).
 OPUS = ["-ac", "1", "-ar", "16000", "-c:a", "libopus", "-b:a", "24k"]
 

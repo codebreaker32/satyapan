@@ -1,6 +1,6 @@
 """Download genuine, openly licensed videos of people speaking from Wikimedia Commons, for setting thresholds.
 
-Thresholds are set on REAL videos only (forensics/common.py), so we need genuine face video with a clear licence.
+Thresholds are set on REAL videos only (forensics/common.py), so genuine face video with a clear licence is required.
 Safeguards:
   - licence must be CC BY, CC BY-SA, CC0 or public domain (read from each file's Commons metadata);
   - uploaded before 2021, so it is very unlikely to be AI-generated;

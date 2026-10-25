@@ -3,7 +3,7 @@
 #   1. its own engine from this checkout's prototype/ on port 8100 (never the demo's 8000), connected to the
 #      forensics service on 8765 when that answers, so voice and face checks run; otherwise the instruction rules only;
 #   2. the bot, in the foreground. Logs go to clips/logs/tg-engine.log and clips/logs/tg-bot.log.
-# On the workbox run it inside tmux:  tmux new -s tgbot scripts/run_tg_bot.sh
+# On a server, run it inside tmux:  tmux new -s tgbot scripts/run_tg_bot.sh
 # Stop with Ctrl-C (or kill the bot's PID): the check in progress finishes, then the engine started here stops too.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -32,7 +32,7 @@ mkdir -p "$LOGS"
 
 if [ "$PORT" = 8000 ]; then echo "port 8000 is the demo's engine; the bot needs its own (default 8100)"; exit 1; fi
 if (exec 3<>"/dev/tcp/127.0.0.1/$PORT") 2>/dev/null; then
-  # Never reuse whatever is there: it may be an engine on older code, or someone else's server.
+  # Never reuse whatever is there: it may be an engine on older code, or an unrelated server.
   echo "port $PORT is already in use. Stop what runs there, or pick another: SATYAPAN_BOT_ENGINE_PORT=8110 $0"
   exit 1
 fi

@@ -1,7 +1,7 @@
 """Re-encode videos the way a WhatsApp forward roughly looks: H.264, short side at most 480 px, low bitrate.
 
-This is an approximation for calibration, labelled as such. Real forwards (sent between our own phones) are still
-the reference; this only lets us build a compressed calibration cell without forwarding dozens of clips by hand.
+This is an approximation for calibration, labelled as such. Real forwards (sent between test phones) remain
+the reference; this only allows a compressed calibration cell to be built without forwarding dozens of clips by hand.
 Uses the ffmpeg bundled with the `imageio-ffmpeg` package (BSD-2).
 
   .venv/bin/python scripts/whatsappify.py clips/dfdc/manifest.csv      # writes clips/dfdc_wa/ + manifest.csv

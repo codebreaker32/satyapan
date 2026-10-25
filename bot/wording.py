@@ -200,8 +200,8 @@ def _shown(text: str) -> bool:
 
 
 def citizen_reasons(view: dict, lang: str, outcome: str) -> list[str]:
-    """The card's reasons a citizen may be shown, at most three, in her language; then, if a slot is free, what a
-    detector found."""
+    """The card's reasons a citizen may be shown, at most three, in the citizen's language; then, if a slot is free,
+    what a detector found."""
     if outcome == "MATCHES":
         return []
     card = ((view.get("card") or {}).get(lang)) or {}

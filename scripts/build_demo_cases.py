@@ -1,15 +1,17 @@
-"""Build the two live demo cases after the final reset (run-sheet beats 2 and 4), the way the console builds them.
+"""Build the two live demo cases (the cloned voice note and the face swap) after a demo reset, the way the console
+builds them.
 
-Nothing in these two cases is scripted: no beat shows a SIMULATED detector result, and no beat waits on a model.
+Neither case is scripted: neither shows a SIMULATED detector result, and both are built in advance, so opening them
+never waits on a model.
 
   .venv/bin/python scripts/build_demo_cases.py          # about 1-2 minutes; prints each case and its verdict
 
-Beat 2, the cloned RM voice note: a real voice clone uploaded as the customer's WhatsApp voice note, plus the "RM's"
+The cloned RM voice note: a real voice clone uploaded as the customer's WhatsApp voice note, plus the "RM's"
 message (the S1 scenario's text, account number and IFSC) as the WhatsApp text that came from the same number. The
 clone is IndicSynth Hindi (FreeVC voice conversion, CC-BY-NC-4.0): a lab recording standing in for the RM's cloned
 voice, not any real person's voice. Speech-to-text writes down what the voice actually says (a lab sentence); the
-voice check judges the voice; the message checks judge the text.
-Beat 4, the face swap: the public face-swap sample (UniDataPro, CC-BY-NC-ND-4.0) with the ED "digital arrest" text.
+voice check assesses the voice; the message checks assess the text.
+The face swap: the public face-swap sample (UniDataPro, CC-BY-NC-ND-4.0) with the ED "digital arrest" text.
 
 Exits 1 unless both cases come back RED with the real detector flagging the media. Run it after "Reset the demo"
 (the reset clears every case), then open the Scenarios page.
@@ -80,7 +82,7 @@ def main() -> int:
     sc = s1()
     ok = True
     with tempfile.TemporaryDirectory() as tmp:
-        # Beat 2: the cloned RM voice note, and the RM's text from the same unknown number
+        # The cloned RM voice note, and the RM's text from the same unknown number
         note = Path(tmp) / VOICE_NAME
         shutil.copyfile(VOICE_CLONE, note)
         cid = call(base, "POST", "/api/cases", {"flag": sc["flag"]})["case"]["id"]
@@ -92,7 +94,7 @@ def main() -> int:
         out = call(base, "POST", f"/api/cases/{cid}/run")
         ok &= report("beat 2, cloned RM voice note + the RM's text", out.get("case", out), "R-AUDIO-SYNTH")
 
-    # Beat 4: the face swap with the ED text, exactly as the run-sheet's setup note builds it in the console
+    # The face swap with the ED text, built exactly as it would be in the console
     cid = call(base, "POST", "/api/cases", {"flag": CONSOLE_FLAG})["case"]["id"]
     call(base, "POST", f"/api/cases/{cid}/consent", CONSOLE_CONSENT)
     call(base, "POST", f"/api/cases/{cid}/media", {"language": "hi", "derived_text": ED_TEXT}, files={"file": FACE_SWAP})

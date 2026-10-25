@@ -54,7 +54,7 @@ class Service:
     @staticmethod
     def _audio_detector():
         try:
-            from .audio import default_detector          # Bhawna's module, once it is ready
+            from .audio import default_detector          # forensics/audio.py, when installed
             return default_detector()
         except ImportError:
             return None

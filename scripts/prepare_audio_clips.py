@@ -1,4 +1,4 @@
-"""Labelled Hindi audio for calibrating the audio detector (for Bhawna; same manifest format as the video side).
+"""Labelled Hindi audio for calibrating the audio detector (same manifest format as the video side).
 
 Real speech: Google FLEURS (CC-BY-4.0), read Hindi speech (Kathbath is gated; FLEURS is open).
 Synthetic speech: IndicSynth (vdivyasharma, CC-BY-NC-4.0), Hindi text-to-speech / voice-cloned speech.

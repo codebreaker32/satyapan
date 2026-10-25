@@ -10,7 +10,7 @@ The caller may say what the upload is (`kind`): "audio" never runs the face chec
 WebM container gets no face result. A recording made with a camera pointed at a screen (`channel="live-replay"`) gets
 no face verdict either: the face check is calibrated on original video files only.
 
-The audio detector is Bhawna's (`forensics/audio.py`, same contract). Until it is installed, the audio half of a check
+The audio detector is `forensics/audio.py` (same contract). When it is not installed, the audio half of a check
 abstains with a plain reason instead of failing.
 """
 from __future__ import annotations
@@ -66,7 +66,7 @@ def _webm_kind(path: Path, ext: str) -> str:
 
 def sound_track_format(path: Path) -> Optional[tuple[str, int]]:
     """(codec, sample rate) of a file's first audio stream, or None. The voice check's calibration cell depends on how
-    the sound reached us (Opus, 8 kHz phone audio, or clean), so it is read from the original file, not from the
+    the sound arrived (Opus, 8 kHz phone audio, or clean), so it is read from the original file, not from the
     16 kHz WAV the sound track is extracted to."""
     try:
         import av
@@ -131,7 +131,7 @@ def analyse(path: Path | str, video: Optional[Detector] = None, audio: Optional[
         video = GenDVideoForensics()
     if audio is None:
         try:
-            from .audio import default_detector  # Bhawna's module exposes this once it is ready
+            from .audio import default_detector  # provided by forensics/audio.py when installed
 
             audio = default_detector()
         except ImportError:
@@ -155,8 +155,8 @@ def analyse(path: Path | str, video: Optional[Detector] = None, audio: Optional[
     with tempfile.TemporaryDirectory() as tmp:
         track = extract_sound_track(path, Path(tmp))
         if track is None:
-            # "No sound track" only when the container opens and holds no audio stream; a truncated or unreadable
-            # file with an AAC track used to be told it had none.
+            # "No sound track" only when the container opens and holds no audio stream, so a truncated or unreadable
+            # file with an AAC track is not reported as having none.
             results.append(_no_audio_detector("the video has no sound track" if has_no_audio_stream(path)
                                               else "the sound track could not be read"))
         elif audio is None:

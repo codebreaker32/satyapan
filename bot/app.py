@@ -191,7 +191,7 @@ class Bot:
         if not (self.uploads_root / case_id).exists():
             self.pending.done(case_id)
 
-    # ---------------- Telegram calls that should survive a hiccup
+    # ---------------- Telegram calls retried after a transient failure
 
     def _tg(self, fn: Callable, *args, **kw):
         for attempt in range(3):

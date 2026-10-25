@@ -1,4 +1,4 @@
-"""Audio deepfake (voice-clone) detector: DF Arena on 4-second windows, with honest abstention.
+"""Audio deepfake (voice-clone) detector: DF Arena on 4-second windows, with explicit abstention.
 
 Pipeline:
   1. Decode any audio or video file with PyAV (FFmpeg inside) to 16 kHz mono float32. A video's soundtrack is read
@@ -130,7 +130,7 @@ def sha256_of(path: Path) -> str:
 
 
 def channel_for(codec: str, source_rate: int) -> str:
-    """How the audio reached us. WhatsApp voice notes and browser recordings are Opus; phone calls are 8 kHz."""
+    """How the audio arrived. WhatsApp voice notes and browser recordings are Opus; phone calls are 8 kHz."""
     if source_rate and source_rate <= 8000 or codec in ("amr_nb", "amrnb", "gsm", "pcm_mulaw", "pcm_alaw"):
         return "phone-8k"
     if codec == "opus":
@@ -151,7 +151,7 @@ class DFArenaScorer:
     from there; it is not copied into this repository because of its non-commercial licence. Weights are loaded with
     torch.load(weights_only=True, mmap=True), so a 4.6 GB checkpoint is paged in rather than copied into memory.
     `int8=True` quantises the Linear layers dynamically, which roughly quarters their memory and speeds up a CPU.
-    `device` defaults to the GPU when there is one (the team's EC2 g4dn box) and the CPU otherwise."""
+    `device` defaults to the GPU when there is one (e.g. an EC2 g4dn instance) and the CPU otherwise."""
 
     def __init__(self, size: str = "500M", int8: bool = False, threads: Optional[int] = None,
                  device: Optional[str] = None):
@@ -281,7 +281,7 @@ class DFArenaAudioForensics:
             return "abstain", "", reason, m.get("median"), cell
         cal = self.calibration.cells.get(cell)
         if cal is None and channel == LIVE_REPLAY:
-            # No replay clips calibrated yet: judge it like a browser (Opus) recording, but see below.
+            # No replay clips calibrated yet: treat it like a browser (Opus) recording, but see below.
             cal = self.calibration.cells.get(cell_for(language, "whatsapp-opus"))
         cal = cal or self.calibration.cells.get(cell_for(language, "any"))
         status, band, reason = classify(m["median"], cal)

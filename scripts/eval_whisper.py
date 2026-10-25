@@ -1,7 +1,7 @@
-"""Which Whisper model should read Hindi voice notes? Word error rate and speed on real Hindi speech (FLEURS).
+"""Compare Whisper models for Hindi voice notes: word error rate and speed on real Hindi speech (FLEURS).
 
-Google FLEURS (CC-BY-4.0) ships read Hindi speech with reference transcripts. We take N clips, transcribe each
-with every candidate model on this laptop's CPU, and report word error rate (WER, lower is better) and seconds per
+Google FLEURS (CC-BY-4.0) ships read Hindi speech with reference transcripts. The script takes N clips, transcribes each
+with every candidate model on this laptop's CPU, and reports word error rate (WER, lower is better) and seconds per
 clip. Optionally re-encodes the clips the way WhatsApp sends voice notes (Opus, 16 kHz, mono) to see the effect.
 
   .venv/bin/python scripts/eval_whisper.py --n 20

@@ -166,7 +166,7 @@ def fetch_indicsynth(n: int) -> list[dict]:
                     break
                 except OSError:
                     time.sleep(3 * (attempt + 1))
-            time.sleep(0.5)                               # be gentle with the datasets server
+            time.sleep(0.5)                               # rate-limit requests to the datasets server
         gen = json.loads(meta_path.read_text(encoding="utf-8")).get("Generative Model", "") if meta_path.exists() else ""
         if dest.exists():
             rows.append({"path": str(dest.relative_to(ROOT / "clips")), "label": "fake", "language": "hi",

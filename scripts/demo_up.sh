@@ -6,11 +6,11 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 FIN=$(pwd)
-# The engine and console: prototype/ in this repo (merged 24 Oct), else the older sibling checkout ../satyapan.
+# The engine and console: prototype/ in this repo, else the older sibling checkout ../satyapan.
 if [ -d prototype/satyapan ]; then PROTO="$FIN/prototype"; else PROTO=$(cd ../satyapan && pwd); fi
 # Its Python environment (pip install -e prototype into it): SATYAPAN_ENGINE_VENV, else the sibling checkout's
 # ../satyapan/.venv (this laptop), else prototype/.venv. No command substitution that can fail here: under set -e a
-# failing `cd` inside one ended the script silently on any machine without the sibling checkout.
+# failing `cd` inside one would end the script silently on any machine without the sibling checkout.
 if [ -n "${SATYAPAN_ENGINE_VENV:-}" ]; then ENGINE_VENV="$SATYAPAN_ENGINE_VENV"
 elif [ -x "$FIN/../satyapan/.venv/bin/satyapan" ]; then ENGINE_VENV="$FIN/../satyapan/.venv"
 else ENGINE_VENV="$PROTO/.venv"; fi
@@ -58,7 +58,7 @@ export SATYAPAN_FORENSICS_URL="http://127.0.0.1:$PORT"
 export SATYAPAN_WHISPER_MODEL="${SATYAPAN_WHISPER_MODEL:-large-v3-turbo}"
 export SATYAPAN_WHISPER_BEAM="${SATYAPAN_WHISPER_BEAM:-1}"
 export SATYAPAN_WHISPER_PRELOAD=1   # load speech-to-text at start-up, not on the first voice note
-# The website registration look-up uses its recorded answers, so no check leaves the laptop and a slow venue network
+# The website registration look-up uses its recorded answers, so no check leaves the laptop and a slow network
 # cannot stall a verdict. SATYAPAN_LIVE_WEB=1 scripts/demo_up.sh asks the public RDAP registry (rdap.org) live instead.
 export SATYAPAN_LIVE_WEB="${SATYAPAN_LIVE_WEB:-0}"
 # The offline helper reader (prototype/satyapan/llm_reader.py, Llama 3.2 3B through Ollama) stays OFF for the demo:
