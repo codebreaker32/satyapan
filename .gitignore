@@ -1,6 +1,33 @@
+# Public clips, demo media and generated synthetic files (scripts/, synthetic/): never committed
 clips/
+# Model weights and data fetched by scripts/fetch_models.sh and `satyapan setup-models`
+models/
+vendor/
+
+# Python
 .venv/
 __pycache__/
 *.pyc
+*.egg-info/
 .pytest_cache/
-models/
+
+# Node and build outputs
+node_modules/
+dist/
+out/
+
+# Logs
+logs/
+*.log
+
+# Evidence packs, uploads and the bank's signing keys (prototype/evidence/keys)
+evidence/
+
+# Secrets and personal keys
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*_key
+*_key.txt
