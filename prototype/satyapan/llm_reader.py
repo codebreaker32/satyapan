@@ -22,7 +22,7 @@ Nothing leaves the laptop: Ollama serves the model on 127.0.0.1, and with the mo
 aside and the rules-based reading stands alone. The model is Meta's Llama 3.2 3B (Llama 3.2 Community License;
 Built with Llama), declared in MODELS.md.
 
-  SATYAPAN_LLM_READER=llama3.2:3b      # turn it on with this model (scripts/demo_up.sh sets it); off by default
+  SATYAPAN_LLM_READER=llama3.2:3b      # turn it on with this model (pass it to scripts/demo_up.sh); off by default
   SATYAPAN_OLLAMA_URL=http://127.0.0.1:11434
 """
 from __future__ import annotations

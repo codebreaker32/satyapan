@@ -37,8 +37,9 @@ FAILURE_CASES = [
               "becomes unsure."),
     ("voice", "Genuine Hindi voices often score 0.99 or more on the raw model, so the Hindi lines sit at 0.9996 and "
               "above; a genuine video's sound track at 0.9986 landed in the grey band (unsure) in our live check."),
-    ("both", "No public Indian scam-call audio or video exists to test on. Our fakes are lab-made (IndicSynth Hindi, "
-             "In-the-Wild English celebrity speech, one face-swap vendor sample). Open detectors lose about half their "
+    ("both", "No public Indian scam-call audio or video exists to test on. Our fakes are lab-made or collected online "
+             "(IndicSynth Hindi lab clones, In-the-Wild English public-figure fakes collected from the internet, one "
+             "face-swap vendor sample). Open detectors lose about half their "
              "accuracy on deepfakes circulated in 2024 (Deepfake-Eval-2024), so real-world catch rates may be lower."),
 ]
 

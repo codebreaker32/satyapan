@@ -1,5 +1,6 @@
-"""Ordered fusion policy. Not a weighted score: a RED needs a cited hard rule plus a signal from a different family
-that rests on different evidence. F5 (context) and anything marked can_be_second=False never count as the second.
+"""Ordered fusion policy. With no judged media it is not a weighted score: a RED needs a cited hard rule plus a
+signal from a different family that rests on different evidence. F5 (context) and anything marked can_be_second=False
+never count as the second.
 
 Outcomes, in order of evaluation:
   MATCHES  the bank's own signed message, found in its outbound log, and no hard rule fired
@@ -14,8 +15,8 @@ judge it, the combined score at the end of this module decides instead: 50% inst
 more, AMBER from 15%, GREY below. Media the detector could not judge counts as no media.
 
 No RED when the engine read no money demand. A judge pasted a genuine overdue-loan letter: no payee, no
-instruction, `instruction=NONE`, and the card told a real customer to stop. "Verify the instruction, not the
-pixels" is the product's own sentence, so a verdict that stops a payment while the extractor read no instruction
+instruction, `instruction=NONE`, and the card told a real customer to stop. "Verify the instruction, not just
+the pixels" is the product's own sentence, so a verdict that stops a payment while the extractor read no instruction
 and no payee contradicts it. When `instruction` is NONE and no payee account, IFSC or VPA was read, a RED pair
 falls back to AMBER and the explanation says so, naming both rules. This guard may only ever make a verdict less
 severe, never more: it is the last thing checked before a RED is returned and it has no other effect.

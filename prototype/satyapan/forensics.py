@@ -1,5 +1,6 @@
-"""F3 media forensics. Corroboration only: these signals are soft, so they can never anchor a RED, and each
-detector abstains outside the conditions it was calibrated for.
+"""F3 media forensics. Each detector abstains outside the conditions it was calibrated for. With no judged media
+these signals are soft and never anchor a RED; when a detector judges the media, its score is half of the combined
+score in fusion.fuse ("unsure" counts as no media).
 
 - NullAudioForensics abstains ("no calibrated detector loaded").
 - AASISTAudioForensics loads an AASIST-L checkpoint (MIT, clovaai/aasist) when torch is installed and a per-cell

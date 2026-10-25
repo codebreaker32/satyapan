@@ -44,7 +44,8 @@ When a bank's existing controls pause a large, unusual transfer, Satyapan lets t
 - Invariants the UI must never contradict: with no judged media, RED needs two independent families (F5 never counts); RED also needs a money demand to have been read, so with no instruction and no payee the verdict is capped at AMBER; a lone hard rule gives AMBER; with judged media the combined score decides (50% instruction + 50% deepfake, RED from 40%, AMBER from 15%); "no warning signs" is never shown as "safe"; the system never says "fake", "genuine" or "fraud"; customers never see a score; nothing is auto-blocked.
 - Terminology: case, flag, claim (extracted), signal, family F1–F5, verdict/outcome, card, evidence pack, hold, escalation ladder, claim-only mode, campaign memory.
 - Languages: Hindi and English on the customer card (Devanagari must render); officer UI in English.
-- Deepfake video forensics is out of scope for the two-person build; the video demo uses its audio track.
+- Video: a face check (GenD CLIP-L/14 with YuNet) runs on uploaded video next to the voice check; `docs/accuracy.md`
+  says where it holds and where it does not (WhatsApp-size video is the weak cell).
 - The Bedrock LLM extractor stays an optional path: model access on the team's AWS account was NOT_AUTHORIZED as of 16 Oct 2026 (../docs/disclosure.md), the rules-based extractor is the default, and the demo does not need Bedrock.
 
 ## Brand Commitments

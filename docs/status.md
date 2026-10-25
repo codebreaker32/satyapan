@@ -92,7 +92,7 @@ unchanged (in-scope scams 97.5% flagged; genuine 0 stopped, 11.1% asked to verif
 | Voice check, Hindi clean | at the 5% line: 4 of 81 real voices flagged, 57 of 60 fakes caught | `calibration/audio_report.md` |
 | Voice check, Hindi WhatsApp-style (simulated) | 3 of 69 real flagged, 52 of 60 fakes caught | same |
 | Voice check, Hindi phone 8 kHz (Gram Vaani real calls + simulated) | 9 of 198 real flagged, 49 of 60 fakes caught | same |
-| Voice check, English, all channels (In-the-Wild) | 13 of 269 real flagged, 289 of 294 fakes caught | same |
+| Voice check, English, all channels (In-the-Wild) | 12 of 269 real flagged, 288 of 294 fakes caught | same |
 | Voice check, by kind of fake (Hindi) | XTTS-v2 clones 87 of 87 caught; FreeVC conversions 70 of 93 | same |
 | Whisper turbo, Hindi | about 33% word errors; about 2x real time on CPU | `calibration/whisper_eval_fast.md` |
 | Whisper small, Hindi | about 60% word errors at similar speed (not used) | same |
