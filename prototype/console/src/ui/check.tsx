@@ -142,12 +142,6 @@ export function Check({ view, titles }: Props) {
                   : m.derived_text_engine.startsWith('tesseract')
                     ? ` · OCR by ${m.derived_text_engine}`
                     : ` · text from ${m.derived_text_engine}`)}
-              {view.inputs.forensics_simulated && m.kind !== 'text' && (
-                <>
-                  {' '}
-                  <span className="tag tag-sim">Forensics simulated</span>
-                </>
-              )}
             </MetaRow>
           ))}
           {neededMeta.has('meta:sender') && (
@@ -373,7 +367,6 @@ function Feature({
   onHover: (l: Lit) => void
   onPick: (l: Lit) => void
 }) {
-  const simulated = Boolean(s.detail.simulated)
   const id = s.rule_id
   return (
     <li
@@ -411,7 +404,6 @@ function Feature({
               .filter(Boolean)
               .join(' · ')}
           </span>
-          {simulated && <span className="tag tag-sim">Simulated</span>}
           {MOCKED_EVIDENCE.has(s.evidence_key) && <span className="tag tag-accent">Mock lookup</span>}
         </div>
         {expanded ? <div className="feat-reason">{s.reason_en}</div> : <div className="feat-title">{title ?? s.reason_en}</div>}

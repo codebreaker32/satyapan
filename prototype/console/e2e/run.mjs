@@ -7,7 +7,7 @@
 //   satyapan serve --port 8010
 //   npm run e2e
 //
-// Plain node script in the style of .impeccable/review/*.mjs: no test framework,
+// Plain node script: no test framework,
 // one PASS/FAIL line per assertion, process.exit(1) if anything failed. Playwright
 // comes from the deck's install; do not npm-install it here.
 import { chromium } from '../../../deck/node_modules/playwright/index.mjs'
@@ -272,11 +272,8 @@ try {
     await runScenario(page, titleById, id)
     await checkBand(page, id, outcome)
   }
-  // Still on the S8 case: the band names the one rule that fired, under its own heading.
-  check(
-    (await page.locator('.band h3', { hasText: 'What fired' }).count()) > 0,
-    'S8-rbi-bond-no-payee: the band shows "What fired" above the lone hard rule',
-  )
+  // Still on the S8 case: the band names the one rule that fired.
+  check((await page.locator('.band ul li').count()) > 0, 'S8-rbi-bond-no-payee: the band names the lone hard rule')
 
   // The Scenarios page itself lists every fixture: five beats in the first frame, the rest behind the disclosure.
   await openScenarios(page)

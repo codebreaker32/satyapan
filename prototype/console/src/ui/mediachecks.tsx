@@ -72,7 +72,7 @@ function scoreWords(sc: string): string {
 }
 
 function why(s: Signal, d: Detail, acc: Accuracy | null): string {
-  if (d.simulated) return 'This rehearsal scenario scripts the answer; no detector looked at a file. It is marked Simulated wherever it appears.'
+  if (d.simulated) return 'This rehearsal scenario scripts the answer; no detector looked at a file.'
   const cell = acc?.cells.find((c) => c.cell === d.cell)
   const kind = (d.cell && CELL_WORDS[d.cell]) || 'this kind of input'
   const model = `The ${modelWords(d.model)} ${s.evidence_key === 'media:video' ? 'face' : 'voice'} model`
@@ -134,7 +134,6 @@ export function MediaChecks({ view }: { view: CaseView }) {
               </div>
               <div className="mc-result">
                 {r.word}
-                {d.simulated && <span className="tag tag-sim">Simulated</span>}
               </div>
               {/* until the figures are read, the result word stands alone rather than a sentence that changes later */}
               {settled && <p className="mc-why">{why(s, d, acc)}</p>}

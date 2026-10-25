@@ -58,17 +58,11 @@ export function VerdictBand({ view, titles }: Props) {
                 <b>Deepfake check</b>
                 <span>
                   {sc.deepfake_pct}%
-                  {/* a scripted rehearsal result must never read as a live detector, here least of all */}
-                  {sc.deepfake_simulated && <span className="tag tag-sim">Simulated</span>}
                 </span>
               </li>
               <li>
                 <b>Combined</b>
-                <span>
-                  {/* only the line that matters for this verdict, so the row stays on one line at 1280x720 */}
-                  {sc.combined_pct}% ·{' '}
-                  {v.outcome === 'RED' ? `RED from ${sc.red_line_pct}%` : `AMBER from ${sc.amber_line_pct}%, RED from ${sc.red_line_pct}%`}
-                </span>
+                <span>{sc.combined_pct}%</span>
               </li>
             </ul>
             {/* What it rests on, compactly when there is a pair (the rules' RED pair, or a rule plus the media check):
@@ -118,7 +112,6 @@ export function VerdictBand({ view, titles }: Props) {
         )}
         {!sc && v.outcome === 'AMBER' && anchor && !v.no_money_cap && (
           <>
-            <h3>What fired</h3>
             <ul>
               <li>
                 <b>{FAMILY_WORD[anchor.family]}</b>
