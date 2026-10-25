@@ -1,8 +1,8 @@
-# Satyapan: architecture and build plan
+# Satyapan: architecture
 
 **Verify the instruction, not just the pixels.** When a bank pauses a large, unusual transfer, Satyapan helps the officer
 check the "official" voice note, video or notice behind it. The instruction checks and the deepfake check count half
-each in a combined score (since 24 Oct, `docs/changes-2026-10-24.md`); the officer always decides.
+each in a combined score (`docs/changes-2026-10-24.md`); the officer always decides.
 
 ## 1. How a case flows
 
@@ -54,7 +54,7 @@ version, the cell, the score and the file hash, so it can go into the evidence r
 4. **On screen and in the record:** one plain line per detector on the officer screen; model, version, calibration
    cell, score and file hash in the signed evidence record.
 
-**Wiring (24 Oct):** each kind of media has its own rule and route (`rule_for` in
+**Wiring:** each kind of media has its own rule and route (`rule_for` in
 `prototype/satyapan/forensics.py`): a face result maps to `R-VIDEO-SYNTH` ("Signs of face manipulation", family F3,
 soft), a voice result to `R-AUDIO-SYNTH`, and a document to `R-DOC-TAMPER`, or to `R-DOC-AI` when the file's own label
 names an AI tool.
@@ -65,47 +65,12 @@ Open detectors lose about half their accuracy on deepfakes circulated in 2024 (D
 So the deepfake % comes from calibrated bands, never a raw model score; "unsure" counts as no media; and the officer
 sees the three numbers and a sentence on the band, never a score on the customer's card. Worked examples: `docs/changes-2026-10-24.md`.
 
-## 2. Build plan (24–25 Oct)
-
-Times are indicative and follow the event schedule.
-
-### Day 1
-
-| Time (IST) | Video | Audio |
-|---|---|---|
-| until 14:00 | Video calibration run (Commons real clips + WhatsApp-like copies + face-swap pairs); report in `calibration/` | DF Arena loads and scores one note on the laptop; time measured |
-| 14:00–17:00 | `forensics/analyse.py`: one entry point; a video runs the video check **and** the audio check on its sound track; `docs/consent.md` | `forensics/audio.py` wrapper + tests on the shared contract; calibration on Kathbath (real Hindi), IndicSynth (fake Hindi), In-the-Wild, WhatsApp-like Opus copies |
-| 17:00–20:00 | Wire both detectors into the demo engine in place of the SIMULATED results; one plain line per detector on the officer screen; detector fields in the evidence record | Audio calibration report; joint wiring with the video track |
-| 20:00–22:00 | Demo clips: a genuine selfie video of a team member (consented) and one labelled public face-swap sample | Demo clips: a genuine voice note of a team member and one labelled synthetic Hindi sample |
-| late | First full rehearsal; record every defect found | same |
-
-### Day 2
-
-| When | Video and audio |
-|---|---|
-| Morning | Fix rehearsal issues. Update the demo run-sheet and Q&A notes: the demo now runs a real face-swap detector and a real voice-clone detector, with their measured catch rates and false-alarm rates (from `calibration/`, with sample sizes) |
-| Midday | **Freeze.** Pre-demo check: detectors load offline, calibration files present, every scenario gives its expected verdict |
-| Before the demo | Two full rehearsals, with notifications off |
-
-### Fallbacks
-
-- A detector not calibrated in time ships as "unsure: not calibrated", and that scenario keeps its SIMULATED label.
-- No network access: models load from the local cache (`HF_HUB_OFFLINE`), nothing calls a paid service.
-- The screen fails: run the same scenarios in the terminal.
-
-### What the demo shows (forensics beats)
-
-1. Cloned voice note: the voice check flags it, and the two independent checks name the reasons (RED).
-2. Face-swapped "officer" video: the face check flags it, and the sound track is checked too.
-3. A blurry or tiny-face forward: the detector says "unsure", with the reason, rather than guessing.
-4. A genuine video of a team member (consented): no signs found, and the screen says that this does not prove it is genuine.
-
-## 3. Citizen bot: Telegram (built) and WhatsApp (later)
+## 2. Citizen bot: Telegram
 
 A citizen forwards the suspicious voice note, video, PDF or summons to a bot and gets a verdict back. Same core, new
 door:
 
-**Built (25 Oct): the Telegram bot**, in `bot/` (standard library only; setup, privacy and limits in `bot/README.md`).
+**The Telegram bot** is in `bot/` (standard library only; setup, privacy and limits in `bot/README.md`).
 `scripts/run_tg_bot.sh` starts its own engine on port 8100, connected to the forensics service when that answers,
 then the bot. It follows the design rules below: consent first, RED / AMBER / GREY with no GREEN (a MATCHES case gets
 GREY's words), no scores, 10 checks per user per hour, and the file and the engine's copy deleted after the reply.
@@ -135,7 +100,7 @@ Design rules for the bot:
   before choosing it, given the no-paid-services rule below.
 - **Load.** About 15 s of CPU per video; a queue keeps the bot responsive.
 
-## 4. Standing rules
+## 3. Standing rules
 
 - Only synthetic, public or consented data; no real official's face or voice in the demo.
 - No paid APIs at run time; everything runs on the laptop.

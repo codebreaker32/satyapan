@@ -73,7 +73,7 @@ More on the engine's optional models: `prototype/README.md`.
 | `calibration/whisper_eval.md`, `calibration/whisper_eval_fast.md` | speech-to-text word error rates on Hindi clips |
 | `scripts/pipeline_check.py` | the live end-to-end check against a running demo (a smoke test, not an accuracy measurement) |
 | `docs/overnight-report.md` | the final changes before the demo, the checks they passed and the open items |
-| `docs/changes-2026-10-24.md` | the 24 Oct merge: the combined score and why the offline LLM reader ships OFF |
+| `docs/changes-2026-10-24.md` | the merge of the two development copies: the combined score and why the offline LLM reader ships OFF |
 
 ## What is in this repository
 
@@ -81,7 +81,7 @@ More on the engine's optional models: `prototype/README.md`.
 |---|---|
 | `MODELS.md` | Declaration of every pre-trained model and third-party API, with checkpoint state and licence |
 | `forensics/` | The detectors: shared contract, GenD face check, DF Arena 500M voice check, joined entry point, local service |
-| `prototype/` | The demo engine and officer console (Python + React), with the combined score (two development copies merged on 24 Oct). This is what the demo runs; its data is in `prototype/data/` |
+| `prototype/` | The demo engine and officer console (Python + React), with the combined score. This is what the demo runs; its data is in `prototype/data/` |
 | `synthetic/` | The generators for every synthetic file in use, and `validate_fixtures.py` for the hand-written text data |
 | `scripts/` | Model fetch, scoring, calibration, dataset download, WhatsApp-like re-encoding, demo start-up and checks |
 | `calibration/` | Thresholds, calibration reports and dataset attribution (numbers only, never clips) |
