@@ -1,8 +1,8 @@
 """One hash of the engine code and the data it decides with, so preflight can tell a stale server from a fresh one.
 
-The rulebook hash alone missed a server still running yesterday's extract.py or pipeline.py: every overnight fix that
-changed Python and not rulebook.yaml passed "server meta: rulebook sha matches local". Campaign memory is left out on
-purpose, because the server rewrites that file as analysts propose and approve entries.
+The rulebook hash alone misses a server still running an older extract.py or pipeline.py: any change to Python and not
+to rulebook.yaml passes "server meta: rulebook sha matches local". Campaign memory is left out on purpose, because
+the server rewrites that file as analysts propose and approve entries.
 """
 from __future__ import annotations
 

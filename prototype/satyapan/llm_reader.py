@@ -13,12 +13,12 @@ What it may fill, and why only that:
   RED that way. R-STATE-NAME-PAY then says only what was read: a government-sounding name and a demand for money.
 - the instruction about money, only beside an unnamed or government-sounding sender and never as a government due,
   with the rules' own guards re-run at the quoted words (negation, reported speech). Beside the bank's own name a
-  model-read request paired with the bank-record rules into a RED on a genuine EMI letter (24 Oct evaluation);
+  model-read request paired with the bank-record rules into a RED on a genuine EMI letter in the evaluation set;
 - the "you are under digital arrest" words, which must contain the phrase and pass extract.is_warning_about.
 It never fills a payee: the rules' own patterns already read every well-formed account, IFSC and UPI ID, and a
 model-read payee would start a bank look-up on words no pattern could confirm.
 
-Nothing leaves the laptop: Ollama serves the model on 127.0.0.1, and with the model missing or slow the reader steps
+Nothing leaves the machine: Ollama serves the model on 127.0.0.1, and with the model missing or slow the reader steps
 aside and the rules-based reading stands alone. The model is Meta's Llama 3.2 3B (Llama 3.2 Community License;
 Built with Llama), declared in MODELS.md.
 
@@ -87,10 +87,10 @@ def configured_model() -> Optional[str]:
     return None if m in ("", "0", "off", "none") else m
 
 
-# The model is asked for exact words and two yes/no answers, never to classify into our enums: a 3B model picking
-# from labels it cannot see ("the customer's own bank" for "Main PMO se bol raha hoon") reads worse and slower. The
-# reader maps the words itself: a government sender becomes OTHER, and the money request's kind comes from its own
-# words (fee, invest, FD, challan, tax), defaulting to a transfer.
+# The model is asked for exact words and two yes/no answers, never to classify into the engine's enums: a 3B model
+# picking from labels it cannot see ("the customer's own bank" for "Main PMO se bol raha hoon") reads worse and
+# slower. The reader maps the words itself: a government sender becomes OTHER, and the money request's kind comes
+# from its own words (fee, invest, FD, challan, tax), defaulting to a transfer.
 SCHEMA = {"type": "object", "properties": {
     "sender_words": {"type": "string"},
     "sender_is_government": {"type": "boolean"},
@@ -203,9 +203,9 @@ class LocalLLMReader:
                 filled.append("claimed_issuer")
         words = got.get("money_request_words", "")
         # Only beside an unnamed or government-sounding sender, and never as a government due. Beside the bank's own
-        # name or a named body, a model-read request pairs with the bank-record rules into a RED: measured on 24 Oct,
+        # name or a named body, a model-read request pairs with the bank-record rules into a RED: in the evaluation,
         # the genuine EMI letter V73 ("push Rs 12,000 into the designated EMI collection account", an order form the
-        # rules stopped reading as a demand on 19 Oct) went to RED that way. A challan or tax would switch on the
+        # rules deliberately do not read as a demand) went to RED that way. A challan or tax would switch on the
         # receiver-name rule the same way.
         if ("instruction" in gaps and words and RE_MONEY_WORDS.search(words)
                 and claim.claimed_issuer in (Issuer.NONE, Issuer.OTHER)):

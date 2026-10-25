@@ -59,8 +59,8 @@ CALL_ARTEFACTS = {"transcript", "officer_picklist"}
 # Who the 1600xx series is a fact ABOUT. RBI/2024-25/105 directs banks and other regulated entities to place
 # their transactional and service calls from 1600xx. A REGULATOR is not one of them: RBI and SEBI do not place
 # service calls to bank customers at all, so "banks and financial firms place service calls only from numbers
-# starting 1600, and this one did not" is not a sentence about a message claiming to be RBI. A judge got that
-# sentence on a customer card about a pasted "RBI ALERT" SMS on 18 Oct.
+# starting 1600, and this one did not" is not a sentence about a message claiming to be RBI, and must not reach
+# a customer card about a pasted "RBI ALERT" SMS.
 SERVICE_CALL_ISSUERS = {Issuer.BANK_SELF}
 
 
@@ -75,7 +75,7 @@ def agency_pay(claim: Claim, ctx: RuleContext):
     """A body the message names as a state authority is demanding a payment.
 
     Scoped to LAW_ENFORCEMENT, which is the half of CLAIMED_STATE_AUTHORITY whose members the message names in
-    so many words, so "this message claims to be X" is a statement of fact we can point at a span for. The
+    so many words, so "this message claims to be X" is a statement of fact backed by a span. The
     open-set half goes to `state_name_pay` below with a sentence that claims less. The partition and the reason
     it exists are written out at CLAIMED_STATE_AUTHORITY in models.py.
     """
@@ -105,7 +105,7 @@ def state_name_pay(claim: Claim, ctx: RuleContext):
     first two and cannot take the third, because a private firm is free to name its unit anything.
 
     So this rule never says the sender claims to be the state. It says a government-sounding name was read, a
-    payment was asked for, and we could not confirm who sent the message — three things that are true of the
+    payment was asked for, and the sender could not be confirmed — three things that are true of the
     forged notice and of the private firm alike, and that leave the officer and the customer to do the
     confirming. The body's own name stays where it has always belonged: in the quoted span beside the message,
     never in prose read aloud to a customer.
@@ -207,17 +207,16 @@ def _call_number(claim: Claim, ctx: RuleContext) -> str | None:
     """The number a financial caller reached the customer from, or None when this artefact carries no call.
 
     The 1600xx series is a fact about calls a bank places (RBI/2024-25/105), so the rule may only be stated about
-    an artefact that carries a call. It used to fire on anything with a number attached: a judge pasted a bank
-    letter with no call in it, got "Financial call not from the 1600 series" on the customer card, and that
-    sentence was one of the two families that made the verdict RED. The reason asserted a channel fact the input
-    did not contain.
+    an artefact that carries a call. Fired on anything with a number attached, it put "Financial call not from
+    the 1600 series" on the customer card for a bank letter with no call in it, and that sentence was one of the
+    two families that made the verdict RED. The reason asserted a channel fact the input did not contain.
 
     `claim.caller_number` alone is not enough to say a call happened: the extractor sets it from the first phone
-    number in the text, and a helpline printed at the foot of a letter is not a caller. Pass 5 made the gate the
-    CHANNEL, which closed the letter but left a wider path open, and a judge walked straight down it on 18 Oct:
-    a pasted "RBI ALERT" SMS reading "For any query call our helpline +911122601000" sets the channel to
-    PHONE_CALL off the word "call", and the customer card then read "This call came from +911122601000". There
-    was no call. The channel read out of a pasted message is a fact about what the message DESCRIBES; it is not
+    number in the text, and a helpline printed at the foot of a letter is not a caller. Gating on the CHANNEL alone
+    closes the letter but leaves a wider path open: a pasted "RBI ALERT" SMS reading "For any query call our
+    helpline +911122601000" sets the channel to PHONE_CALL off the word "call", and the customer card would then
+    read "This call came from +911122601000" when there was no call. The channel read out of a pasted message is a
+    fact about what the message DESCRIBES; it is not
     a fact about the artefact in front of the officer.
 
     So the gate is both: the ARTEFACT has to be one that can carry a call (a transcript, or the officer's own
@@ -243,8 +242,8 @@ def caller_1600(claim: Claim, ctx: RuleContext):
 
 @rule("R-DOMAIN-BANKIN")
 def domain_bankin(claim: Claim, ctx: RuleContext):
-    # A bank sending its customer to a government portal (".gov.in", ".nic.in") is not a bank link at all: the
-    # 23 Oct evaluation found a Demo Bank warning that named echallan.parivahan.gov.in flagged as a non-bank link.
+    # A bank sending its customer to a government portal (".gov.in", ".nic.in") is not a bank link at all: without
+    # this, a Demo Bank warning that names echallan.parivahan.gov.in is flagged as a non-bank link.
     if claim.claimed_issuer == Issuer.BANK_SELF:
         for u in claim.urls:
             host = u.value.split("//")[-1].split("/")[0].lower()
@@ -476,7 +475,7 @@ def _log_coverage(log) -> dict:
 
     * The channel list is computed from the `channel` field of the records the log holds. Whatever the customer
       card says the log covers is therefore something the record in `data/mocks/outbound_log.json` contains, and
-      an officer or a judge can open that file and count.
+      a reviewer can open that file and count.
     * The boundary — that this log is what the bank sends *centrally*, so a branch letter or a counter
       conversation is outside it — is the adapter's own declared production source ("Bank CRM / messaging gateway
       logs for centrally sent channels"), which `tests/test_docs.py` already pins word for word against
@@ -514,15 +513,15 @@ def bank_self(claim: Claim, ctx: RuleContext):
 
     The reason used to end "It did not come from us." That is categorical and the record under it is not: the log
     holds what the bank sends centrally on logged channels and nothing a branch hands over, posts or says at a
-    counter. A hackathon judge pasted a genuine overdue-loan letter from a head-office recovery cell and the
-    customer card told a real customer the bank had not sent it. The scope now travels with the claim, in the same
-    two sentences, so the officer cannot read one without the other.
+    counter. On a genuine overdue-loan letter from a head-office recovery cell, that sentence would tell a real
+    customer the bank had not sent it. The scope travels with the claim, in the same two sentences, so the officer
+    cannot read one without the other.
 
     The rule stays hard, and can still anchor a RED. The thinness here is coverage breadth, not lookup
     reliability: inside its stated scope the match is an exact content hash against the gateway log and its answer
     is deterministic. Softening the severity would have left the same categorical sentence standing on a softer
     rule, which is the wrong half to fix. What keeps it safe is structural and is now stronger than a severity
-    tweak: a RED still needs an independent family on different evidence, and after this pass it also needs a
+    tweak: a RED still needs an independent family on different evidence, and it also needs a
     money demand to have been read, so "we have no record of sending this" can never on its own stop a payment.
     """
     if claim.claimed_issuer != Issuer.BANK_SELF or claim.source == "officer_picklist":

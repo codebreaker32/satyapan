@@ -30,8 +30,8 @@ STATE_DIR = Path(__file__).resolve().parent.parent / "evidence"
 LARGE_AMOUNT_INR = 10_00_000  # ₹10 lakh: above this, FRMU review is mandatory
 
 # What a campaign-memory match adds to its sentence: the receiver it shares with the confirmed case, or the payment
-# detail that changed since. The second is the case Bhawna raised on 23 Oct: a script already confirmed, now with a
-# new account, which is a receiver nobody has reported yet. The officer can then help her report it.
+# detail that changed since. The second covers a script already confirmed, now with a new account, which is a
+# receiver nobody has reported yet. The officer can then help her report it.
 _SLOT_EN = {"account": "the account", "vpa": "the UPI ID", "phone": "the phone number", "host": "the link"}
 _SLOT_HI = {"account": "खाता", "vpa": "UPI आईडी", "phone": "फ़ोन नंबर", "host": "लिंक"}
 
@@ -53,8 +53,8 @@ def _memory_also(hit: dict) -> tuple[str, str]:
 
 
 # How the bank's name is written in Devanagari. A Hindi scam posing as the bank writes "डेमो बैंक", and with only the
-# Latin name configured, "आपके डेमो बैंक खाते से ... कट गए हैं ... इस खाते में 1 रुपया भेजें" read no bank claim and came out
-# GREY (found by the 25 Oct probe). A bank deploying this would list its own spellings here.
+# Latin name configured, "आपके डेमो बैंक खाते से ... कट गए हैं ... इस खाते में 1 रुपया भेजें" reads no bank claim
+# and comes out GREY. A bank deploying this would list its own spellings here.
 BANK_NAMES_HI = {"Demo Bank": ("डेमो बैंक",)}
 
 # The fields an officer can strike as wrongly read, and how each is struck.
@@ -100,8 +100,8 @@ class Satyapan:
         self.reader = LocalLLMReader(model) if model else None
         self.audio = audio or default_audio_forensics()
         self.document = document or DocumentForensics()
-        # Finale detectors run as a local service (satyapan-finale). Off unless a URL is given, so tests and the
-        # terminal fallback behave exactly as before.
+        # The face and voice detectors run as a local service (satyapan-finale). Off unless a URL is given, so tests and
+        # the terminal fallback behave exactly as before.
         url = forensics_service if forensics_service is not None else os.environ.get("SATYAPAN_FORENSICS_URL", "")
         self.remote = RemoteForensics(url) if url else None
         self._now = now
@@ -225,7 +225,7 @@ class Satyapan:
             if inp["forensics_sim"] and m.kind in ("audio", "video", "image", "pdf"):
                 signals.append(to_signal(self.book, SimulatedForensics(inp["forensics_sim"]).analyse(path or Path(m.filename), claim.language_hint)))
             elif path and m.kind in ("audio", "video") and self.remote is not None:
-                # finale detectors: a video gets a face check and a voice check, each its own F3 signal
+                # face and voice detectors: a video gets a face check and a voice check, each its own F3 signal
                 signals.extend(to_signal(self.book, r) for r in self.remote.analyse_all(
                     path, m.kind, language=inp.get("media_langs", {}).get(idx, claim.language_hint),
                     channel=inp.get("media_channels", {}).get(idx)))
@@ -331,7 +331,7 @@ class Satyapan:
         self.decide(case, actor=actor, action="strike_field", note=f"struck {field}" + (" on a RED case" if on_red else ""))
         inp["picklist"] = None
         # Re-run on the corrected claim, passed explicitly. It used to be patched onto the shared engine for the length
-        # of the re-run; with the finale forensics call in run() that window lasts seconds, and another case run in it
+        # of the re-run; with the remote forensics call in run() that window lasts seconds, and another case run in it
         # would have been judged on this case's claim.
         return self.run(case, claim=c)
 

@@ -47,7 +47,7 @@ GOVT_SENDERS = LAW_ENFORCEMENT | CIVIC_DUE_ISSUERS | {Issuer.COURT, Issuer.RBI, 
 
 # Every persona a payment can be demanded in the name of the state under. OTHER is the open-set body: a name the
 # message spells out on a letterhead or in a self-claim and the enum has no row for ("IRDAI Enforcement Cell,
-# Mumbai", "Narcotics Control Bureau"). Before 19 Oct that whole class of digital-arrest script landed on GREY,
+# Mumbai", "Narcotics Control Bureau"). Without it, that whole class of digital-arrest script lands on GREY,
 # because the rule asking whether a state body is demanding money could only be asked about eight named bodies.
 # A court and a regulator are deliberately NOT in here: each has its own rule with its own citation
 # (R-COURT-PAY, R-RBI-INV), and folding them in would put a second, differently-sourced sentence on the same
@@ -59,7 +59,7 @@ GOVT_SENDERS = LAW_ENFORCEMENT | CIVIC_DUE_ISSUERS | {Issuer.COURT, Issuer.RBI, 
 # Control Bureau" from "Credit Information Bureau (India) Limited" or from "Acme Recovery and Fraud
 # Investigation Unit". So LAW_ENFORCEMENT keeps R-AGENCY-PAY, which says what the message claims to be, and
 # OTHER gets R-STATE-NAME-PAY, which says only what was read: a government-sounding name, a demand for money,
-# and a sender we could not confirm. Same family, same severity, same citation; a different sentence.
+# and a sender that could not be confirmed. Same family, same severity, same citation; a different sentence.
 CLAIMED_STATE_AUTHORITY = LAW_ENFORCEMENT | {Issuer.OTHER}
 # The open-set half of that partition. A set rather than `is Issuer.OTHER` so the two rules are written as one
 # partition of one class and a third persona cannot be added to only one of them by accident.
@@ -69,9 +69,9 @@ OPEN_SET_AUTHORITY = CLAIMED_STATE_AUTHORITY - LAW_ENFORCEMENT
 def visible_name(value: Optional[str]) -> Optional[str]:
     """A person's name for the record, or None if nobody is there.
 
-    `str.strip()` is not enough. The pass-4 gate signed a decision as U+200B and, worse, released a RED case
-    alone by passing a zero-width space as the co-signer: `"\\u200b".isspace()` is False, so it survived strip()
-    and satisfied the four-eyes check. Anything with no visible glyph is nobody — format characters (Cf: ZWSP,
+    `str.strip()` is not enough. Without this, a decision could be signed as U+200B and a RED case released
+    alone by passing a zero-width space as the co-signer: `"\\u200b".isspace()` is False, so it survives strip()
+    and satisfies the four-eyes check. Anything with no visible glyph is nobody — format characters (Cf: ZWSP,
     BOM, word joiner, the bidi marks), control characters (Cc) and every separator (Zs, Zl, Zp).
     """
     if not value:
@@ -86,11 +86,11 @@ def visible_name(value: Optional[str]) -> Optional[str]:
 
 
 # Characters that render as nothing but are not format characters: Hangul fillers (U+115F, U+1160, U+3164, U+FFA0)
-# and the Braille blank (U+2800). The bug hunt released a RED with each of them as the co-signer.
+# and the Braille blank (U+2800). Each of them, as the co-signer, could otherwise release a RED.
 _BLANKS = frozenset("\u115f\u1160\u3164\uffa0\u2800")
 
-# Letters from other scripts that look like Latin ones in a staff id: "оfficer.bhawna" with a Cyrillic о co-signed
-# officer.bhawna's own release. Only lookalikes of Latin letters; nothing else is folded.
+# Letters from other scripts that look like Latin ones in a staff id: "оfficer.demo" with a Cyrillic о could
+# co-sign officer.demo's own release. Only lookalikes of Latin letters; nothing else is folded.
 _CONFUSABLES = str.maketrans({
     "а": "a", "в": "b", "е": "e", "ё": "e", "к": "k", "м": "m", "н": "h", "о": "o", "р": "p", "с": "c",
     "т": "t", "у": "y", "х": "x", "і": "i", "ї": "i", "ј": "j", "ѕ": "s", "ԁ": "d", "һ": "h", "ӏ": "l",
@@ -105,8 +105,8 @@ def identity_key(value: Optional[str]) -> Optional[str]:
 
     The record keeps the name as typed (visible_name); this key only compares. Full-width letters fold through NFKC,
     case through casefold, combining marks and variation selectors are dropped, and Cyrillic or Greek lookalikes fold
-    to Latin. Without it "OFFICER.BHAWNA" was caught but "оfficer.bhawna" (Cyrillic о), "ｏｆｆｉｃｅｒ.ｂｈａｗｎａ" and
-    "officer.bhawna" plus an invisible mark each passed as a second person."""
+    to Latin. Without it "OFFICER.DEMO" is caught but "оfficer.demo" (Cyrillic о), "ｏｆｆｉｃｅｒ.ｄｅｍｏ" and
+    "officer.demo" plus an invisible mark each pass as a second person."""
     name = visible_name(value)
     if name is None:
         return None
@@ -277,7 +277,7 @@ class Verdict(BaseModel):
 # ---------- the case ----------
 
 class Flag(BaseModel):
-    """What the bank's own monitoring passed to us when it paused the transfer."""
+    """What the bank's own monitoring passed to Satyapan when it paused the transfer."""
     reason: str
     amount_inr: float = 0
     customer_ref: str = "cust-demo"

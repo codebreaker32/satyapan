@@ -1,10 +1,9 @@
 """Input normalisation for the extractor, with an offset map back to the original text.
 
-A scam message is not typed for us. The ones a judge pastes in live arrive with Cyrillic "о" standing in for
-Latin "o", zero-width spaces sprinkled inside words ("tra<ZWSP>nsf<ZWSP>er"), WhatsApp's mathematical-bold
-letters, fullwidth digits and leetspeak ("arr3st"). None of that changes what the message says to a reader, and
-all of it used to make our pattern tables see nothing at all: the homoglyph probe came back GREY while its
-clean-ASCII twin came back AMBER on two hard rules.
+Scam messages arrive with Cyrillic "о" standing in for Latin "o", zero-width spaces inside words
+("tra<ZWSP>nsf<ZWSP>er"), WhatsApp's mathematical-bold letters, fullwidth digits and leetspeak ("arr3st"). None
+of that changes what the message says to a reader, and without normalisation the pattern tables see none of it:
+the homoglyph probe comes back GREY while its clean-ASCII twin comes back AMBER on two hard rules.
 
 So the extractor matches on a normalised copy. The one thing that must survive is grounding: every Span the
 extractor stores is quoted back to the officer and drawn with a leader line onto the ORIGINAL characters, and
@@ -19,7 +18,7 @@ What the pass does, per character, so that the map stays exact:
 3. maps the exotic spaces (NBSP and friends) to a plain space;
 4. applies NFKC to each remaining character on its own. Per character rather than to the whole string, because
    one original character must map to a contiguous run of normalised characters for the index map to hold.
-   That is what folds fullwidth "Ｔ" and WhatsApp's mathematical-bold letters. Composition is not needed: our
+   That is what folds fullwidth "Ｔ" and WhatsApp's mathematical-bold letters. Composition is not needed: the
    Devanagari patterns are written with decomposed nukta (ज + ़), which is what NFKC produces anyway.
 5. folds leetspeak digits back to letters, but only strictly inside a word (see `_deleet`), so "Rs 25,00,000",
    the 1600 helpline prefix, an IFSC and a 14-digit account number are never touched.
@@ -43,7 +42,7 @@ import unicodedata
 from dataclasses import dataclass
 
 # Dropped outright: ZWSP, ZWNJ, ZWJ, word joiner, BOM, soft hyphen. ZWNJ/ZWJ carry meaning in Devanagari
-# shaping but never in our patterns, and scam text uses them exactly as it uses ZWSP: to break a word in half
+# shaping but never in the patterns, and scam text uses them exactly as it uses ZWSP: to break a word in half
 # so a keyword list misses it.
 _DROP = {chr(c) for c in (0x200B, 0x200C, 0x200D, 0x2060, 0xFEFF, 0x00AD)}
 
@@ -105,13 +104,12 @@ def _deleet(chars: list[str]) -> None:
 # ---- intra-word spacing ------------------------------------------------------------------------------------
 # "You must t r a n s f e r Rs 38,00,000 to the verification account" read as instruction NONE and scored GREY,
 # because spacing walks straight through everything above: there is no confusable, no zero-width and no digit to
-# fold, just eight ordinary one-letter words. A judge found it on 18 Oct.
+# fold, just eight ordinary one-letter words.
 #
-# Pass 5 closed the plain space. ONE character defeated it: "t.r.a.n.s.f.e.r", "t-r-a-n-s-f-e-r",
-# "t_r_a_n_s_f_e_r" and "t·r·a·n·s·f·e·r" all read as no instruction, and because pass 5 also made a money
-# demand NECESSARY for RED, a missed instruction now costs the whole band rather than one field. A judge found
-# all four on 18 Oct. So the separator is a CLASS, not a space: the thing being evaded is "put something
-# between the letters", and which character it is was never the point.
+# Closing up only the plain space is not enough: "t.r.a.n.s.f.e.r", "t-r-a-n-s-f-e-r", "t_r_a_n_s_f_e_r" and
+# "t·r·a·n·s·f·e·r" then all read as no instruction, and because a money demand is NECESSARY for RED, a missed
+# instruction costs the whole band rather than one field. So the separator is a CLASS, not a space: the thing
+# being evaded is "put something between the letters", and which character it is does not matter.
 #
 # THE RULE, exactly. A run of five or more single ASCII letters separated only by SEPARATORS (a plain space or
 # one of `. - _ / * · ‧ • ∙`, in any mix, one or more per gap), with no letter or digit touching either end of
@@ -140,7 +138,7 @@ def _deleet(chars: list[str]) -> None:
 #     already turned the fullwidth and compatibility forms (U+FF0D, U+2024) into the ASCII ones listed here.
 # Not covered, deliberately: partially separated words ("tra n sfer", "tran.sfer") and Devanagari, where a
 # letter is several code points with its matras and the same trick needs its own rule. Each would need its own
-# probe set; neither is what the judge found.
+# probe set; neither is covered by the current probes.
 _DESPACE_MIN = 5
 _SEP_CHARS = ".-_/*·‧•∙"
 _SEPS = frozenset(" " + _SEP_CHARS)
@@ -180,8 +178,8 @@ class Normalised:
 
     def map_span(self, start: int, end: int) -> tuple[int, int]:
         """Normalised [start:end) -> original [start:end). The original slice may be wider than the normalised
-        one (it still holds the zero-width characters that were dropped inside it), which is exactly what we
-        want to quote and highlight: the officer sees the characters that are really in the message."""
+        one (it still holds the zero-width characters that were dropped inside it), which is what is quoted
+        and highlighted: the officer sees the characters that are really in the message."""
         n = len(self.origin)
         if n == 0:
             return 0, 0

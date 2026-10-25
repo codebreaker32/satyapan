@@ -17,7 +17,7 @@ FIXTURES = DATA_DIR / "fixtures" / "scenarios.json"
 CONSOLE_DIST = Path(__file__).resolve().parent.parent / "console" / "dist"
 
 # Any text that reaches the extractor is capped here (pasted text, a .txt upload, a supplied transcript, OCR'd
-# pages): every extractor regex runs over it, and a whole-PDF paste must never stall the demo. The longest
+# pages): every extractor regex runs over it, and a whole-PDF paste must never stall the engine. The longest
 # scenario text is well under 2k. The API and the CLI share this constant and this message.
 MAX_TEXT_CHARS = 25_000
 
@@ -228,10 +228,10 @@ def cmd_preflight(args) -> int:
         return True, f"/api/meta 200; rulebook sha matches local ({local.sha256[:12]}), and so does the engine code ({here[:12]})"
 
     def chk_forensics():
-        """The finale detectors (satyapan-finale forensics service), as the running server sees them."""
+        """The face and voice detectors (the satyapan-finale forensics service), as the running server sees them."""
         svc = (get_json(base + "/api/meta").get("forensics") or {}).get("service")
         if not svc:
-            # A FAIL, not a skip: the run-sheet says every line must PASS, and a server with no forensics service
+            # A FAIL, not a skip: preflight requires every line to PASS, and a server with no forensics service
             # gives uploaded voice notes and videos no face or voice check at all (they are not simulated either).
             return False, ("not connected: uploaded voice notes and videos get no face or voice check (start the demo "
                            "with satyapan-finale/scripts/demo_up.sh)")
@@ -243,7 +243,7 @@ def cmd_preflight(args) -> int:
         if not cells:
             return False, "video detector has no calibration: every video would say 'unsure: not calibrated'"
         # "installed" only means the code and calibration are there. Whether the model itself loaded is what decides
-        # if a voice note gets a score, and a missing download once looked installed here while every voice abstained.
+        # if a voice note gets a score; a missing download can look installed while every voice abstains.
         if a.get("installed") and a.get("loaded") is False:
             return False, (f"voice model did not load ({a.get('error') or 'unknown error'}): every voice note would say "
                            "'unsure'; run satyapan-finale/scripts/fetch_models.sh, then restart demo_up.sh")

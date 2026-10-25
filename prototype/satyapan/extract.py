@@ -82,9 +82,9 @@ ISSUER_KEYWORDS: list[tuple[Issuer, list[str]]] = [
 
 # ---- the euphemism family for TRANSFER_TO_ACCOUNT ----------------------------------------------------------
 # A digital-arrest script rarely says "transfer". It says "park your entire liquid holdings in the designated
-# verification account". One euphemism used to zero the whole chain, so the verb list is wide. Every verb is
-# bounded two ways, because this repo has twice shipped a pattern that matched inside an unrelated word ("kr"
-# inside "shukriya", "invest" inside "investigation") and a false positive here puts money wording on a benign
+# verification account". One missed euphemism zeroes the whole chain, so the verb list is wide. Every verb is
+# bounded two ways, because a pattern that matches inside an unrelated word ("kr" inside "shukriya", "invest"
+# inside "investigation") is a known failure, and a false positive here puts money wording on a benign
 # customer card:
 #   1. no letter may touch the verb on either side, so "remove" is not "move" and "workplace" is not "place";
 #   2. the verb only counts when a money word AND a destination word sit beside it in the same sentence, within
@@ -110,15 +110,15 @@ _DEST = (r"(?:(?<![a-z])(?:a[ckq]{1,2}[ao]?u?nts?|a/?c|acct|wallet|khaat[aey]|kh
 # reads as TRANSFER_TO_ACCOUNT in English and is not part of this family.)
 _WIRE = (r"(?<!\bthe )(?<!\ba )(?<!\ban )(?<!\bone )(?<!\bthis )(?<!\bthat )(?<!incoming )(?<!inward )"
          r"(?<!outward )(?<!loose )(?<!same )wires?")
-# "push" was in this list for one pass and came out again on 19 Oct; see _DROPPED_ORDER_FORMS below.
+# "push" is deliberately not in this list; see _DROPPED_ORDER_FORMS below.
 _PUSH_VERB = r"(?:pushe?s?|pushing|push kar\w{0,3})"
 _MOVE_VERB = (r"(?<![\w])(?:park|parks|parking|place|places|placing|move|moves|moving|shifts?|shifting"
               r"|deposits?|depositing|remits?|remitting|route|routes|routing|consolidates?|consolidating"
               rf"|{_WIRE}|wire kar\w{{0,3}}"
               r"|tra?nsfe?rs?|tra?nsfe?rring|tra?nsfe?r kar\w{0,3}|bhej\w{0,3}|daal\w{0,2}|dalo|jama ?kar\w{0,3}"
               # "pay Rs 2,00,000 to account ...", "payment karo is account me", "bharo", "भुगतान करें": the plainest
-              # demand an agency script makes, and it was not in the family, so CBI and customs demands worded
-              # with "pay" came out GREY. Still behind the money + pointed-destination gate like every verb here.
+              # demand an agency script makes; without it, CBI and customs demands worded with "pay" come out
+              # GREY. Still behind the money + pointed-destination gate like every verb here.
               r"|pay|pays|paying|make\s+(?:a\s+|the\s+)?payment|payment\s+kar\w{0,3}|bhar(?:o|na|en|ein|iye|do|dein)?"
               r"|भुगतान\s?कर\w{0,3}|भर(?:ें|ो|िए|\s?दें|\s?दो)(?![ऀ-ॿ])"
               r"|भेज\w{0,3}|डाल\w{0,3}|जमा ?कर\w{0,3}|ट्रांसफ़?र\w{0,3})(?![a-z])")
@@ -144,16 +144,16 @@ _BOTH_CTX = rf"(?:{_MONEY}{_GAP}{_DEST_POINTED}|{_DEST_POINTED}{_GAP}{_MONEY})"
 # "Credit this account with Rs 6,50,000" and "arrange the settlement of Rs 6,50,000 in the clearance account" are
 # both ways a forged notice words a demand without using a verb this family holds. Neither can join _MOVE_VERB:
 #   - the bare verb "credit" is unusable, because "we will credit the balance to this account on Monday" is an
-#     ordinary bank sentence with a money word, a pointed destination and the verb. Pass 5 paid for exactly this
-#     mistake one register up, so "credit" only reads as the PHRASE, where the money arrives on "with", which is
-#     how an order is worded; a credit TO the customer is worded "credit <X> to your account".
+#     ordinary bank sentence with a money word, a pointed destination and the verb. The passive register has the
+#     same problem (see RE_CREDIT_TO_CUSTOMER), so "credit" only reads as the PHRASE, where the money arrives on
+#     "with", which is how an order is worded; a credit TO the customer is worded "credit <X> to your account".
 #   - "arrange" bare is broader still ("please arrange for the funds to be available in this account by Friday"),
 #     so it only reads in front of "settlement of".
 # Both also need the clause to be an ORDER rather than a report. "We will arrange the settlement of Rs 4,20,000
 # of your matured deposit into this account" carries every other gate; what separates it from "Arrange the
 # settlement of Rs 6,50,000 in the clearance account today" is that the second has no subject in front of the
-# verb. So these two read only at the head of a clause, or behind a second-person obligation frame. That gate was
-# not enough for the credit phrase and it came out again the same day; only the settlement phrase is live.
+# verb. So these two read only at the head of a clause, or behind a second-person obligation frame. That gate is
+# not enough for the credit phrase, which is withdrawn (see below); only the settlement phrase is live.
 _ORDER_HEAD = (r"(?:(?:^|(?<=[.;!?।\n\r]))[\x20\t]*"
                r"|\b(?:please|kindly|must|immediately|now|today|then|hereby|aapko|आपको|कृपया"
                r"|you\s+(?:must|should|shall|have\s+to|need\s+to"
@@ -162,7 +162,7 @@ _CREDIT_DEMAND = rf"(?<![\w])credits?(?![a-z])\s+{_POINTER}{_NEAR}{_DEST}{_NEAR}
 _SETTLE_DEMAND = (r"(?<![\w])arrange(?:s|d)?(?![a-z])\s+(?:the\s+|for\s+the\s+)?"
                   r"(?:immediate\s+|full\s+|complete\s+|final\s+){0,2}settlement\s+of\b")
 
-# ---- the two forms this pass added and then withdrew -------------------------------------------------------
+# ---- two withdrawn order forms ----------------------------------------------------------------------------
 # `_ORDER_HEAD` discriminates "order" from "report", which is what its two probes were written against ("we will
 # credit this account with...", "the app will push a notification..."). It does not discriminate scam from
 # benign, and a bank's own recovery letter is a polite ORDER:
@@ -173,14 +173,14 @@ _SETTLE_DEMAND = (r"(?<![\w])arrange(?:s|d)?(?![a-z])\s+(?:the\s+|for\s+the\s+)?
 # every outbound-log miss), so the card said "Please stop. Do not send this money now" on a bank's own letter.
 #
 # Neither form is separable from its benign twin BY FORM: "Credit this account with Rs 6,50,000 before 4 pm" and
-# the recovery letter above are the same sentence with a different sender. So both came out again, and the
-# demands they used to read now fall back on whatever else the message says. This is a narrower engine on
-# purpose, and `tests/test_euphemism_bounds.py::DROPPED_19_OCT` pins the trade in both directions so a later
-# pass cannot re-add either form without meeting the benign twin.
+# the recovery letter above are the same sentence with a different sender. So both are withdrawn, and the
+# demands they would read fall back on whatever else the message says. The engine is narrower on purpose, and
+# `tests/test_euphemism_bounds.py::DROPPED_19_OCT` pins the trade in both directions so a later change cannot
+# re-add either form without meeting the benign twin.
 #
-# Not a general fix, and this comment is the honest statement of that: the pre-existing verbs do the same thing
-# on the same letter ("Kindly deposit Rs 2,50,000 in this loan account", "Kindly transfer ... to account
-# 3001122334455" were RED before this pass and are RED today). What closes the class is the structure named
+# This is not a general fix: the remaining verbs do the same thing on the same letter ("Kindly deposit
+# Rs 2,50,000 in this loan account", "Kindly transfer ... to account 3001122334455" are RED, with or without
+# the withdrawn forms). What closes the class is the structure named
 # above, not the verb list; `tests/test_bank_order_is_not_a_demand.py` holds that as a strict xfail.
 # The two family members as they were written, kept only so the test can show each one matching the benign bank
 # order that took it out. Nothing in the engine reads them; `MOVE_EUPHEMISM` below is the family.
@@ -203,8 +203,8 @@ MOVE_EUPHEMISM = [
 # ---- the same family in the passive and obligation register ------------------------------------------------
 # A forged legal notice is not written in the imperative. It says "The sum of Rs 38,00,000 is required to be
 # remitted to the account specified herein", never "you must transfer Rs 38,00,000". The ACTIVE control of that
-# exact sentence already reads as TRANSFER_TO_ACCOUNT, so the register was the only thing between the two, and a
-# judge got a GREY out of that gap on 18 Oct. This block is the same family read in the passive: same verbs,
+# exact sentence already reads as TRANSFER_TO_ACCOUNT, so the register was the only difference between the two,
+# and the passive form came out GREY. This block is the same family read in the passive: same verbs,
 # same money word, same POINTED destination, same gap rule. Nothing here loosens any of those three gates.
 #
 # The frame must carry OBLIGATION or compulsion, never a completed or merely announced action. "Your salary was
@@ -235,15 +235,15 @@ _MOVED_HI = (r"(?:जमा|ट्रांसफ़?र|jama|tra?nsfe?r)\s*(?:�
 _PASSIVE_VERB = rf"(?:{_OBLIG}{_MOVED}|{_MOVED_HI})"
 # A notice points at the account from the other side as well, in the register a notice is written in: "remitted
 # to the account specified herein", "deposited in the account mentioned below". Three things are required
-# together, and each one was put there by a false positive this pass produced and measured:
+# together, and each one prevents a false positive that was measured without it:
 #   - the participle AND a word that points at THIS document. "The account specified in your application" and
 #     "the account given at onboarding" are the customer's own account;
 #   - a destination preposition in front of it. Without that, "the balance is required to be moved OUT OF the
 #     account mentioned above" and "funds BETWEEN the accounts mentioned above" read as demands - the same
 #     words, the opposite direction, and ordinary bank wording;
-#   - and it is used only here, in the passive family. Folded into the shared _DEST_POINTED it re-opened the
-#     exact hole the pass-3 gate closed: "To close the account mentioned above, please move the balance out
-#     first" came back as an instruction to pay. The active family does not need it and does not get it.
+#   - and it is used only here, in the passive family. Folded into the shared _DEST_POINTED it re-opens the
+#     hole the pointed-destination gate closes: "To close the account mentioned above, please move the balance out
+#     first" reads as an instruction to pay. The active family does not need it and does not get it.
 _POINTER_POST = (r"(?:specified|mentioned|indicated|stated|noted|detailed|shown|furnished|set out)\s+"
                  r"(?:here\s?in|hereunder|hereinbelow|below|above)(?![a-z])")
 _DEST_NOTICE = rf"(?:{_DEST_POINTED}|(?:to|into|in)\s+(?:the\s+)?{_DEST}{_NEAR}{_POINTER_POST})"
@@ -253,9 +253,9 @@ _DEST_NOTICE = rf"(?:{_DEST_POINTED}|(?:to|into|in)\s+(?:the\s+)?{_DEST}{_NEAR}{
 # written, measured and deleted: no probe in this repo reached them, they cost 4 ms each on an 11 kB message,
 # and an unused alternative is false-positive surface with nothing on the other side of the trade.
 # The passive is blind to direction, and the benign half of this register is money moving TO the customer: a
-# matured FD, a refund, salary, interest, a reversal. The pass-5 gate paid the bill for that — "the maturity
-# amount of Rs 4,20,000 is required to be remitted to the account specified herein" came back as an instruction
-# to pay, the bank's own letter reached RED, and the customer card told her to stop her own money. The verb
+# matured FD, a refund, salary, interest, a reversal. Without a guard, "the maturity amount of Rs 4,20,000 is
+# required to be remitted to the account specified herein" reads as an instruction to pay, the bank's own letter
+# reaches RED, and the customer card tells her to stop her own money. The verb
 # lexeme cannot separate direction ("credited" is excluded, "remitted" is not, and both run both ways), so the
 # gate is the money itself: when the sentence names the money as something arriving, the passive does not read.
 # This is a suppressor on the passive family only; the active family is untouched and so are the scenarios.
@@ -287,7 +287,7 @@ MOVE_PASSIVE = [
 # traffic word somewhere in the message (RE_VEHICLE, applied in `extract`).
 #
 # A traffic FINE is the same demand without the word "challan" ("pay your vehicle driving fine, you passed a red
-# light"), and two of Bhawna's test messages on 23 Oct were read as nothing at all for that reason. The fine forms
+# light"), and without these forms such messages were read as nothing at all. The fine forms
 # need a pay word in the same sentence and sit behind the same vehicle gate, so "pay a fine to avoid arrest" with no
 # vehicle in it is read exactly as before; a police fine that does threaten arrest keeps R-AGENCY-PAY (rules.py).
 # Never inside a web address: "pay only on echallan.parivahan.gov.in" is an awareness line naming the official
@@ -334,7 +334,7 @@ INSTRUCTION_KEYWORDS: list[tuple[Instruction, list[str]]] = [
     (Instruction.PAY_CHALLAN, PAY_CHALLAN_PATTERNS),
     (Instruction.PAY_LOCAL_TAX, PAY_LOCAL_TAX_PATTERNS),
     # "invest" needs its ending: unbounded, it read "the investigation is confidential" as an investment pitch
-    # and the customer card then told a frightened customer, in Hindi, that she was being asked to invest.
+    # and the customer card then told the customer, in Hindi, that she was being asked to invest.
     (Instruction.INVEST_FOR_RETURNS, [r"\binvest(?:s|ed|ing|ment|ments)?\b", r"निवेश", r"\breturns?\b", r"रिटर्न", r"\bprofit\b", r"मुनाफ़?ा", r"\b\d+\s?x\b", r"guaranteed", r"गारंटी", r"double (your|the) money", r"trading (account|platform|desk)"]),
     # "tod" (break) must be its own word: unbounded it matched "today", so "your fixed deposit matures today"
     # read as an instruction to break the FD.
@@ -386,11 +386,11 @@ OWNER_KEYWORDS: list[tuple[ClaimedOwner, list[str]]] = [
 ]
 
 # ---- anchoring: when does NAMING an authority amount to CLAIMING to be it? ---------------------------------
-# A hackathon judge downgraded a textbook digital-arrest script by prefixing a fake tool-output blob that merely
-# contained the word "RBI". claimed_issuer used to be whichever authority token matched FIRST, so the claim
-# became RBI, R-AGENCY-PAY (law enforcement demanding money) never fired, and a RED-class CBI script scored
-# GREY. Worse, the officer's band then said the message "claims to be from RBI" when it claims to be from CBI.
-# Every span was verbatim and real, which is exactly what made it dangerous: the attacker chose the span.
+# Prefixing a textbook digital-arrest script with a fake tool-output blob that merely contains the word "RBI"
+# downgrades it if claimed_issuer is whichever authority token matches FIRST: the claim becomes RBI, R-AGENCY-PAY
+# (law enforcement demanding money) never fires, and a RED-class CBI script scores GREY. The officer's band then
+# says the message "claims to be from RBI" when it claims to be from CBI. Every span is verbatim and real, which
+# is exactly what makes it dangerous: the attacker chose the span.
 #
 # So a bare mention is no longer a claim of identity. An authority token counts only when the text around it is
 # a frame that claims that identity, attributes the message to it, or names it as the owner of the payee
@@ -409,8 +409,8 @@ OWNER_KEYWORDS: list[tuple[ClaimedOwner, list[str]]] = [
 #
 # None of this is unforgeable - the attacker owns the text. The point is that forging it now requires the
 # message to state, in words a reader can see, that it is from RBI. At that point "claims to be from RBI" is a
-# TRUE sentence about the message, and if the message also claims to be CBI we say so instead of picking one
-# silently (see select_issuer).
+# TRUE sentence about the message, and if the message also claims to be CBI that is recorded instead of one
+# being picked silently (see select_issuer).
 TIER_NONE, TIER_ACCOUNT, TIER_NAME, TIER_CLAIM = 0, 1, 2, 3
 
 AUTHORITY_ISSUERS = (Issuer.ED, Issuer.CBI, Issuer.POLICE, Issuer.COURT, Issuer.RBI, Issuer.SEBI,
@@ -496,7 +496,7 @@ ANCHOR_LEFT = [
 # `पुलिस`. A plain-English digital-arrest script ("I am calling from the Cyber Crime Police Station, Chennai. You
 # must transfer ten lakh rupees to this verification account ...") therefore came back GREY with
 # claimed_issuer NONE, and the band said "no authority was read out of it" about a message whose transfer
-# instruction, payee and arrest threat had all been read. A judge found it on 18 Oct.
+# instruction, payee and arrest threat had all been read.
 #
 # So the unit is matched as a PHRASE and the token counts two ways: when the phrase FOLLOWS the token, and when
 # the phrase CONTAINS it. Containment, not overlap: the phrase has to cover the whole token, so "...the police.
@@ -508,8 +508,8 @@ ANCHOR_LEFT = [
 # Offences Wing" and "Delhi Police Crime Branch".
 # The Devanagari half of the list mirrors the English one noun for noun, because a Devanagari masthead has to
 # anchor at the SAME tier as its English equivalent: `सीबीआई साइबर अपराध शाखा, नई दिल्ली` is the same letterhead
-# line as `CBI Cyber Crime Branch, New Delhi` and used to anchor nothing, so the Hindi half of a judge's probe
-# set read as a message that named no sender at all. Bare `शाखा` is deliberately NOT in the list: on its own it
+# line as `CBI Cyber Crime Branch, New Delhi`; without the Devanagari nouns a Hindi letterhead reads as a
+# message that names no sender at all. Bare `शाखा` is deliberately NOT in the list: on its own it
 # is a bank branch ("आपकी शाखा"), so only the qualified crime-branch phrasing counts, exactly as the English side
 # carries "crime branch" and not "branch".
 _UNIT_NOUN = (r"(?:cyber ?cell|cyber ?crime[\w ]{0,24}?cell|crime branch|police station|police thana|thana"
@@ -562,7 +562,7 @@ ANCHOR_RIGHT = [
     # names the body a document is attributed to, which a message can do about someone else; a self-claim must
     # outrank it or one cited authority silences the one the message says it is.
     # the body's own officer is speaking. Closed with _UNIT_END, not \b: "अधिकारी" ends in a vowel sign, after
-    # which \b never matches, so "सीबीआई अधिकारी बोल रहा हूँ" anchored nothing until the 23 Oct evaluation found it.
+    # which \b never matches, so "सीबीआई अधिकारी बोल रहा हूँ" would otherwise anchor nothing.
     _SEP + _POSS + _FILL + (r"(?:officers?|official|adhikari|अधिकारी|governor|गवर्नर|inspector|इंस्पेक्टर"
                             r"|director|team|desk|विभाग)" + _UNIT_END),
     _SEP + r"(?:here|speaking|calling|this side)\b",                       # "CBI cyber cell here"
@@ -616,7 +616,7 @@ _ANCHOR_ACCT_LEFT = rf"{_DEST}[^.;!?।,\n]{{0,16}}$"
 # ---- open-set authorities: the bodies the Issuer enum does not hold ----------------------------------------
 # The enum holds eight bodies. India has hundreds, and a scam picks whichever one fits its story: "IRDAI
 # Enforcement Cell, Mumbai", "Narcotics Control Bureau", "Cyber Crime Coordination Cell". Every one of those used
-# to anchor nothing, so a textbook digital-arrest script built on a body we do not enumerate read as a message
+# to anchor nothing, so a textbook digital-arrest script built on a body the enum does not hold read as a message
 # that named no sender at all, and the whole class landed on GREY with the officer's band saying "no authority
 # was read out of it" about a letterhead that spells one out.
 #
@@ -628,21 +628,20 @@ _ANCHOR_ACCT_LEFT = rf"{_DEST}[^.;!?।,\n]{{0,16}}$"
 #
 # The name reaches TIER_NAME on its FORM, exactly as a spelled-out enumerated name does ("DIRECTORATE OF
 # ENFORCEMENT." / "The Reserve Bank of India cautions the public"), and TIER_CLAIM through the ordinary frames.
-# A masthead is the form, so writing the masthead position in as a separate condition was the first attempt and
-# it was wrong: prefixing one word to the message moves the name off the start of the line, so "RBI " pasted in
-# front of a notice silently dropped its issuer to NONE. That is the injection hole in a new hat, and
-# tests/test_injection_steering.py caught it. A referral and a reported claim suppress the anchor, as for any
+# A masthead is the form, so the masthead position is deliberately not a separate condition: prefixing one word
+# to the message moves the name off the start of the line, so "RBI " pasted in front of a notice would silently
+# drop its issuer to NONE. That reopens the injection hole, and tests/test_injection_steering.py pins it.
+# A referral and a reported claim suppress the anchor, as for any
 # enumerated body.
 #
-# THREE GATES do the discriminating, because the net is wide (the third was added on 19 Oct by this pass's own
-# adversarial gate, and is written out beside _CORP_SUFFIX below):
+# THREE GATES do the discriminating, because the net is wide (the third is written out beside _CORP_SUFFIX below):
 #   1. the name is capitalised and multi-word, matched case-sensitively, so a lowercase mention ("report it to
 #      the enforcement cell") never qualifies - the same rule that keeps an acronym out of TIER_NAME.
 #   2. the head noun has to place the body in the STATE. Bureau, Directorate, Commission and Authority are
 #      statutory words in India and carry themselves. Department, Board, Cell and Unit do not: a bank's own
-#      letterhead says "Demo Bank Loan Recovery Cell, Head Office" - the judge's benign-letter probe is written
-#      on one, and reading it as a government body silenced the bank's own outbound-log rule and took that
-#      probe from AMBER to GREY. For those four the name must also carry a word from the state vocabulary.
+#      letterhead says "Demo Bank Loan Recovery Cell, Head Office" - a benign bank-letter probe is written on
+#      one, and reading it as a government body silenced the bank's own outbound-log rule and took that probe
+#      from AMBER to GREY. For those four the name must also carry a word from the state vocabulary.
 #   3. the run the name sits in must not say the body is a registered COMPANY (_CORP_SUFFIX).
 # A name that contains the bank's own name is handled one layer up, in `extract`: the bank's unit is the bank.
 _OPEN_HEAD_STATE = r"(?:bureau|directorate|commission|authority)"
@@ -669,7 +668,7 @@ RE_OPEN_BODY_HI = re.compile(rf"(?:[{_DEVA_CONT}]+[\x20\t-]+){{1,4}}"
 RE_OPEN_STATE_HI = re.compile(rf"{_OPEN_HEAD_STATE_HI}\s*$")
 RE_OPEN_MARK_HI = re.compile(_OPEN_MARK_HI)
 
-# GATE 3, added 19 Oct after the pass's own adversarial gate: a body that names itself a COMPANY is not the
+# GATE 3: a body that names itself a COMPANY is not the
 # state. The two gates above read form, and form cannot tell "Narcotics Control Bureau" from "Credit Information
 # Bureau (India) Limited", or "Cyber Crime Investigation Cell" from "Claims Investigation Department, Acme
 # General Insurance Company Limited". Both are multi-word, title-cased, headed by a state head noun and carrying
@@ -747,10 +746,10 @@ def _open_set_names(rx: re.Pattern, text: str, enum_spans: list[tuple[int, int]]
 RE_ANCHOR_LEFT = [re.compile(p, re.I) for p in ANCHOR_LEFT]
 RE_ANCHOR_RIGHT = [re.compile(p, re.I) for p in ANCHOR_RIGHT]
 RE_UNIT_AFTER = re.compile(_SEP + _POSS + _FILL + _UNIT_NOUN + _UNIT_END, re.I)
-# "<Body> Department" with nothing in between: "Customs Department, Mumbai Airport" anchored nothing in English until
-# the 23 Oct evaluation found it, while the Hindi विभाग already did. No filler is allowed, unlike the unit nouns
-# above: with it, "CBI " pasted in front of "Income Tax Department" read as the CBI's own department and moved the
-# issuer, which tests/test_injection_steering.py caught the same day.
+# "<Body> Department" with nothing in between: without this, "Customs Department, Mumbai Airport" anchors nothing
+# in English, while the Hindi विभाग already does. No filler is allowed, unlike the unit nouns above: with it,
+# "CBI " pasted in front of "Income Tax Department" read as the CBI's own department and moved the issuer, which
+# tests/test_injection_steering.py pins.
 RE_DEPARTMENT_AFTER = re.compile(_SEP + r"department" + _UNIT_END, re.I)
 RE_UNIT_PHRASE = re.compile(rf"\b{_UNIT_NOUN}{_UNIT_END}", re.I)
 # How far a unit phrase may start before, or end after, the authority token it contains. "Police Station" is the
@@ -773,7 +772,7 @@ RE_ANCHOR_SAME_PHRASE = re.compile(r"[\s,/&–—-]*(?:(?:of|the|ki|ka|ke|का
 # body, but they identify the body only by implication, and the body they imply is the broadest one in the
 # family. "This is Inspector <name>, CBI Economic Offences Wing, Delhi ... place a refundable judicial security
 # deposit of Rs 12,00,000 ..." anchored POLICE on "Inspector" at offset 8, demoted the CBI to other_issuers,
-# and the Hindi customer card then told a frightened customer the message "claims to be the police". It claims
+# and the Hindi customer card then told the customer the message "claims to be the police". It claims
 # to be the CBI, and the message says so in words.
 #
 # So at EQUAL anchor tier a named body outranks a generic rank word. This can only ever break a tie: when a
@@ -902,8 +901,8 @@ def _unit_name_end(text: str, m: re.Match) -> int:
     """Where the body's own unit name ends, if the token is followed by one. `m.end()` otherwise.
 
     "CBI Cyber Crime Branch" names one body, and the characters that anchor the CBI are the same characters that
-    anchor POLICE (`crime branch` is a POLICE token). Before this the two tied at TIER_CLAIM, `select_issuer`
-    found two law-enforcement personas and returned None, and a judge's digital-arrest script fell through to
+    anchor POLICE (`crime branch` is a POLICE token). Without this the two tie at TIER_CLAIM, `select_issuer`
+    finds two law-enforcement personas and returns None, and a digital-arrest script falls through to
     BANK_SELF on the words "branch manager" at the end of it. RE_ANCHOR_SAME_PHRASE cannot see this on its own:
     it allows only separators and joining words between two tokens, and "Cyber" is neither.
     """
@@ -966,19 +965,19 @@ def select_issuer(text: str, hits: list[IssuerHit]) -> Optional[IssuerHit]:
     mention anywhere in the text now loses to the body the message actually claims to be.
 
     Zero anchored: None, so claimed_issuer stays NONE. The band already says in words when it could not read an
-    authority out of the message, and "we could not tell" is the honest answer when nothing in the text claims
+    authority out of the message, and "could not tell" is the accurate answer when nothing in the text claims
     an identity. The mentions are not thrown away - they go to `claim.other_issuers`.
 
     Two anchored, equally strongly, and one of them earned its anchor on a rank word rather than on the body's
     own name: the named body wins. "This is Inspector <name>, CBI Economic Offences Wing" claims to be the CBI,
-    and before this the rank word won on position alone and the card said "the police". A rank word still wins
-    when it is the only thing tied, so this never loses an issuer, only ever makes one more specific.
+    and without this the rank word would win on position alone and the card would say "the police". A rank word
+    still wins when it is the only thing tied, so this never loses an issuer, only ever makes one more specific.
 
     Two anchored, equally strongly, and genuinely two bodies: prefer the one the payee account is attributed to,
     because that is the body the money is being demanded in the name of and the one every money rule is about.
     If the account points at neither or at both, None: a message that claims to be two different authorities
-    does not let us say which, and saying one of them in the officer's band would be the original bug wearing a
-    different hat. Both still land in `claim.other_issuers`.
+    does not establish which, and naming one of them in the officer's band would repeat the prefix-injection
+    failure. Both still land in `claim.other_issuers`.
     """
     anchored = [h for h in hits if h.anchored]
     if not anchored:
@@ -995,13 +994,13 @@ def select_issuer(text: str, hits: list[IssuerHit]) -> Optional[IssuerHit]:
     on_money = [h for h in kept if h.on_account]
     if len(on_money) == 1:
         return on_money[0]
-    # Two bodies claimed and the money points at neither. Returning None here was the injection hole wearing a
-    # different hat: an attacker only had to anchor a second, harmless-looking authority ("A notice from the
-    # Reserve Bank of India. This is CBI Cyber Cell. ...") to make the issuer NONE and silence every issuer rule.
+    # Two bodies claimed and the money points at neither. Returning None here would reopen the injection hole: an
+    # attacker would only have to anchor a second, harmless-looking authority ("A notice from the Reserve Bank of
+    # India. This is CBI Cyber Cell. ...") to make the issuer NONE and silence every issuer rule.
     # A silent downgrade is the attack; an upgrade is not, because a lone hard rule is still only AMBER. So when
     # exactly one of the tied bodies is a law-enforcement persona, that is the one the money rules are about and
-    # the one we name. The others are still recorded in `claim.other_issuers`, and the band can say both were
-    # named. Only when the tie is between two bodies of the same kind do we admit we cannot tell.
+    # the one named. The others are still recorded in `claim.other_issuers`, and the band can say both were
+    # named. Only a tie between two bodies of the same kind leaves the issuer undetermined.
     enforcement = [h for h in kept if h.issuer in LAW_ENFORCEMENT]
     return enforcement[0] if len(enforcement) == 1 else None
 
@@ -1037,8 +1036,8 @@ CHANNEL_KEYWORDS: list[tuple[Channel, list[str]]] = [
 
 # ---- the de-spacing lexicon --------------------------------------------------------------------------------
 # "You must t r a n s f e r Rs 38,00,000 to the verification account 30011223344556" came back with instruction
-# NONE and scored GREY. Pass 3 closed homoglyphs, zero-widths and leetspeak; spacing has no character to fold,
-# so it walked through all of it. `normalize` closes up a spaced run only when the run reconstitutes a word in
+# NONE and scored GREY. Normalisation folds homoglyphs, zero-widths and leetspeak; spacing has no character to
+# fold, so it passes through all of them. `normalize` closes up a spaced run only when the run reconstitutes a word in
 # THIS lexicon, and the lexicon lives here because the only words it can ever be safe to close up are the words
 # the extractor's own tables look for. Closing a run into anything else would be inventing text.
 #
@@ -1077,7 +1076,7 @@ DESPACE_LEXICON = frozenset(
 )
 
 # The digit group is bounded by DIGIT count, not by character count. With a character window, spaced digits ate
-# the budget: the pass-5 gate wrote "a c c o u n t  No 3 0 0 1 1 2 2 3 3 4 4 5 5 6" and the 22-character window
+# the budget: on "a c c o u n t  No 3 0 0 1 1 2 2 3 3 4 4 5 5 6" the 22-character window
 # truncated a 14-digit account to 12, which is the number that would have gone to the beneficiary name look-up,
 # to the I4C registry and into the signed evidence pack. A wrong identifier is worse than no identifier.
 RE_ACCOUNT = re.compile(r"(?:a/?c(?:count)?|acct|account|खात[ाे]|khata)\s*(?:no\.?|number|नंबर|#|:)?\s*[:\-]?\s*"
@@ -1107,7 +1106,7 @@ RE_AMOUNT = re.compile(r"(?:₹|rs\.?|inr|rupees?)\s?([\d,]+(?:\.\d+)?)(\s?(?:la
 # a summons id has letters/digits joined by "/" or "-" (ED/DLZO/2026/4471); plain words like "under" are not ids
 RE_SUMMONS_NO = re.compile(r"summons?\s*(?:no\.?|number|#|नंबर)?\s*[:\-]?\s*([A-Z]{1,4}[/\-][A-Z0-9/\-]{3,}|\d[A-Z0-9/\-]{3,})", re.I)
 # A case, document or passcode number contains a digit. Without that bound, "case" and "crime" swallowed the
-# next word: the judge's probes stored case_no = "under" (from "under NDPS Act"), "COORDINATION" (from "CYBER
+# next word: test probes stored case_no = "under" (from "under NDPS Act"), "COORDINATION" (from "CYBER
 # CRIME COORDINATION CELL") and "helpline", and the console then drew a "Case number" mark on nonsense.
 # The lookahead is only a minimum-length guard; the capture is what requires the digit.
 RE_PASSCODE = re.compile(r"pass ?code\s*(?:is\s*)?[:\-]?\s*(?=[A-Z0-9]{4,12}\b)([A-Z0-9]*\d[A-Z0-9]*)\b", re.I)
@@ -1116,8 +1115,8 @@ RE_DATE = re.compile(r"\b(\d{1,2}[\-/.]\d{1,2}[\-/.]\d{2,4}|\d{4}-\d{2}-\d{2}|\d
 RE_PHONE = re.compile(r"(?<!\d)(?:\+91[\s-]?)?(1600\d{5,7}|[6-9]\d{9})(?!\d)")
 # ---- an instruction that the message is telling you NOT to follow ------------------------------------------
 # Public-awareness text is written out of the same words as the scam it warns about, so the extractor reads it
-# as the scam unless something tells the two apart. This is the third pass running that a judge has read an
-# instruction out of a negated warning, and the mechanism, not the example, is what was wrong both times.
+# as the scam unless something tells the two apart. Reading an instruction out of a negated warning is a
+# recurring failure, and the mechanism, not the example, is what has to be fixed.
 #
 # WHY THE OLD GUARD MISSED. It was `RE_NEGATION.search(t[m.start()-60 : m.start()])`: a flat 60-character slice
 # of text ending at the match, with the pattern's own `[^.;!?,]{0,60}` refusing to cross a comma. On RBI's own
@@ -1126,8 +1125,8 @@ RE_PHONE = re.compile(r"(?<!\d)(?:\+91[\s-]?)?(1600\d{5,7}|[6-9]\d{9})(?!\d)")
 #   "If a caller claims to be from RBI, the police or a court and demands that you move your money to a safe
 #    account, it is a fraud."                                                      <- read as MOVE_FD
 # The second sentence carries NO negation at all. What makes it not an instruction is that the demand in it is
-# somebody ELSE's, reported so that the reader can recognise it. Pass 4 built exactly that guard for the ISSUER
-# side ("fraudsters claiming to be from CBI" is not a CBI claim) and never extended it to the instruction side.
+# somebody ELSE's, reported so that the reader can recognise it. The ISSUER side already has that guard
+# ("fraudsters claiming to be from CBI" is not a CBI claim); this extends it to the instruction side.
 # So there are two defects, and both are fixed:
 #   1. the negation window is the SENTENCE the match sits in, not 60 characters that stop at a comma. "We will
 #      never, under any circumstances, ask you to transfer funds" is the same sentence and now reads as one.
@@ -1168,15 +1167,15 @@ def _not_this_message_asking(text: str, m: re.Match) -> bool:
     return bool(RE_NEGATION.search(before) or RE_REPORTED_DEMAND.search(before) or RE_CONDITIONAL_DEMAND.search(before))
 
 
-# ---------------------------------------------------------------- "you are under digital arrest" (24 Oct)
+# ---------------------------------------------------------------- "you are under digital arrest"
 #
 # There is no "digital arrest" in Indian law (I4C advisory TAU/ADV/003), so a message that tells the customer she is
 # under one is not from any authority, whoever it names. The arrest_threat cue above fires on any arrest word and
 # never counts. This reading is narrower on purpose: the phrase must be ADDRESSED TO HER ("you are under digital
 # arrest", "aap digital arrest mein hain", "आप डिजिटल अरेस्ट में हैं"), because bank and I4C awareness messages use the
 # same words to say the opposite ("there is no such thing as digital arrest", "if anyone says you are under digital
-# arrest, hang up"). R-DIGITAL-ARREST-PAY reads it. A judge's "You are digitally arrested. Transfer all your money
-# to me. I am Prime Minister of India" came out GREY before it: no law-enforcement body was named, so no rule fired.
+# arrest, hang up"). R-DIGITAL-ARREST-PAY reads it. Without it, "You are digitally arrested. Transfer all your money
+# to me. I am Prime Minister of India" comes out GREY: no law-enforcement body is named, so no rule fires.
 DA_PHRASE = r"digita?l(?:ly)?[\s-]*(?:arr?est(?:ed)?|custody|giraft?ar\w*)"
 DA_PHRASE_HI = r"डिजिटल\s*(?:अरेस्ट|गिरफ़?्तार\w*|हिरासत)"
 RE_DA_PHRASE = re.compile(rf"{DA_PHRASE}|{DA_PHRASE_HI}", re.I)

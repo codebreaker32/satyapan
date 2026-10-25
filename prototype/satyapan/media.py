@@ -98,7 +98,7 @@ def kind_of(path: Path) -> str:
     return "text"
 
 
-# Magic bytes, cheapest first. Every image, PDF and container format we accept carries a mandatory signature,
+# Magic bytes, cheapest first. Every accepted image, PDF and container format carries a mandatory signature,
 # so the first few bytes are enough to tell a renamed file from a real one.
 MAGIC: tuple[tuple[bytes, str], ...] = (
     (b"\x89PNG\r\n\x1a\n", "image"),
@@ -117,10 +117,10 @@ SNIFFABLE_KINDS = {"image", "pdf"}              # named one of these and carryin
 
 
 def sniff(head: bytes) -> Optional[str]:
-    """The media family the first bytes actually describe, or None when they describe nothing we know.
+    """The media family the first bytes actually describe, or None when they describe no known format.
 
     Used as a reason to reject a file whose contents contradict its name, never as a reason to accept one:
-    some browsers send a voice note with no declared type and no signature we recognise, and those still pass.
+    some browsers send a voice note with no declared type and no recognised signature, and those still pass.
     """
     if len(head) >= 12 and head[:4] == b"RIFF":
         return {b"WEBP": "image", b"WAVE": "audio", b"AVI ": "video"}.get(head[8:12])
@@ -138,9 +138,9 @@ def contents_contradict_name(kind: str, head: bytes) -> bool:
     """True when the bytes say this file is not what its name claims, so there is no point decoding it.
 
     Text is never sniffed. Plain text has no signature to contradict, it is read with errors="ignore" so there is
-    no decoder to protect, and the short magic strings here collide with ordinary words: the pass-4 gate rejected
+    no decoder to protect, and the short magic strings here collide with ordinary words: sniffing text would reject
     a real note beginning "BMW loan recovery notice" as a bitmap and one beginning "ID3 card verification" as an
-    mp3, told the officer the file "does not open as plain text" when it opened perfectly, and pushed her off the
+    mp3, tell the officer the file "does not open as plain text" when it opens perfectly, and push her off the
     media path. Sniffing stays a reason to reject, never a new reason to accept.
     """
     if kind == "text":
@@ -259,7 +259,7 @@ def transcribe(path: Path, language: str = "hi") -> tuple[str, str]:
     model, model_name = whisper_model()
     try:
         audio = decode_audio(path)[0]
-    except Exception:  # noqa: BLE001 - let the speech model try the path itself; it refuses what we could not open
+    except Exception:  # noqa: BLE001 - let the speech model try the path itself; it refuses what could not be opened
         audio = str(path)
     if not isinstance(audio, str) and len(audio) == 0:
         raise MediaUnreadable(no_speech_message(path.name, near_silent=True))
@@ -277,7 +277,7 @@ def transcribe(path: Path, language: str = "hi") -> tuple[str, str]:
 
 def _near_silent(audio) -> bool:
     """Is a decoded recording this quiet throughout? Only its wording depends on this (see NEAR_SILENT)."""
-    if isinstance(audio, str):   # we could not decode it ourselves, so we cannot say how loud it is
+    if isinstance(audio, str):   # not decoded here, so its loudness is unknown
         return False
     import numpy as np
     return float(np.percentile(np.abs(audio), 99.9)) < NEAR_SILENT
@@ -362,7 +362,7 @@ def has_video_frames(path: Path) -> bool:
                 return False
             for _ in container.decode(stream):
                 return True
-    except Exception:  # noqa: BLE001 - anything that will not open is not a video we can check
+    except Exception:  # noqa: BLE001 - anything that will not open is not a checkable video
         return False
     return False
 
@@ -379,7 +379,7 @@ def ingest(path: Path, derived_text: Optional[str] = None, language: str = "hi")
             ref.derived_text, ref.derived_text_engine = transcribe(path, language)
         except MediaUnreadable:
             # A video is still checked for its faces when nobody speaks in it: a face swap set to music, or with no
-            # sound track at all, is exactly what a test kit holds, and refusing it meant the face check never ran.
+            # sound track at all, is a common test case, and refusing it would mean the face check never runs.
             # It is kept with an empty transcript (the officer can type what was said) as long as its pictures open.
             # A voice note with no speech has nothing left to check, so it is still refused with the sentence why.
             if kind != "video" or not has_video_frames(path):

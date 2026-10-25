@@ -14,19 +14,19 @@ That ladder runs on the instruction checks only (every family but F3). When medi
 judge it, the combined score at the end of this module decides instead: 50% instruction + 50% deepfake, RED at 40% or
 more, AMBER from 15%, GREY below. Media the detector could not judge counts as no media.
 
-No RED when the engine read no money demand. A judge pasted a genuine overdue-loan letter: no payee, no
-instruction, `instruction=NONE`, and the card told a real customer to stop. "Verify the instruction, not just
-the pixels" is the product's own sentence, so a verdict that stops a payment while the extractor read no instruction
-and no payee contradicts it. When `instruction` is NONE and no payee account, IFSC or VPA was read, a RED pair
+No RED when the engine read no money demand. A genuine overdue-loan letter has no payee and no instruction
+(`instruction=NONE`); a RED on it would tell a real customer to stop a legitimate payment. "Verify the
+instruction, not just the pixels" is the product's own sentence, so a verdict that stops a payment while the
+extractor read no instruction and no payee contradicts it. When `instruction` is NONE and no payee account, IFSC
+or VPA was read, a RED pair
 falls back to AMBER and the explanation says so, naming both rules. This guard may only ever make a verdict less
 severe, never more: it is the last thing checked before a RED is returned and it has no other effect.
 
 No payment wording when no payment was read. The verdict headline is the one string both surfaces show: the
-officer's band prints it and the customer's card takes it verbatim. `HEADLINES[AMBER]` said "Verify before paying"
-on every AMBER, including a benign re-KYC letter whose coverage sentence on the same screen said the engine found
-no instruction about money, and the only thing keeping that wording off the customer's card was a card-side
-override. `HEADLINES_NO_PAYMENT` now holds the neutral AMBER, `money_in_play` decides which table is used, and
-`card.build_card` reads the same predicate for its own copy, so the band and the card cannot disagree.
+officer's band prints it and the customer's card takes it verbatim. `HEADLINES[AMBER]` says "Verify before paying",
+which is wrong on a benign re-KYC letter whose coverage sentence on the same screen says the engine found no
+instruction about money. `HEADLINES_NO_PAYMENT` holds the neutral AMBER, `money_in_play` decides which table is
+used, and `card.build_card` reads the same predicate for its own copy, so the band and the card cannot disagree.
 
 The explanation is prose a person reads: the officer's band, `satyapan demo`, the CLI and the evidence pack all print
 it. It therefore names a rule by its rulebook title, never by its id. The id stays the audit surface: `anchor_rule`,
@@ -49,13 +49,13 @@ HEADLINES = {
 }
 # The same outcome, worded for a message that asked for no money. AMBER is the only headline that mentions paying:
 # RED, GREY and MATCHES already say "verify", "could not confirm" and "matches our records", which hold either way.
-# The wording is the one the card used to apply on its own, promoted to the verdict so both surfaces say it.
+# The wording is set on the verdict, not on the card, so both surfaces say it.
 HEADLINES_NO_PAYMENT = {
     Outcome.AMBER: ("Confirm this message first", "पहले इस संदेश की पुष्टि करें"),
 }
 
-# What a family and an evidence key are, in words. The explanation used to print "F2, evidence: bank:outbound_log",
-# which is a schema key, not a sentence. The codes stay in the signal rows the officer can expand.
+# What a family and an evidence key are, in words. "F2, evidence: bank:outbound_log" is a schema key, not a
+# sentence, so the explanation does not print it. The codes stay in the signal rows the officer can expand.
 FAMILY_WORDS = {Family.F1: "the issuer rulebook", Family.F2: "the bank's own records", Family.F3: "media forensics",
                 Family.F4: "campaign memory", Family.F5: "bank context"}
 EVIDENCE_WORDS = {
@@ -118,7 +118,7 @@ def _join(parts: list[str]) -> str:
 def _quoted(span) -> str:
     """The words the extractor matched on, so the officer can catch it reading something that is not there.
 
-    The adversarial pass found the extractor taking INVEST_FOR_RETURNS out of "RBI does not give any such financial
+    An adversarial test found the extractor taking INVEST_FOR_RETURNS out of "RBI does not give any such financial
     investment advice" — a negation. Showing the matched words does not fix the extractor, but it stops the band
     asserting an instruction the officer cannot find in the message in front of her.
     """
@@ -133,8 +133,8 @@ def _quoted(span) -> str:
 def _what_was_read(claim: Claim) -> list[str]:
     """What the extractor actually took out of the message, in the officer's words.
 
-    Only facts the claim itself carries: no inference, no severity, no judgement. This is what makes a GREY
-    honest — it names what was seen, quotes the words it rests on, and then says what could and could not check it.
+    Only facts the claim itself carries: no inference, no severity, no judgement. This is what keeps a GREY
+    accurate: it names what was seen, quotes the words it rests on, and then says what could and could not check it.
     """
     read: list[str] = []
     if claim.claimed_issuer != Issuer.NONE:
@@ -152,10 +152,9 @@ def _what_was_read(claim: Claim) -> list[str]:
 
 
 # Below this many characters of visible text, "too little content to check" is literally true. Above it, the
-# sentence was a lie: a judge pasted a 350-character consumer-commission notice that names a Commission twice
-# and the band said there was too little content, when what had actually happened is that a substantial message
-# was read in full and nothing in it could be tied to a claim. The threshold is a plain length, not a word
-# count, because an OCR'd Devanagari notice is the same amount of reading in fewer words.
+# sentence is false: a 350-character consumer-commission notice that names a Commission twice is not too little
+# content; it was read in full and nothing in it could be tied to a claim. The threshold is a plain length, not
+# a word count, because an OCR'd Devanagari notice is the same amount of reading in fewer words.
 _SUBSTANTIAL = 140
 
 
@@ -163,7 +162,7 @@ def _nothing_could_be_anchored(claim: Claim) -> str:
     """The GREY sentence for a message the extractor read and took nothing out of.
 
     Two different facts need two different sentences. A one-line or empty artefact really does carry too little
-    to check. A full-page notice does not: it was read, all of it, and the honest answer is that nothing in it
+    to check. A full-page notice does not: it was read, all of it, and the accurate answer is that nothing in it
     named a body as the SENDER, asked for money, or gave a payee - and that a body Satyapan holds no rule for
     reads exactly like no body at all, which is a limit of the engine and not a finding about the message.
     """
@@ -257,7 +256,7 @@ def _why_nothing_fired(claim: Claim) -> str:
     # bank had no record to check against or the records it could check found nothing.
     pair = "the authority and the instruction it read are not enough for a rule on their own"
     # The outbound log and the ledger always answer, so "found nothing wrong" is true of them. The name look-up may
-    # not hold the account at all (status UNKNOWN), and any account a judge types is one it does not hold, so for
+    # not hold the account at all (status UNKNOWN), and any account typed in by hand is one it does not hold, so for
     # the account door the sentence says only what is true either way.
     if claim.claimed_issuer == Issuer.BANK_SELF or claim.instruction == Instruction.RETURN_EXCESS_CREDIT:
         return pair + ", and the bank's own records found nothing wrong"
@@ -272,7 +271,7 @@ def _what_ran(claim: Claim, signals: list[Signal], titles: dict[str, str], *, ex
 
     A GREY can still carry signals: `R-ED-FOUND` is an F1 informational match saying ED's own system recognised
     the summons. Nothing informational moves a verdict, but saying nothing ran while the panel below lists one is
-    the contradiction this whole change exists to remove. F5 is context and never counts, so it stays out.
+    the contradiction this function exists to prevent. F5 is context and never counts, so it stays out.
     """
     # A media check that found nothing or abstained is not a rule that fired: its rule title ("Signs of face
     # manipulation") reads like a finding. Name such checks by what they did instead.
@@ -284,7 +283,7 @@ def _what_ran(claim: Claim, signals: list[Signal], titles: dict[str, str], *, ex
     fired = sorted({s.rule_id for s in signals if s.family not in (Family.F5, Family.F3)})
     media = _media_checks(quiet_media, flagged_media)
     if not fired:
-        # The why-clause now carries what "nothing to corroborate" used to say, and this sentence is set on the
+        # The why-clause already carries what "nothing to corroborate" would say, and this sentence is set on the
         # verdict band where every extra line costs. One idea, once.
         why = f", because {_why_nothing_fired(claim)}" if explain else ". There is nothing to corroborate it either way"
         return f"No rule fired on it{why}.{media}"
@@ -305,7 +304,7 @@ def _media_checks(quiet: list[Signal], flagged: set[str] = frozenset()) -> str:
 
     With two files of the same kind each result is named, and a quiet one beside a flagged one of the same kind is
     "another" check: "The media shows signs of synthetic speech ... the voice check found no signs" read as one voice
-    check saying both things (bug hunt raw finding 32)."""
+    check saying both things."""
     parts: list[str] = []
     seen: dict[str, int] = {}
     for s in quiet:
@@ -392,16 +391,16 @@ def _fuse_rules(claim: Claim, signals: list[Signal], names: dict[str, str], show
     if any(s.escalate_alone for s in soft):
         s = next(s for s in soft if s.escalate_alone)
         # Same sentence, aimed at what she was actually asked to do. This branch is where the benign no-money
-        # AMBERs land (a one-hour-old ED summons, a court hearing notice), so "verify before paying" here was the
-        # band contradicting its own coverage sentence as plainly as the headline above it did.
+        # AMBERs land (a one-hour-old ED summons, a court hearing notice), so "verify before paying" here would
+        # contradict the band's own coverage sentence, as the headline above would.
         if neutral:
             return verdict(Outcome.AMBER, f"{_named(s.rule_id, names)} means the customer should confirm this "
                            "message before acting on it.")
         return verdict(Outcome.AMBER, f"{_named(s.rule_id, names)} means the customer should verify before paying.")
 
     # GREY says what kind of GREY this is, because "no warning signs" is a lie whenever the extractor did read an
-    # authority, an instruction, a payee or a pressure cue out of the message and nothing could check it. A judge
-    # pasting a leetspeak arrest threat that the patterns miss must not be told the message looks clean.
+    # authority, an instruction, a payee or a pressure cue out of the message and nothing could check it. A
+    # leetspeak arrest threat that the patterns miss must not be reported as a message that looks clean.
     read = _what_was_read(claim)
     never_safe = "This is not a confirmation that the message is safe."
     if read:
@@ -415,7 +414,7 @@ def _fuse_rules(claim: Claim, signals: list[Signal], names: dict[str, str], show
     return verdict(Outcome.GREY, f"Nothing was read out of this message. {ran} {never_safe}")
 
 
-# ---------------------------------------------------------------- the combined score (Bhawna, 24 Oct 2026)
+# ---------------------------------------------------------------- the combined score
 #
 # Lane 1 has two tests: the instruction checks (Comparisons 1-4) and the deepfake check on the media (voice, the sound
 # of a video, a document). With no media, or none the detector could judge, the instruction checks decide alone,
@@ -447,8 +446,8 @@ def deepfake_pct(s: Signal) -> int | None:
 
 def instruction_pct(rules: list[Signal]) -> int:
     """What the instruction checks found, 0-100. A RED pair is 90, so on its own it already reaches the RED line
-    (Bhawna's example: 80% instruction, 0% deepfake, 40% combined, RED). A rule whose citation is not verified
-    counts 0, so it can never help the combined score to a RED either (docs/finale-qa.md, Q6)."""
+    (for example: 80% instruction, 0% deepfake, 40% combined, RED). A rule whose citation is not verified
+    counts 0, so it can never help the combined score to a RED either."""
     rules = [s for s in rules if s.citation_verified]
     hard = [s for s in rules if s.severity == Severity.HARD and s.citation_verified]
     soft = [s for s in rules if s.severity == Severity.SOFT]

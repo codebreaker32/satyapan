@@ -1,6 +1,6 @@
 """Integrations. Every adapter has a `label` saying what it mocks, who owns the real one and how it is reached.
 
-In the 48-hour build the issuer portals and bank systems are mocked from JSON under data/mocks/. The officer console
+In this build the issuer portals and bank systems are mocked from JSON under data/mocks/. The officer console
 shows each label, so nobody mistakes a mock for a live lookup.
 """
 from __future__ import annotations
@@ -265,7 +265,7 @@ class SnapshotWebsiteRegistry:
 
 class LiveWebsiteRegistry(SnapshotWebsiteRegistry):
     """The same look-up made live over HTTPS, with a short timeout and a cache. When the registry cannot be reached
-    (no Wi-Fi at the venue) it falls back to the recorded answers, and to UNKNOWN beyond those, so a dead network
+    (no network) it falls back to the recorded answers, and to UNKNOWN beyond those, so a dead network
     never becomes a finding about a website."""
     label = Label(SnapshotWebsiteRegistry.label.name, SnapshotWebsiteRegistry.label.production_source,
                   SnapshotWebsiteRegistry.label.owner, SnapshotWebsiteRegistry.label.route, mock=False)

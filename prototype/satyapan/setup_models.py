@@ -1,4 +1,4 @@
-"""`satyapan setup-models`: fetch every model and language file the engine can use, once, so the finale needs no Wi-Fi.
+"""`satyapan setup-models`: fetch every model and language file the engine can use, once, so a run needs no network.
 
 Nothing in the engine downloads anything while a case is being checked. A model that is not on disk is a missing
 install, reported as one (the console then asks for a transcript, or the detector abstains). This command is the

@@ -40,11 +40,11 @@ app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http
 
 # The website check answers from the registry records saved on 23 Oct unless SATYAPAN_LIVE_WEB=1, which asks the
 # domain registries live (rdap.org) and still falls back to the recorded answers when the network fails. Off by
-# default, so nothing leaves the laptop unless someone chose that (the docs and the run-sheet say so).
+# default, so nothing leaves the machine unless that is explicitly enabled (documented in the docs).
 engine = Satyapan(adapters=Adapters.mocks(live_web=os.environ.get("SATYAPAN_LIVE_WEB", "0") == "1"))
 if os.environ.get("SATYAPAN_WHISPER_PRELOAD"):
-    # demo_up.sh sets this: load the speech-to-text model in the background at start-up, so the first voice note of
-    # the demo does not also wait 15-60 s for the model to load. Failure here only means the first note loads it.
+    # demo_up.sh sets this: load the speech-to-text model in the background at start-up, so the first voice note
+    # does not also wait 15-60 s for the model to load. Failure here only means the first note loads it.
     import threading
 
     def _preload_whisper() -> None:
@@ -59,12 +59,12 @@ UPLOADS = STATE_DIR / "uploads"
 
 # Upload limits for the demo. The cap bounds what lands on disk under evidence/uploads/; the request body itself
 # is still read by the framework first, which is acceptable on 127.0.0.1.
-# A minute of phone video is often 50-100 MB, and a judge may bring one. The upload streams to disk under this cap,
+# A minute of phone video is often 50-100 MB. The upload streams to disk under this cap,
 # the face check samples 16 frames whatever the length, and the voice check scores at most about 12 s of speech.
 MAX_UPLOAD_MB = 100
 MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
-# A phone's own formats too: an iPhone records video as .mov, Android call recorders save .amr or .3gp, and a judge's
-# test kit can hold any of them. Each still has to open as what its name says (media.contents_contradict_name).
+# A phone's own formats too: an iPhone records video as .mov, and Android call recorders save .amr or .3gp.
+# Each still has to open as what its name says (media.contents_contradict_name).
 ALLOWED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp",                      # images
                       ".ogg", ".opus", ".mp3", ".wav", ".m4a", ".weba",      # audio (.weba: a browser's own recording)
                       ".aac", ".amr", ".flac",
@@ -171,13 +171,13 @@ def meta():
             "forensics": {"audio": engine.audio.label.as_dict(), "document": engine.document.label.as_dict(),
                           "service": ({**engine.remote.label.as_dict(), "health": engine.remote.health()} if engine.remote else None)},
             "signer": engine.signer.label.as_dict(),
-            # honest scope: wall time to verdict in this serve session on this laptop, not a benchmark
+            # Scope: wall time to verdict in this serve session on this machine, not a benchmark
             "session_timing": {"count": len(_verdict_ms),
                                "session_p50_verdict_ms": round(statistics.median(_verdict_ms), 1) if _verdict_ms else None,
                                "scope": "this serve session only; cleared by /api/demo/reset"}}
 
 
-# ---------- scenarios (finale demo) ----------
+# ---------- scenarios (demo) ----------
 
 @app.get("/api/scenarios")
 def scenarios():
@@ -496,8 +496,8 @@ def demo_reset():
     for cid in list(engine.cases):   # snapshot: a threadpool-concurrent run must not break the iteration
         shutil.rmtree(UPLOADS / cid, ignore_errors=True)
     engine.cases.clear()
-    # Uploads of cases from before a restart are no longer in memory, so the loop above never reached them: a judge's
-    # own voice note stayed on the laptop. Every case folder left is an orphan now that no case is open.
+    # Uploads of cases from before a restart are no longer in memory, so the loop above never reaches them and an
+    # uploaded voice note would stay on disk. Every case folder left is an orphan now that no case is open.
     if UPLOADS.is_dir():
         for orphan in UPLOADS.glob("SP-*"):
             shutil.rmtree(orphan, ignore_errors=True)

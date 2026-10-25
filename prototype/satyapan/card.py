@@ -1,25 +1,26 @@
 """The customer card: what the officer reads aloud, in Hindi or English. Three cited reasons and ONE instruction.
 No scores, and never the words "fake", "genuine" or "fraud" (see FORBIDDEN; tests lint every template and output).
 
-Five rules shape the copy below, every one of them from a judge reading the card aloud as a frightened 70-year-old
-would hear it. None of them touches a verdict: they are copy and gates, and the outcome words never move.
+Five rules shape the copy below, each written for the card as an elderly customer under pressure hears it read
+aloud. None of them touches a verdict: they are copy and gates, and the outcome words never move.
 
-1. One instruction. The card used to end the call, refuse the payment, verify with the issuer and promise help with
-   a report, which is four things to remember under pressure. `do_now` is now a single imperative sentence in both
-   languages for every outcome; everything else the officer does moves to `say_next`, which is for the officer's
-   eyes and is never part of `read_aloud`.
-2. Money wording only when money was asked for. A benign re-KYC SMS that asks for nothing used to get a card
+1. One instruction. Ending the call, refusing the payment, verifying with the issuer and reporting are four things
+   to remember under pressure, so `do_now` is a single imperative sentence in both languages for every outcome;
+   everything else the officer does goes to `say_next`, which is for the officer's eyes and is never part of
+   `read_aloud`.
+2. Money wording only when money was asked for. A benign re-KYC SMS that asks for nothing must not get a card
    saying "do not send money now". `fusion.money_in_play` reads the claim, and the no-payment copy talks about
    confirming the message before acting on it. No verdict, outcome word or fusion logic depends on this. The
-   headline is NOT chosen here any more: `fuse` sets a payment-neutral AMBER headline from the same predicate,
-   so the officer's band and the customer's card say the same words on the same screen.
-3. A clause that describes the customer's message must rest on a span (see GROUNDED_CLAUSES below). A judge's
-   Customs/NDPS probe got a card that said the message asked her to invest, and an EPFO probe got a promise to
-   call her relationship manager. Neither was in her message. A clause with nothing to point at is dropped.
+   headline is not chosen here: `fuse` sets a payment-neutral AMBER headline from the same predicate, so the
+   officer's band and the customer's card say the same words on the same screen.
+3. A clause that describes the customer's message must rest on a span (see GROUNDED_CLAUSES below). Without
+   this, a Customs/NDPS message produced a card saying it asked the customer to invest, and an EPFO notice
+   produced a promise to call their relationship manager; neither was in the message. A clause with nothing to
+   point at is dropped.
 4. The card never asserts something about the situation that the artefact does not carry. "End the call now."
-   was on every RED, including an OCR'd scanned notice and a voice note, where there is no call to end. It is
-   gated on `_on_a_call` now, which is the gate `rules._call_number` argues for in its own docstring.
-5. A technical token does not get read aloud to a frightened 70-year-old. The SIMULATED provenance stamp on a
+   would otherwise appear on every RED, including an OCR'd scanned notice and a voice note, where there is no call
+   to end. It is gated on `_on_a_call`, the same gate `rules._call_number` sets out in its own docstring.
+5. A technical token is not read aloud to the customer. The SIMULATED provenance stamp on a
    rehearsal forensics result stays on the officer's evidence row and leaves the card (SIMULATED_MARKER); where
    the rulebook's wording is written for an officer, the card has its own sentence (CARD_SENTENCES).
 """
@@ -39,20 +40,20 @@ FORBIDDEN = {
     # सही / सच / प्रामाणिक / वैध are the Hindi side of "genuine": they call the message itself true or valid,
     # which no verdict licenses. MATCHES only says the bank's signature and outbound log agree about who sent it.
     # धोख covers धोखा, धोखे and धोखाधड़ी in one pattern: "यह संदेश धोखा है" ("this message is a deception") is a
-    # verdict no outcome licenses, and the family was only half banned before. The coaching line's recorded
-    # "इस धोखे का हिस्सा" survives through ALLOWED_PHRASES, which is a phrase carve-out, not a free field.
+    # verdict no outcome licenses. The coaching line's recorded "इस धोखे का हिस्सा" survives through ALLOWED_PHRASES,
+    # which is a phrase carve-out, not a free field.
     "hi": [r"नकली", r"असली", r"धोख", r"फ़र्ज़ी", r"फर्जी", r"जाली", r"ठग",
            # narrowed with lookaheads so a legitimate word that merely starts with one of these is not banned:
-           # सचेत ("stay alert") is copy we want, and वैधानिक ("statutory") describes a process, not the message.
+           # सचेत ("stay alert") is intended copy, and वैधानिक ("statutory") describes a process, not the message.
            # अवैध stays caught on purpose: calling the message invalid is a verdict no outcome licenses.
            r"सही", r"सच(?!ेत)", r"प्रामाणिक", r"वैध(?!ानिक)"],
 }
 # The only words a `coaching` or `read_aloud` string may carry that the rest of the card may not, written as the
 # exact phrase and masked out before the patterns run, so everything around it is still linted. "इस धोखे का
 # हिस्सा" ("part of this deception") describes the COACHING the caller gave her — do not trust the bank, say the
-# money is for something else — and never the message, the sender or a person. It is the one carve-out this card
-# has ever had, argued on 17 Oct (pass 1's adversarial note, then pass 4's Hindi copy pass) and kept on purpose:
-# softening it would weaken the only warning on the card that is about the attack rather than about the message.
+# money is for something else — and never the message, the sender or a person. It is the card's only carve-out,
+# kept on purpose after adversarial and Hindi copy review: softening it would weaken the only warning on the card
+# that is about the attack rather than about the message.
 ALLOWED_PHRASES = ("इस धोखे का हिस्सा",)
 # Fields whose text the carve-out applies to. Nothing else: a banned word in a reason, a headline, a stop line, an
 # instruction or an officer line raises whatever it sits next to.
@@ -91,14 +92,14 @@ STOP_LINE = {Outcome.RED: ("Please stop. Do not send this money now.", "रु�
              Outcome.MATCHES: ("We sent this message ourselves.", "यह संदेश हमने ही भेजा था।")}
 STOP_LINE_NO_PAYMENT = {Outcome.RED: ("Please stop. Do not act on this message.", "रुकिए। इस संदेश पर कुछ न करें।"),
                         Outcome.AMBER: ("Please wait before you act on this.", "इस पर कुछ करने से पहले रुकिए।")}
-# The headline is the verdict's, verbatim, in both languages and on both surfaces. There is no card-side override
-# any more: the one case that needed one — AMBER over a message that asked for no money, where the band read
-# "Verify before paying" and the card read "Confirm this message first" on the same screen — is now decided once,
-# in `fusion.HEADLINES_NO_PAYMENT`, from the predicate this file also uses for its own copy.
+# The headline is the verdict's, verbatim, in both languages and on both surfaces. There is no card-side override:
+# AMBER over a message that asked for no money (where the band and the card could otherwise read "Verify before
+# paying" and "Confirm this message first" on the same screen) is decided once, in `fusion.HEADLINES_NO_PAYMENT`,
+# from the predicate this file also uses for its own copy.
 #
 # What the OFFICER does next, in the card's language. Never read aloud, never on the card she takes home: these are
-# the three things that used to be crammed into do_now. Still linted, because the officer reads them off the screen
-# while she is sitting there.
+# the follow-up steps kept out of do_now. Still linted, because the officer reads them off the screen while the
+# customer is present.
 SAY_NEXT = {
     Outcome.RED: (["Tell her we will help her report the number and the account.",
                    "Check it with them here while she waits: {route}"],
@@ -119,9 +120,9 @@ SAY_NEXT = {
                       ["बताएँ कि यह संदेश हमारे ही भेजे हुए रिकॉर्ड में मिला है।",
                        "आगे कोई संदेश आए तो जाँचने के लिए यही जगह बताएँ: {route}"]),
 }
-# Said only when a call is actually happening in front of the officer, and prepended to the lines above. "End the
-# call now." was the first line of every RED, so it went out over an OCR'd scanned notice (S3, the demo's flagship
-# RED) and over a voice note, asserting a call that did not exist. See `_on_a_call`.
+# Said only when a call is actually happening in front of the officer, and prepended to the lines above. As the
+# first line of every RED, "End the call now." would go out over an OCR'd scanned notice (S3) and over a voice
+# note, asserting a call that did not exist. See `_on_a_call`.
 SAY_NEXT_ON_A_CALL = {
     Outcome.RED: ("End the call now.", "कॉल अभी काटें।"),
 }
@@ -131,10 +132,10 @@ COACHING = ("If someone told you to ignore the bank or to say the money is for s
 # second clause coaches her about a payment story, so it drops out when no payment was asked for; the first clause
 # is the part that still applies, because the coaching to distrust the bank comes with every one of these messages.
 #
-# The English said "part of the scam" until 19 Oct. `FORBIDDEN["en"]` has banned `\bscam\b` since the card existed,
-# and `lint_card` did not cover `coaching` — which `make_card` concatenates into `read_aloud` — so a word the
-# product bans was read aloud to the customer on every RED and AMBER card in English. "The trick" says the same
-# thing about the same behaviour and labels nothing. The Hindi keeps "इस धोखे का हिस्सा" (ALLOWED_PHRASES).
+# The English says "the trick", not "part of the scam": `FORBIDDEN["en"]` bans `\bscam\b`, and `coaching` is
+# concatenated into `read_aloud`, so "scam" would be read aloud on every English RED and AMBER card. "The trick"
+# says the same thing about the same behaviour and labels nothing. The Hindi keeps "इस धोखे का हिस्सा"
+# (ALLOWED_PHRASES).
 COACHING_NO_PAYMENT = ("If someone told you to ignore the bank, that is part of the trick.",
                        "अगर किसी ने आपसे कहा है कि बैंक की बात मत मानिए, तो वही इस धोखे का हिस्सा है।")
 DEFAULT_ROUTE_EN = "the authority's own website or helpline, or your bank's 1600 number"
@@ -271,18 +272,18 @@ def _digital_arrest_pay(text: str, signal: Signal, claim: Claim, hi: bool) -> st
 
 
 def _state_name_pay(text: str, signal: Signal, claim: Claim, hi: bool) -> str | None:
-    """Three sentences: the practice, what was read out of the message, and what our own check could not settle.
+    """Three sentences: the practice, what was read out of the message, and what the bank's check could not settle.
 
     Only the middle one describes the message, and it has two halves with a span each — the name (issuer_span)
     and the demand (instruction_span). The first sentence is a fact about government agencies and the third is a
-    fact about us, so both survive an ungrounded claim. Dropping the middle one entirely is why this handler is
-    here: with neither span the reason is still true and still useful, and it no longer says anything at all
-    about the sender.
+    fact about the bank's check, so both survive an ungrounded claim. Dropping the middle one entirely is why this
+    handler is here: with neither span the reason is still true and still useful, and it no longer says anything at
+    all about the sender.
 
     Note what is NOT here, by contrast with `_agency_pay`: the body's name. The sentence says the name sounds
     like a government office's, which is what the open-set net read, and never that the sender is or claims to be
     one. "Claims Investigation Department, Acme General Insurance Company Limited" is a real department of a real
-    insurer, and this reason has to be honest on it.
+    insurer, and this reason has to stay accurate for it.
     """
     s = _sentences(text)
     practice, read, unconfirmed = s[0], s[1], " ".join(s[2:])
@@ -381,11 +382,11 @@ GROUNDED_CLAUSES = {
 #
 # `forensics.to_signal` stamps "(SIMULATED)" into the band a rehearsal forensics result reports, so the rulebook's
 # reason comes out as "...(moderate (SIMULATED))" and the Hindi as "...(मध्यम (SIMULATED))" — a Latin technical
-# word inside a Devanagari sentence being read to a frightened 70-year-old, in the middle of nested brackets.
+# word inside a Devanagari sentence being read to the customer, in the middle of nested brackets.
 # The marker is provenance about the detector, which is the officer's business. It stays, verbatim, on
 # `signal.reason_en` / `signal.reason_hi` (the officer's evidence row renders those as they are, next to its own
-# "Simulated" tag), on `detail.simulated`, and in the signed pack. Only the card drops it. That is the same move
-# pass 5 made with the computed outbound-log coverage: the property stays, the surface changes.
+# "Simulated" tag), on `detail.simulated`, and in the signed pack. Only the card drops it. The outbound-log
+# coverage sentence follows the same principle: the property stays, the surface changes.
 SIMULATED_MARKER = re.compile(r"\s*\(SIMULATED\)")
 
 
@@ -394,22 +395,22 @@ def _suspect_registry(signal: Signal, hi: bool) -> str | None:
 
     The rulebook says "This phone number is already listed in the national suspect registry run by I4C", which is
     right for the officer's row and wrong on the card twice over. "I4C" is an acronym the customer cannot expand,
-    and the sentence asserts what a national registry contains rather than what our check found — so the only
+    and the sentence asserts what a national registry contains rather than what the check found — so the only
     sentence on the card that claims an outside fact was also the only one with no provenance, while the officer's
     signal row beside it carried the adapter's "Mock lookup" label.
 
-    Attributing it to the check is the move pass 5 made on R-BANK-SELF ("{bank} has no record of sending this
-    message", not "the bank did not send it"): what we did and what we found, which is as true over a mock as
-    over the production registry feed, and the holder of the list named in words instead of initials. Rejected
+    Attributing it to the check follows R-BANK-SELF ("{bank} has no record of sending this message", not "the
+    bank did not send it"): what the check did and what it found, which is as true over a mock as over the
+    production registry feed, and the holder of the list named in words instead of initials. Rejected
     alternative: stamping "mock" on the customer's card. Every reason on every card in this build rests on a
     mocked adapter, so that rule would turn the card into a rehearsal artefact; the mock labels belong on the
-    officer's surface and in the pack, which is where this repo has always put them.
+    officer's surface and in the pack, which is where this repo puts them.
     """
     what = signal.detail.get("what_hi" if hi else "what")
     if not what:
         return None
     if hi:
-        # "हमने जाँचा और ..." is reported direct speech, which is the register pass 4 settled on for this card;
+        # "हमने जाँचा और ..." is reported direct speech, which is the register this card uses;
         # "पहले से दर्ज है" keeps the rulebook's "already", which is the part that matters to her — the number was
         # known before her case. "ठगी" would be the natural word for the list's subject and is deliberately not
         # used: it is one letter from ठग, which FORBIDDEN bans, and the lint would stop it anyway.
@@ -426,7 +427,7 @@ CARD_SENTENCES = {
 
 def ground_reason(signal: Signal, claim: Claim, hi: bool) -> str | None:
     """The reason as it may be read aloud: the card's own sentence where it has one, ungrounded clauses dropped,
-    technical markers taken out, or None if nothing honest is left."""
+    technical markers taken out, or None if nothing accurate is left."""
     own = CARD_SENTENCES.get(signal.rule_id)
     text = own(signal, hi) if own else (signal.reason_hi if hi else signal.reason_en)
     handler = GROUNDED_CLAUSES.get(signal.rule_id)
@@ -484,7 +485,7 @@ def build_card(verdict: Verdict, claim: Claim, lang: str = "hi") -> Card:
     stop_table = STOP_LINE if pays else {**STOP_LINE, **STOP_LINE_NO_PAYMENT}
     do_now = do_table[verdict.outcome][1 if hi else 0].format(route=route)
     # The verdict's headline, verbatim: `fuse` already chose the payment-neutral AMBER from `money_in_play`, so
-    # overriding it here is what made the band and the card disagree.
+    # overriding it here would make the band and the card disagree.
     headline = (verdict.headline_hi if hi else verdict.headline_en)
     stop = stop_table[verdict.outcome][1 if hi else 0]
     lines_next = list(SAY_NEXT[verdict.outcome][1 if hi else 0])
@@ -506,8 +507,8 @@ def build_card(verdict: Verdict, claim: Claim, lang: str = "hi") -> Card:
 
 
 # A reason may quote an identifier the sender chose: a link, a host, a UPI ID, a summons number, a caller's number.
-# The scammer picks those, so a link like demobank-fraud-check.com put a banned word on the card, lint_card raised,
-# and the case could no longer be opened (HTTP 500 on run and on every later GET). Quoting the sender's own link is
+# The sender picks those, so a link like demobank-fraud-check.com would put a banned word on the card, lint_card
+# would raise, and the case could not be opened (HTTP 500 on run and on every later GET). Quoting the sender's link is
 # not the card labelling the message, so such a token is masked before the patterns run, but only when it appears
 # verbatim in the message and looks like an identifier (it has a dot, @, slash or digit). A plain word is never masked.
 _QUOTED_TOKEN = re.compile(r"[^\s()“”\"'‘’«»,;]+")
@@ -524,11 +525,11 @@ def _mask_quoted(text: str, source: str) -> str:
 def lint_card(card: Card, quoted_from: str = "") -> None:
     """Customer-facing text must never label the message itself. Raise if a forbidden word slips in.
 
-    Every field, including `coaching` and `read_aloud`. Those two were exempt until 19 Oct, which is how the
-    shipped English coaching line ended "...that is part of the scam" while `FORBIDDEN["en"]` banned `\\bscam\\b`
-    and `build_card` concatenated the line into `read_aloud`: the card read a banned word out loud on every
-    English RED and AMBER, and the suite was green. `read_aloud` is linted even though it is built out of fields
-    already checked, because a Card can be handed to this function by the API or an officer correction.
+    Every field, including `coaching` and `read_aloud`. Exempting those two let an English coaching line ending
+    "...that is part of the scam" pass while `FORBIDDEN["en"]` banned `\\bscam\\b` and `build_card` concatenated
+    the line into `read_aloud`, so a banned word was read out loud on every English RED and AMBER with the test
+    suite green. `read_aloud` is linted even though it is built out of fields already checked, because a Card can
+    be handed to this function by the API or an officer correction.
 
     `say_next` is linted too: the officer reads it off the screen in front of her, so the same words are out.
 

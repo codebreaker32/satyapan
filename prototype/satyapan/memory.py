@@ -287,7 +287,7 @@ class CampaignMemory:
         e = next((x for x in self.entries if x["id"] == entry_id), None)
         if e is None:
             raise KeyError(entry_id)
-        # The same analyst under another spelling ("Analyst.Aman", a Cyrillic а, an invisible mark) counts once, the
+        # The same analyst under another spelling (different case, a Cyrillic а, an invisible mark) counts once, the
         # way the RED co-sign compares names. A raw-string compare let one person confirm their own entry.
         if identity_key(analyst) not in {identity_key(a) for a in e["approvals"]}:
             e["approvals"].append(analyst)

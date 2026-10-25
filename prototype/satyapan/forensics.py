@@ -7,9 +7,9 @@ score in fusion.fuse ("unsure" counts as no media).
   calibration file exists.
 - DocumentForensics: error-level analysis plus creator metadata; abstains on small or recompressed images.
 - SimulatedForensics: rehearsal only; its results are labelled SIMULATED wherever they appear.
-- RemoteForensics: the finale detectors (satyapan-finale: GenD face check + audio deepfake check) through their local
-  service, which keeps the models loaded. A video gets a face result and a voice result. If the service is not
-  running, the file gets one abstaining result that says so; a case never fails because of forensics.
+- RemoteForensics: the face and voice detectors (satyapan-finale: GenD face check + audio deepfake check) through
+  their local service, which keeps the models loaded. A video gets a face result and a voice result. If the service
+  is not running, the file gets one abstaining result that says so; a case never fails because of forensics.
 """
 from __future__ import annotations
 
@@ -147,7 +147,7 @@ class DFArenaAudioForensics:
     language and channel on public real speech (In-the-Wild, Gram Vaani, FLEURS) and checked on real circulated fakes.
 
     It replaces AASIST-L, which is near chance on real circulated fakes (full AASIST: 43% EER on In-the-Wild). The model
-    loads on the first voice note (about a minute on the team laptop), not at start-up. `channel="live-replay"` marks
+    loads on the first voice note (about a minute on a CPU laptop), not at start-up. `channel="live-replay"` marks
     a recording made by playing the customer's phone into the console's microphone: there "no signs" becomes "unsure",
     because replay hides a clone's traces."""
     label = Label("Audio forensics", "DF Arena 500M (Speech-Arena-2025, Idiap; non-commercial licence) on CPU, "
