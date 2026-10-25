@@ -1,4 +1,4 @@
-"""Two media files of the same kind are each named, never merged into one check saying two things (raw finding 32)."""
+"""Two media files of the same kind are each named, never merged into one check saying two things."""
 from __future__ import annotations
 
 from satyapan.forensics import ForensicResult

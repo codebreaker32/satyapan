@@ -1,6 +1,6 @@
 """Copy-paste notices: a real government message copied word for word, with only the "where to" detail swapped.
 
-Two shapes, both raised on 23 Oct: a municipal house-tax notice whose payment account is replaced with a new
+Two shapes: a municipal house-tax notice whose payment account is replaced with a new
 scammer's, and an e-challan SMS whose phone number or link is replaced. The words are real, so word matching cannot
 tell the copy from the original, and the scammer is new, so no list of known scammers can either. What tells them
 apart is where the payment goes, read against official sources: who owns the account (the bank's name look-up),
@@ -34,7 +34,7 @@ def test_a_civic_body_is_read_as_itself(text, issuer):
 
 
 @pytest.mark.parametrize("text, issuer", [
-    # The Hindi officer frame ends on a vowel sign, after which \b never matches; it anchored nothing until 23 Oct.
+    # The Hindi officer frame ends on a vowel sign, after which \b never matches, so it used to anchor nothing.
     ("सीबीआई अधिकारी बोल रहा हूँ। अपनी FD तोड़कर पूरा पैसा तुरंत सरकारी सुरक्षित खाते में भेजें।", Issuer.CBI),
     # "<Body> Department" with nothing in between, for parity with the Hindi विभाग.
     ("Customs Department, Mumbai Airport. Pay the clearance fee of Rs 1,50,000 to account 30011223344556.", Issuer.CUSTOMS),
@@ -72,7 +72,7 @@ def test_traffic_police_is_never_read_as_the_police():
     ("Your property tax for 2026-27 is overdue.", Instruction.PAY_LOCAL_TAX),
     ("नगर निगम, लखनऊ। आपका गृह कर बकाया है, तुरंत जमा करें।", Instruction.PAY_LOCAL_TAX),
     ("Nagar Nigam se suchna: aapka house tax bakaya hai, jaldi jama karein.", Instruction.PAY_LOCAL_TAX),
-    # a traffic FINE with no "challan" in it: Bhawna's two console tests of 23 Oct, verbatim
+    # a traffic FINE with no "challan" in it: two messages typed into the console, verbatim
     ("You have broken signal at traffic light, your vehicle number dl04-110 will be charged a fine for 500000, "
      "pay at 9354209849@slc", Instruction.PAY_CHALLAN),
     ("pay your vehicle driving fine , you passes a red light at traffic signal, \npay at 9354209849@slc ",

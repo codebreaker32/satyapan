@@ -1,6 +1,6 @@
 """Who the message says it is: the self-claim frame, the bank-role tokens, and the open-set bodies.
 
-Three defects the 19 Oct pass-1 judge found, all in `claimed_issuer`, all with the same shape — the engine read
+Three defects, all in `claimed_issuer` and all with the same shape: the engine read
 the wrong sender out of a message that says in plain words who it claims to be:
 
 1. A self-claim frame could not see past a rank and a personal name. "This is Inspector R. Mehra, CBI Cyber
@@ -94,14 +94,14 @@ def test_the_rank_bridge_is_not_a_tautology():
 # ---- 2. a bank role is not a bank self-claim ---------------------------------------------------------------
 
 def test_the_branch_manager_is_not_the_bank_claiming_to_be_itself():
-    """The judge's span. Telling the customer to keep a bank officer out of it is not claiming to BE one."""
+    """Telling the customer to keep a bank officer out of it is not claiming to BE one."""
     c = X.extract("You may not inform the branch manager of the reason.")
     assert c.claimed_issuer != Issuer.BANK_SELF, (
         f"'branch manager' claimed BANK_SELF again, from {c.issuer_span.text if c.issuer_span else None!r}")
     assert c.claimed_issuer == Issuer.NONE
 
 
-# The two load-bearing BANK_SELF frames (decisions.md, 17 Oct pass 2). If either of these stops reading, the
+# The two load-bearing BANK_SELF frames (decisions.md). If either of these stops reading, the
 # bank's own-record rules stop being asked about the scripts they exist for.
 BANK_SELF_KEEPS = [
     "I am calling from your bank",
@@ -192,7 +192,7 @@ def test_a_private_or_referred_unit_is_not_a_state_authority(text):
 
 
 # ---- 3b. a body that names itself a company is not the state ------------------------------------------------
-# Gate 3, added 19 Oct by this pass's own adversarial gate. Each of these clears gate 1 (multi-word, title-cased)
+# Gate 3, added after an adversarial review. Each of these clears gate 1 (multi-word, title-cased)
 # and gate 2 (a state head noun, or a shared head noun plus a state-vocabulary marker: "intelligence", "crime",
 # "investigation"), and all three were AMBER anchored on a rule titled "A state authority demands a payment"
 # before the suffix was read. The Hindi card then told a frightened customer that an insurer's claims department
@@ -237,7 +237,7 @@ def test_the_corporate_suffix_gate_is_what_drops_the_masthead():
     """Not a tautology: each probe above passes the first two gates and only gate 3 stops it.
 
     `_names_a_state_body` is the pair of gates that shipped before this one. If it already rejected these names
-    the test above would prove nothing about the suffix, and a later pass could delete gate 3 and still be green.
+    the test above would prove nothing about the suffix, and a later change could delete gate 3 and still be green.
     """
     from satyapan.extract import RE_OPEN_BODY, RE_OPEN_BODY_HI, _names_a_company, _names_a_state_body
 
@@ -250,7 +250,7 @@ def test_the_corporate_suffix_gate_is_what_drops_the_masthead():
 
 
 def test_the_banks_own_recovery_cell_is_still_the_bank():
-    """The pass-5 judge's benign letter. Reading it as a government body silenced the bank's own record rule.
+    """A benign bank letter. Reading it as a government body silenced the bank's own record rule.
 
     This is the regression the open-set net created on its first draft and the reason for the two gates: the
     letterhead "Demo Bank Loan Recovery Cell, Head Office" is multi-word, capitalised and ends in "Cell", and
@@ -290,7 +290,7 @@ def test_one_unit_name_is_one_body():
     """"CBI Cyber Crime Branch" is the CBI, not the CBI plus a police crime branch.
 
     Both tokens used to anchor at TIER_CLAIM off the same characters, `select_issuer` saw two law-enforcement
-    personas and returned None, and the judge's script then fell through to BANK_SELF on the words "branch
+    personas and returned None, and the script then fell through to BANK_SELF on the words "branch
     manager" at the end of it. The second token must not even reach `other_issuers`: the record would be saying
     the message names two bodies when it names one.
     """
@@ -301,7 +301,7 @@ def test_one_unit_name_is_one_body():
 
 
 def test_the_new_patterns_keep_their_spans_in_the_original_text_and_stay_fast():
-    """The non-negotiable constraint, re-proved on the paths this pass added.
+    """The non-negotiable constraint, re-proved on the new matching paths.
 
     Matching runs on a normalised copy (zero-widths dropped, confusables folded), so a pattern that stores a
     normalised offset points every quote and leader line in the console at the wrong characters. The probe is
@@ -351,7 +351,7 @@ P3_CBI = ("This is Inspector R. Mehra, CBI Cyber Crime Branch, New Delhi. Your h
 def test_p1_an_open_set_body_demanding_money_is_no_longer_grey(engine):
     """Was GREY with claimed_issuer NONE: a letterhead body the enum has no row for read as no sender at all.
 
-    The anchor moved from R-AGENCY-PAY to R-STATE-NAME-PAY on 19 Oct and the verdict did not: the open-set class
+    The anchor moved from R-AGENCY-PAY to R-STATE-NAME-PAY and the verdict did not: the open-set class
     keeps its hard F1 rule and its AMBER, with a sentence that does not say who the sender is.
     """
     case = run_text(engine, P1_IRDAI, amount=285000)
@@ -379,7 +379,7 @@ ACCUSING = ["claims to be", "दावा करता है", "a government bo
 
 @pytest.mark.parametrize("text,amount", BENIGN_CORPORATE, ids=[t[:34] for t, _ in BENIGN_CORPORATE])
 def test_a_corporate_department_gets_no_card_that_accuses_its_sender(engine, text, amount):
-    """The whole point of gate 3, measured where it is paid: on the card the officer reads aloud.
+    """Gate 3, checked where it matters: on the card the officer reads aloud.
 
     Each of these was AMBER anchored on a rule titled "A state authority demands a payment", and the Hindi card
     read "यह संदेश कोई सरकारी संस्था होने का दावा करता है" — a false statement of fact about the sender, read to

@@ -1,7 +1,7 @@
 """GREY must never claim the message looks clean.
 
-The pass-2 judge pasted a leetspeak arrest threat ("transf3r", "arr3st") and a polite "RBI Ombudsman matching
-deposit" letter. The patterns missed both, so no rule fired and the verdict was GREY — which is correct, the engine
+Two probes: a leetspeak arrest threat ("transf3r", "arr3st") and a polite "RBI Ombudsman matching deposit"
+letter. The patterns missed both, so no rule fired and the verdict was GREY — which is correct, the engine
 had nothing to corroborate. What was not correct was the band: it read "No warning signs found" while the engine's
 own extraction had taken an authority and a transfer instruction out of the very same message, and while the screen
 below listed the pressure cues under "Also noted, never counted".
@@ -138,7 +138,7 @@ def _why(v) -> str:
 
 
 def test_the_digital_arrest_shape_says_why_nothing_fired():
-    """The judge's probe: a payee and pressure cues were read, the authority and the instruction were not."""
+    """The leetspeak probe's shape: a payee and pressure cues were read, the authority and the instruction were not."""
     v = fuse(_claim(payee=Payee(account=Grounded(value="30011223344556", span=_span("30011223344556"))),
                     pressure_cues={"arrest_threat": _span(), "urgency": _span()}), [])
     assert v.outcome == Outcome.GREY

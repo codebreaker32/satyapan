@@ -1,6 +1,6 @@
 """STT provenance parity with the OCR path: transcribe() returns (text, engine) and ingest() records the engine on
-MediaRef.derived_text_engine for audio/video. faster-whisper is not installed on this box, so the happy path injects
-a fake faster_whisper module; the no-STT error path runs for real."""
+MediaRef.derived_text_engine for audio/video. faster-whisper may not be installed, so the happy path injects a
+fake faster_whisper module; the no-STT error path runs for real."""
 import importlib.util
 import sys
 import types
@@ -50,7 +50,7 @@ def test_a_recording_with_no_words_is_refused_with_a_sentence(tmp_path, monkeypa
 
 @pytest.mark.parametrize("level", [0.0, 0.00003])
 def test_a_silent_recording_says_to_check_the_microphone(tmp_path, monkeypatch, level):
-    """A muted microphone records its noise floor: 23 s at about 0.00003 is what the browser sent on 23 Oct."""
+    """A muted microphone records its noise floor: a browser recording of one was 23 s at about 0.00003."""
     pytest.importorskip("av")
     np = pytest.importorskip("numpy")
     _install_fake_whisper(monkeypatch, [])

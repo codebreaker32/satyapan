@@ -1,6 +1,6 @@
 """A card clause that describes the customer's message must rest on a span.
 
-Two judge probes in pass 3 got cards that said things their messages did not say:
+Two probes got cards that said things their messages did not say:
 
 - a Customs/NDPS parcel scam demanding a "case verification charge": the extractor had matched `\\binvest` inside
   "investigation", so the Hindi card read "यह संदेश ... निवेश करने को कह रहा है" — this message is asking you to
@@ -250,10 +250,10 @@ def test_the_rm_promise_is_dropped_when_the_bank_has_no_rm_on_record(lang):
 
 # ---------------------------------------------------------------- the open-set body: what was read, not who sent it
 #
-# R-STATE-NAME-PAY's three sentences are the practice, the reading and our own check, and only the middle one
+# R-STATE-NAME-PAY's three sentences are the practice, the reading and the engine's own check; only the middle one
 # describes the message. These assert the shape of all four grounding combinations and, more importantly, that
-# nothing in any of them says the sender is or claims to be a government body. That sentence was on the card for
-# one pass, anchored on an open-set net that reads the FORM of a name, and it put "this message claims to be a
+# nothing in any of them says the sender is or claims to be a government body. That sentence was on the card in an
+# earlier version, anchored on an open-set net that reads the FORM of a name, and it put "this message claims to be a
 # government body" on an ordinary corporate department's letter.
 
 OPEN_TEXT = ("Acme Recovery and Fraud Investigation Unit, Mumbai. You are directed to arrange the settlement of "

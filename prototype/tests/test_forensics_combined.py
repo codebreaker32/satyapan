@@ -1,5 +1,5 @@
-"""Lane 1's two tests, combined (Bhawna, 24 Oct 2026): the instruction checks and the deepfake check count half each
-when media was attached and judged, and 40% or more is RED. With no media, or none the detector could judge, the
+"""The combined score: the instruction checks and the deepfake check count half each when media was attached and
+judged, and 40% or more is RED. With no media, or none the detector could judge, the
 instruction checks decide alone, exactly as before."""
 import pytest
 from PIL import Image, PngImagePlugin
@@ -123,7 +123,7 @@ def test_an_unverified_rule_counts_zero_so_it_never_helps_a_red():
 
 
 def test_when_the_media_moves_the_verdict_the_text_never_calls_it_too_weak():
-    """Review, 24 Oct: a flagged voice was listed under "What did run ... Nothing there is strong enough to move the
+    """A flagged voice used to be listed under "What did run ... Nothing there is strong enough to move the
     verdict" right beside the AMBER or RED it had just produced, and a lone hard rule read "One rule alone never gives
     RED" inside a RED. The instruction-check sentences now speak for the message alone."""
     plain = Claim(source="text", text="x", claimed_issuer=Issuer.NONE, instruction=Instruction.TRANSFER_TO_ACCOUNT)

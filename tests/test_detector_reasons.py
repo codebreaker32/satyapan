@@ -1,9 +1,9 @@
-"""Detector reasons say what is true (bug hunt findings 18, 19, 20).
+"""Detector reasons say what is true.
 
-- 18: an AV1 video gave no frames to cv2 (no software AV1 decoder in its FFmpeg), so the face check always said
+- An AV1 video gave no frames to cv2 (no software AV1 decoder in its FFmpeg), so the face check always said
   "the video could not be read"; frames now come from PyAV when cv2 decodes none.
-- 19: an unreadable or truncated video was told "the video has no sound track" even when it had one.
-- 20: 1.98 s of speech printed "only 2.0 s of voice (needs 2 s to judge)".
+- An unreadable or truncated video was told "the video has no sound track" even when it had one.
+- 1.98 s of speech printed "only 2.0 s of voice (needs 2 s to judge)".
 """
 from __future__ import annotations
 

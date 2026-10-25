@@ -1,7 +1,7 @@
 """The input layer: homoglyphs, zero-width spaces, leetspeak, and the pattern bounds that go with them.
 
-Every message in here is synthetic. They are rewrites of the probes a hackathon judge pasted through the engine
-on 18 Oct 2026, which produced two wrong verdicts and two right verdicts for a false reason. No real bank,
+Every message in here is synthetic. They are rewrites of adversarial probes run through the engine, which
+produced two wrong verdicts and two right verdicts for a false reason. No real bank,
 customer or official text, no real official's name, no real case number.
 
 The disguised probes are built by escaping the clean text (CY_O, ZWSP), never by pasting invisible characters
@@ -21,7 +21,7 @@ X = RulesExtractor(bank_names=("Demo Bank",))
 ZWSP = "​"          # ZERO WIDTH SPACE
 CY_O = "о"          # CYRILLIC SMALL LETTER O, the look-alike for Latin "o"
 
-# ---- the judge's P6: Cyrillic "o" and zero-width spaces inside words --------------------------------------
+# ---- probe P6: Cyrillic "o" and zero-width spaces inside words --------------------------------------
 P6 = (f"N{CY_O}tice fr{CY_O}m Enf{CY_O}rcement Direc{ZWSP}torate. Summ{CY_O}ns N{CY_O}. ED/DLZO/2026/4471 in "
       f"case ECIR/DLZO/18/2026. Y{CY_O}u must tra{ZWSP}nsf{ZWSP}er Rs 25,00,000 t{CY_O} the RBI "
       f"sup{ZWSP}ervisi{CY_O}n acc{CY_O}unt 50100248891776 IFSC HDFC0000123 immediately or face "
@@ -29,7 +29,7 @@ P6 = (f"N{CY_O}tice fr{CY_O}m Enf{CY_O}rcement Direc{ZWSP}torate. Summ{CY_O}ns N
 # The clean-ASCII twin, derived from P6 so the two can never drift apart.
 P6B = P6.replace(ZWSP, "").replace(CY_O, "o")
 
-# ---- the judge's P3: a digital-arrest script whose only verb is a euphemism -------------------------------
+# ---- probe P3: a digital-arrest script whose only verb is a euphemism -------------------------------
 P3 = ("This is the CBI cyber crime coordination cell. A case under NDPS Act has been registered against you, and "
       "you are under digital custody until the verification is complete. Do not disconnect this video call, and "
       "do not speak to your bank staff or to your family, the investigation is confidential. You must park your entire "
@@ -165,8 +165,8 @@ def test_investigation_is_not_an_invitation_to_invest():
     "Call the crime helpline for assistance.",
 ])
 def test_a_case_number_needs_a_digit(text):
-    """The judge got case_no = "under", "COORDINATION" and "helpline", and the console drew a "Case number"
-    mark on each of them. A case or document number contains a digit."""
+    """The extractor used to return case_no = "under", "COORDINATION" and "helpline", and the console drew a
+    "Case number" mark on each of them. A case or document number contains a digit."""
     d = X.extract(text).document_ids
     assert d.case_no is None, text
     assert d.summons_no is None and d.passcode is None
@@ -251,8 +251,8 @@ def test_the_euphemism_is_read_as_a_payment_instruction(verb, scam, _benign):
 
 @pytest.mark.parametrize("verb,_scam,benign", VERB_PROBES, ids=[v for v, _, _ in VERB_PROBES])
 def test_the_same_verb_in_a_benign_sentence_is_not_an_instruction(verb, _scam, benign):
-    """Not optional. A false positive here puts money wording on a benign customer card, and this repo has
-    twice shipped a pattern that matched inside an unrelated word."""
+    """Not optional. A false positive here puts money wording on a benign customer card, and a pattern that
+    matched inside an unrelated word has shipped twice before."""
     c = X.extract(benign)
     assert c.instruction == Instruction.NONE, f"{verb}: {benign}"
 
@@ -268,7 +268,7 @@ def test_one_context_word_on_its_own_is_not_enough(text):
 
 
 def test_park_probe_gets_the_same_verdict_as_the_transfer_probe(engine):
-    """P3 was a textbook digital-arrest script and came back GREY because "park" was not a verb we knew."""
+    """P3 was a textbook digital-arrest script and came back GREY because "park" was not a known verb."""
     euphemism = run_text(engine, P3).verdict
     plain = run_text(engine, P3_PLAIN).verdict
     assert euphemism.outcome == plain.outcome
@@ -288,7 +288,7 @@ def test_the_park_probe_reads_the_whole_chain():
 
 
 def test_a_spaced_account_number_is_not_truncated():
-    """The pass-5 gate wrote "a c c o u n t  No 3 0 0 1 1 2 2 3 3 4 4 5 5 6" and got back a 12-digit account.
+    """An adversarial probe wrote "a c c o u n t  No 3 0 0 1 1 2 2 3 3 4 4 5 5 6" and got back a 12-digit account.
 
     De-spacing reconstitutes the keyword, which arms the account pattern on spaced digits; that pattern's window
     used to count characters, so the spaces ate the budget and a 14-digit number was silently cut to 12. A wrong

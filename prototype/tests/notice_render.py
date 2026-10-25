@@ -4,7 +4,7 @@ by synthetic/make_notice_image.py (repo root) for the demo's ED_summons_syntheti
 import textwrap
 from pathlib import Path
 
-# DejaVu on Linux; Arial, the plain sans-serif every Windows install ships, on the finale laptop.
+# DejaVu on Linux; on Windows, Arial, the plain sans-serif every Windows install ships.
 FONT_PATHS = ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", "/usr/share/fonts/dejavu/DejaVuSans.ttf",
               "/usr/share/fonts/TTF/DejaVuSans.ttf", "C:/Windows/Fonts/arial.ttf")
 

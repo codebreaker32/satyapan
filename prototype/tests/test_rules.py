@@ -34,9 +34,9 @@ def test_agency_pay(engine):
 def test_state_name_pay(engine):
     """The open-set half of CLAIMED_STATE_AUTHORITY: a body the enum has no row for, demanding money.
 
-    "IRDAI Enforcement Cell, Mumbai" reads as Issuer.OTHER, and before 19 Oct no rule asking whether a state
+    "IRDAI Enforcement Cell, Mumbai" reads as Issuer.OTHER, and previously no rule asking whether a state
     body is demanding money could be asked about it, so the whole class of digital-arrest script built on a body
-    we do not enumerate landed on GREY. R-AGENCY-PAY carried it for one pass; the sentence it prints asserts
+    the enum does not list landed on GREY. R-AGENCY-PAY carried it at first; the sentence it prints asserts
     what the sender claims to be, and the open-set net reads the form of a name rather than a claim of identity,
     so this is its own rule with its own sentence. Same family, same severity, same AMBER.
     """
@@ -57,7 +57,7 @@ MOTIVATING = ("You are digitally arrested. You have to transfer all your bank ac
 
 
 def test_digital_arrest_pay(engine):
-    """A judge's message on 24 Oct came out GREY: no law-enforcement body was named, so R-AGENCY-PAY could not fire,
+    """A digital-arrest message used to read GREY: no law-enforcement body was named, so R-AGENCY-PAY could not fire,
     and "arrested" was only a pressure cue. There is no digital arrest in Indian law, so the sentence needs no
     sender. A lone hard rule: AMBER, never RED on its own."""
     case = run_text(engine, MOTIVATING)
@@ -189,9 +189,9 @@ def test_sebi_valid(engine):
 def test_caller_1600(engine):
     """The rule may only be stated about a bank call, because its reason says "this call" and "banks".
 
-    Three gates, and a judge opened each of the first two in turn. Pass 5: a pasted bank letter with a helpline
+    Three gates, the first two each added after a false positive. First, a pasted bank letter with a helpline
     printed at its foot fired the rule, so the card read "Financial call not from the 1600 series" about a
-    letter. Pass 6: a pasted SMS saying "call our helpline" sets the channel to PHONE_CALL out of the message's
+    letter. Second, a pasted SMS saying "call our helpline" sets the channel to PHONE_CALL out of the message's
     own words, so the card read "This call came from ..." about an SMS. The channel read out of a pasted message
     is a fact about what the message DESCRIBES, never about the artefact in front of the officer. So the
     artefact has to be one that can carry a call (a transcript of one, or the officer's picklist) AND the
@@ -251,7 +251,7 @@ def test_bank_self_names_the_reach_of_the_record_it_rests_on(engine):
     in the same two sentences as the claim, and the channel list is read off the log's own records rather than
     written in the rulebook, so the card cannot name coverage the record does not have.
 
-    This is the test that would have caught the judge's letter being called something the bank had not sent: the
+    This is the test that catches a bank letter being called something the bank had not sent: the
     boundary clause (a branch letter is outside this log) has to be in the sentence the customer hears.
     """
     log = engine.adapters.outbound_log
@@ -262,8 +262,8 @@ def test_bank_self_names_the_reach_of_the_record_it_rests_on(engine):
 
     s = signal(run_text(engine, "Demo Bank Head Office: your home loan is overdue. Pay at any branch counter."), "R-BANK-SELF")
     assert s is not None
-    # The claim is still made, and the one boundary the customer needs is in the same breath as it. The pass-5
-    # gate failed the first version here: it put the computed channel list on the card and a frightened
+    # The claim is still made, and the one boundary the customer needs is in the same breath as it. The first
+    # version failed here: it put the computed channel list on the card, and a frightened
     # 70-year-old was read 44 words containing "outbound log" and "IVR". The customer gets the boundary in her
     # own words; the full computed coverage is the officer's, below.
     assert "has no record of sending this message" in s.reason_en
@@ -310,7 +310,7 @@ def test_bank_self_scope_degrades_to_the_boundary_when_the_log_cannot_be_inspect
     cov = _log_coverage(OpaqueLog())
     assert cov["channels"] == [] and cov["entries"] == 0 and cov["retention_days_min"] is None
     assert cov["scope_en"] == SCOPE_FALLBACK_EN and cov["scope_hi"] == SCOPE_FALLBACK_HI
-    # The customer-facing sentence no longer interpolates the scope at all (the pass-5 gate failed that as jargon
+    # The customer-facing sentence no longer interpolates the scope at all (that was rejected as jargon
     # on the card), so what has to degrade safely is the officer's coverage record, not the card. The card's
     # boundary clause is fixed copy and is therefore true whether or not the log can be inspected.
     meta = engine.book.meta("R-BANK-SELF")
@@ -321,7 +321,7 @@ def test_bank_self_scope_degrades_to_the_boundary_when_the_log_cannot_be_inspect
 
 
 def test_bank_self_can_still_anchor_a_red_but_never_on_its_own(engine):
-    """The decision taken this pass: R-BANK-SELF stays hard. The thinness of the record is coverage breadth, which
+    """Recorded decision: R-BANK-SELF stays hard. The thinness of the record is coverage breadth, which
     the reason now names, not lookup reliability; inside its scope the match is an exact content hash. What keeps
     it safe is structural, and both halves are asserted here: it needs an independent family on different
     evidence, and it needs a money demand to have been read."""
@@ -471,9 +471,9 @@ FINE = "pay your vehicle driving fine , you passes a red light at traffic signal
 
 
 def test_a_fake_traffic_fine_is_checked_against_the_banks_own_name_for_the_upi_id(engine):
-    """Bhawna's console test of 23 Oct, verbatim. Two steps, in her words: first, is the message trying to look
-    official (a traffic fine is); only then, does the receiver's registered name, as the bank's own directory
-    returns it, match the government. "Bhawna", an individual, does not."""
+    """A message typed into the console, verbatim. Two steps: first, is the message trying to look official (a
+    traffic fine is); only then, does the receiver's registered name, as the bank's own directory returns it, match
+    the government. The mock directory's holder of this UPI ID ("Bhawna", an individual) does not."""
     paid = run_paying(engine, FINE.format(upi="9354209849@slc"), payee_vpa="9354209849@slc")
     assert paid.claim.instruction.value == "PAY_CHALLAN"
     s = signal(paid, "R-RECEIVER-NAME")
@@ -546,7 +546,7 @@ def test_website_new(engine):
 
 
 def test_a_bank_pointing_at_a_government_site_is_not_a_bank_link(engine):
-    """Found by the 23 Oct evaluation: a bank's awareness SMS naming echallan.parivahan.gov.in was flagged."""
+    """Found by the labelled evaluation: a bank's awareness SMS naming echallan.parivahan.gov.in was flagged."""
     case = run_text(engine, "Demo Bank alert: pay traffic fines only on echallan.parivahan.gov.in.")
     assert signal(case, "R-DOMAIN-BANKIN") is None
     assert signal(run_text(engine, "Demo Bank: update your KYC today at demobank-kyc.com"), "R-DOMAIN-BANKIN") is not None

@@ -1,4 +1,4 @@
-"""The officer error paths a judge walks: a file we cannot read, a decision with nobody's name on it, and the
+"""The officer error paths: a file the engine cannot read, a decision with nobody's name on it, and the
 pack verifier's answer on a file that is not a pack.
 
 A rejected upload must say what happened, say what the officer can do instead, and leave nothing on disk. These
@@ -58,7 +58,7 @@ def tiny_png(text: str = "DEMO BANK") -> bytes:
     return buf.getvalue()
 
 
-# ---------- a file we cannot read: 415, plain English, nothing kept ----------
+# ---------- a file the engine cannot read: 415, plain English, nothing kept ----------
 
 def test_text_renamed_as_png_is_415_not_500():
     cid = open_case()
@@ -107,13 +107,13 @@ def test_truncated_image_with_valid_magic_is_415_from_the_decoder():
 
 
 def test_unrecognised_audio_bytes_are_still_accepted_on_the_extension():
-    """Recorded decision: browsers send no type and no signature we know for some voice notes, so an allow-listed
+    """Recorded decision: for some voice notes browsers send no type and no known signature, so an allow-listed
     extension is accepted on the extension alone. Sniffing is a reason to reject, never a new reason to accept.
 
     What happens next depends on the install, and each answer is asserted exactly. With no speech-to-text the
-    answer is the 422 that asks the console for a transcript. With speech-to-text installed (as on the finale
-    laptop since 23 Oct) the decoder is what refuses these bytes, so the answer is the 415 that says the file
-    could not be read, the same answer a truncated image gets. Either way nothing is kept."""
+    answer is the 422 that asks the console for a transcript. With speech-to-text installed the decoder is what
+    refuses these bytes, so the answer is the 415 that says the file could not be read, the same answer a
+    truncated image gets. Either way nothing is kept."""
     cid = open_case()
     r = upload(cid, "voice-note.ogg", b"\x00not a container we know\x00", "")
     assert r.status_code in (422, 415), r.text
@@ -141,7 +141,7 @@ def test_valid_small_png_is_accepted_and_kept_on_disk():
 
 
 def test_two_uploads_with_the_same_name_each_keep_their_own_file():
-    """The gate's finding: the manifest records a hash per upload, so there must be a file per hash."""
+    """The manifest records a hash per upload, so there must be a file per hash."""
     cid = open_case()
     first = upload(cid, "notice.png", tiny_png(), "image/png", derived_text="first notice")
     assert first.status_code == 200, first.text
@@ -300,8 +300,8 @@ def test_media_ingest_runs_off_the_event_loop(monkeypatch):
 
 
 def test_a_phones_own_formats_are_accepted():
-    """An iPhone records video as .mov and Android call recorders save .amr or .3gp; a judge's kit can hold any of
-    them. The engine already decodes them (media.VIDEO / media.AUDIO); the upload gate refused them."""
+    """An iPhone records video as .mov and Android call recorders save .amr or .3gp; an upload can be any of them.
+    The engine already decoded them (media.VIDEO / media.AUDIO), but the upload gate refused them."""
     from satyapan.media import AUDIO, VIDEO
     for ext in (".mov", ".3gp", ".mkv", ".amr", ".aac", ".flac"):
         assert ext in api.ALLOWED_EXTENSIONS and ext in (AUDIO | VIDEO)
@@ -323,8 +323,8 @@ def test_the_detectors_measured_accuracy_is_served_as_written():
 
 
 def test_reset_removes_uploads_left_from_before_a_restart():
-    """Raw finding 23: reset only removed the folders of cases still in memory, so every upload from before a server
-    restart stayed on the laptop."""
+    """Reset used to remove only the folders of cases still in memory, so every upload from before a server
+    restart stayed on disk."""
     orphan = api.UPLOADS / "SP-ORPHAN01"
     orphan.mkdir(parents=True, exist_ok=True)
     (orphan / "00-voice.ogg").write_bytes(b"OggS")

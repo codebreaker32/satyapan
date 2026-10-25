@@ -1,4 +1,4 @@
-"""Demotion-to-soft of rules with unverified citations (the docs/finale-qa.md Q6 safety claim).
+"""Demotion-to-soft of rules with unverified citations (a stated safety property).
 
 `rulebook.load_rulebook` flips a `hard` rule to `soft` at load time when its citation lacks
 `verified: true`, so such a rule can never anchor a RED. Every shipped rule is verified, so a

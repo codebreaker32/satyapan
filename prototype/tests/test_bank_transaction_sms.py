@@ -1,6 +1,6 @@
 """A bank's own transaction SMS reports money that already moved; it does not ask the customer to move any.
 
-Bug hunt, finding 0 (critical): "Rs 5,000 credited to your A/c XX1234 by NEFT. - Demo Bank" gave RED. The bare
+Regression: "Rs 5,000 credited to your A/c XX1234 by NEFT. - Demo Bank" gave RED. The bare
 payment-rail word (NEFT, IMPS) or "fund transfer", "UPI payment", "FD ... closed" read as TRANSFER_TO_ACCOUNT or
 MOVE_FD, R-BANK-NEVER-MOVE-FD fired on it, R-BANK-SELF (outbound-log miss) was the second family, and the card told
 the customer to stop her own money. A completed-transaction marker in the same clause now makes that span a report.

@@ -103,7 +103,7 @@ def test_a_browser_recording_uploads_and_is_read(recorded):
 
 @needs_whisper
 def test_a_silent_browser_recording_is_refused_with_a_sentence(tmp_path):
-    """What a muted microphone gives the browser: 23 s of noise floor after one click, as recorded on 23 Oct. It used
+    """What a muted microphone gives the browser: 23 s of noise floor after one click, as a browser recorded it. It used
     to run for 79 s in Whisper and come back as a GREY with no text; now it is refused at once, and says why."""
     import time
 

@@ -1,4 +1,4 @@
-"""End-to-end: every finale scenario produces the verdict the deck promises."""
+"""End-to-end: every demo scenario produces its expected verdict."""
 import pytest
 
 from satyapan.models import Family, Issuer, Outcome, Severity
@@ -64,7 +64,7 @@ def test_lone_hard_rule_gives_amber_never_red(engine):
     # What makes this the lone-hard-rule branch and not something weaker: every other signal on the case is F5,
     # the one family that can never second. The same-family soft pairs (hard+soft and soft+soft on F1) are
     # unit-tested in tests/test_fusion.py; no scenario carries one since R-CALLER-1600 stopped being a sentence
-    # about regulators in the 18 Oct pass-6 build.
+    # about regulators.
     others = [s for s in v.signals if s.rule_id != v.anchor_rule]
     assert others and all(s.family == Family.F5 for s in others), [s.rule_id for s in others]
 

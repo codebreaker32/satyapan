@@ -122,7 +122,7 @@ def test_find_span_quotes_the_original_characters():
 
 
 def test_a_bank_letters_order_form_is_never_read_into_a_demand(engine, stub):
-    """Measured on 24 Oct with the real model: the genuine EMI letter V73 had its order form read as a transfer, which
+    """Measured with the real model: the genuine EMI letter V73 had its order form read as a transfer, which
     paired with the bank-record rules into a RED. Beside the bank's own name the reader now fills no instruction."""
     text = ("Demo Bank: You must push Rs 12,000 into the designated EMI collection account 50100234567891 before "
             "25 November.")

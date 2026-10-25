@@ -1,5 +1,6 @@
-"""The finale detectors reach the engine through the satyapan-finale forensics service. A stub HTTP server stands in
-for it here, so these tests need no model. Off by default: with no service URL the engine behaves exactly as before."""
+"""The detectors in forensics/ reach the engine through the satyapan-finale forensics service. A stub HTTP server
+stands in for it here, so these tests need no model. Off by default: with no service URL the engine behaves
+exactly as before."""
 import json
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer

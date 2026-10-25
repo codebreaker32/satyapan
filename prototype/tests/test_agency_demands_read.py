@@ -1,8 +1,8 @@
-"""Agency money demands are read however they are worded (bug hunt findings 2 and 3).
+"""Agency money demands are read however they are worded.
 
-- 2: demands worded with "pay", "payment karo", "bharo", "भुगतान करें", "rupay" or a यूपीआई ID read no instruction,
+- Demands worded with "pay", "payment karo", "bharo", "भुगतान करें", "rupay" or a यूपीआई ID read no instruction,
   so CBI, police and customs demands came out GREY while the same text with "transfer" gave AMBER.
-- 3: "This is Delhi Police", "calling from Mumbai Police", a "CBI:" masthead and "ED office se bol" anchored no
+- "This is Delhi Police", "calling from Mumbai Police", a "CBI:" masthead and "ED office se bol" anchored no
   authority, so the band said "no authority was read" about a message that opened with one.
 
 A lone agency rule is AMBER by design; these must reach AMBER, never RED on their own. The benign "pay" controls

@@ -1,15 +1,15 @@
-"""The two ways an instruction vanished while the issuer was read correctly (judge probes, 18 Oct 2026).
+"""The two ways an instruction vanished while the issuer was read correctly.
 
 Both wrong verdicts had the same shape: `claimed_issuer` was right, `instruction` was NONE, and the message was
 a textbook demand for money. They differ in where the demand hid.
 
 - P4, the PASSIVE AND OBLIGATION REGISTER. "The sum of Rs 38,00,000 is required to be remitted to the account
   specified herein" came back GREY with instruction NONE, while its active control "You must remit Rs 38,00,000
-  to the verification account" came back AMBER. "remit" was already a verb we knew, so the register was the only
-  thing between the two readings, and a forged summons is always written in the one we could not read.
+  to the verification account" came back AMBER. "remit" was already a known verb, so the register was the only
+  thing between the two readings, and forged summonses are written in exactly the register that was not read.
 - P7, INTRA-WORD SPACING. "You must t r a n s f e r Rs 38,00,000 to the verification account 30011223344556"
-  came back GREY with instruction NONE. Pass 3 closed homoglyphs, zero-widths and leetspeak; spacing has no
-  character to fold, so it walked through every one of them.
+  came back GREY with instruction NONE. Normalisation folds homoglyphs, zero-widths and leetspeak; spacing has
+  no character to fold, so it passed through all of them.
 
 Every message in this file is synthetic: invented text in the shape of a forged notice or an ordinary bank SMS.
 No real bank, customer or official data, no real official's name, no real case or account number.
@@ -17,8 +17,8 @@ No real bank, customer or official data, no real official's name, no real case o
 What the tests have to prove, in the repo's own order of importance:
 1. each probe now reads as its active / unspaced control reads (the finding is closed);
 2. a negative twin that was GENUINELY AT RISK still reads as nothing - it carries the money word, the
-   destination word and the construction, and only the gate under test stops it. Pass 3's gate found that a
-   negative with no money word and no destination ("park the car in the visitor bay") proves nothing;
+   destination word and the construction, and only the gate under test stops it. A negative with no money word
+   and no destination ("park the car in the visitor bay") proves nothing;
 3. every span still indexes and quotes the ORIGINAL message, including where the match was found in de-spaced
    coordinates (`claim.text[span.start:span.end] == span.text`);
 4. neither test is a tautology: with the change reverted in place, each probe fails.
@@ -35,15 +35,15 @@ from tests.test_normalize import _spans
 
 X = RulesExtractor(bank_names=("Demo Bank",))
 
-# ---- the judge's P4: the passive register, with the issuer frame the finding reported ----------------------
+# ---- probe P4: the passive register, with the issuer frame of the original probe ---------------------------
 P4 = ("This is the CBI Cyber Crime Unit. The sum of Rs 38,00,000 is required to be remitted to the account "
       "specified herein for custodial verification, account 30011223344556. Non-compliance will result in "
       "your arrest.")
-# The active control the judge ran, which already returned AMBER. Same message, imperative mood.
+# The active control, which already returned AMBER. Same message, imperative mood.
 P4_ACTIVE = P4.replace("The sum of Rs 38,00,000 is required to be remitted to",
                        "You must remit Rs 38,00,000 to")
 
-# ---- the judge's P7: single letters, spaced out ------------------------------------------------------------
+# ---- probe P7: single letters, spaced out -----------------------------------------------------------------
 P7 = ("This is the CBI Cyber Crime Unit. You must t r a n s f e r Rs 38,00,000 to the verification account "
       "30011223344556 before the hearing.")
 P7_PLAIN = P7.replace("t r a n s f e r", "transfer")
@@ -69,7 +69,7 @@ PASSIVE = [
     ("jama kiya jana hai", "Pura paisa is account me jama kiya jana hai."),
 ]
 
-# Hindi and Hinglish mostly did NOT need this change, and saying so is the honest version of the claim: the verb
+# Hindi and Hinglish mostly did NOT need this change: the verb
 # stem does not inflect for obligation, so "jama karna hoga", "भेजनी होगी" and "transfer karna padega" were
 # already read by the active family, and bare English "transfer" is a banking verb on its own. These four are
 # pinned here as regressions, and `test_the_hindi_obligation_forms_were_already_read` asserts that it really is
@@ -111,15 +111,15 @@ PASSIVE_BENIGN = [
     ("will be remitted", "The maturity amount will be remitted to the account specified in your request."),
     # Hindi: the same sentence a bank sends, in the passive. The account is the customer's own.
     ("आपके खाते में जमा की जानी है", "यह राशि आपके खाते में जमा की जानी है।"),
-    # These four FIRED during this pass and are the reason _POINTER_POST is bounded three ways (see extract.py).
+    # These four FIRED during development and are the reason _POINTER_POST is bounded three ways (see extract.py).
     # "the account mentioned above" is a pointed destination in a forged notice and an ordinary reference in a
     # bank email, and the preposition in front of it is what tells the two apart.
     ("moved out of the account mentioned above",
      "The balance is required to be moved out of the account mentioned above."),
     ("moved between the accounts mentioned above",
      "Funds are required to be moved between the accounts mentioned above."),
-    # the pass-3 gate's own two benign sentences, with "mentioned above" added. Folding the notice pointer into
-    # the shared destination rule made both of them read as instructions to pay.
+    # the two benign sentences from tests/test_euphemism_bounds.py, with "mentioned above" added. Folding the
+    # notice pointer into the shared destination rule made both of them read as instructions to pay.
     ("close the account mentioned above",
      "To close the account mentioned above, please move the balance out first."),
     ("funds between the accounts mentioned above",
@@ -170,13 +170,13 @@ def test_every_span_on_the_passive_probe_quotes_the_original_text():
 
 
 def test_a_counter_deposit_notice_reads_the_same_in_both_registers():
-    """Found during this pass and deliberately left alone, recorded here rather than hidden.
+    """Found while adding the passive register and deliberately left alone, recorded here rather than hidden.
 
     "The cash is to be deposited at the counter in this account by the depositor himself" reads as a payment
-    instruction. So does its active control, "Deposit the cash at the counter in this account": the pass-3
-    euphemism family has read that sentence this way since it shipped, because a counter notice and a scam use
-    the same words in the same order and nothing lexical separates them. Parity with the active control is what
-    this pass promised, so the passive register inherits the reading rather than inventing a different one. The
+    instruction. So does its active control, "Deposit the cash at the counter in this account": the euphemism
+    family has read that sentence this way since it shipped, because a counter notice and a scam use the same
+    words in the same order and nothing lexical separates them. The passive register is meant to match the
+    active control, so it inherits the reading rather than inventing a different one. The
     assertion is parity, not the value, so whoever fixes the active family fixes this with it.
     """
     passive = X.extract("The cash is to be deposited at the counter in this account by the depositor himself.")
@@ -195,7 +195,7 @@ def _without_move_passive(monkeypatch) -> RulesExtractor:
 
 
 def test_the_passive_probe_fails_with_the_change_reverted(monkeypatch):
-    """This repo has shipped four tests that passed with the feature they tested removed. This one does not."""
+    """Not a tautology: with the feature it tests removed, the probe must fail."""
     before = _without_move_passive(monkeypatch).extract(P4)
     assert before.claimed_issuer == Issuer.CBI, "the issuer was always read; that was never the bug"
     assert before.instruction == Instruction.NONE, "without MOVE_PASSIVE the probe must fail, or this proves nothing"
@@ -203,14 +203,14 @@ def test_the_passive_probe_fails_with_the_change_reverted(monkeypatch):
 
 @pytest.mark.parametrize("frame,text", PASSIVE, ids=[f for f, _ in PASSIVE])
 def test_every_passive_probe_was_genuinely_unread_before(frame, text, monkeypatch):
-    """Each probe in PASSIVE is a message this engine could not read until this pass, one assertion each."""
+    """Each probe in PASSIVE is a message the engine could not read before MOVE_PASSIVE, one assertion each."""
     assert _without_move_passive(monkeypatch).extract(text).instruction == Instruction.NONE, f"{frame}: {text}"
 
 
 @pytest.mark.parametrize("frame,text", ALREADY_READ, ids=[f for f, _ in ALREADY_READ])
 def test_the_hindi_obligation_forms_were_already_read(frame, text, monkeypatch):
-    """The other half of the honesty check: these read the same with the change reverted, so the credit for
-    them belongs to the active family and not to this pass."""
+    """The other half of the check: these read the same with the change reverted, so they are read by the
+    active family and not by MOVE_PASSIVE."""
     assert X.extract(text).instruction == Instruction.TRANSFER_TO_ACCOUNT, f"{frame}: {text}"
     assert _without_move_passive(monkeypatch).extract(text).instruction == Instruction.TRANSFER_TO_ACCOUNT
 
@@ -274,7 +274,7 @@ def test_the_spaced_probe_gets_the_same_verdict_as_its_unspaced_control(engine):
 
 
 def test_the_span_found_in_despaced_coordinates_quotes_the_spaced_original():
-    """The contract pass 3 shipped, at the point where it is easiest to break: the match was found at offsets
+    """The span contract, at the point where it is easiest to break: the match was found at offsets
     that do not exist in the message. Every stored span must still index and quote the ORIGINAL characters."""
     c = X.extract(P7)
     names = _spans(c)
@@ -312,7 +312,7 @@ def test_the_lexicon_only_holds_words_the_extractor_already_matches():
 
 
 def test_the_index_map_is_exact_for_every_slice_of_a_despaced_message():
-    """The pass-3 contract, re-proved character by character on the new transform. A deleted space must not
+    """The span contract, re-proved character by character on the new transform. A deleted space must not
     shift any surviving character's origin, including when the two folds stack: a zero-width space inside a
     spaced run is dropped by step 1 and the spacing is closed up by step 6, and the quote is still verbatim."""
     from satyapan.normalize import normalise
@@ -337,7 +337,7 @@ def test_the_index_map_is_exact_for_every_slice_of_a_despaced_message():
 
 
 def test_a_pathological_run_of_single_letters_is_bounded():
-    """A judge can paste anything. 4,000 single letters is one run, and the fold must still terminate, still
+    """A user can paste anything. 4,000 single letters is one run, and the fold must still terminate, still
     find the one word that is in it, and still map back exactly."""
     import time
 

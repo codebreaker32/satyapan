@@ -1,6 +1,6 @@
 """A link, host or ID the sender chose never stops the customer card from being built.
 
-Bug hunt, finding 13: a KYC link "https://demobank-fraud-check.com/kyc" (or www.cbi-criminal-case.com) was quoted in
+Regression: a KYC link "https://demobank-fraud-check.com/kyc" (or www.cbi-criminal-case.com) was quoted in
 the .bank.in / .gov.in reason, lint_card found "fraud" / "criminal" in it and raised, and the run and every later
 GET of the case returned HTTP 500. The lint still catches a banned word the card itself would say.
 """

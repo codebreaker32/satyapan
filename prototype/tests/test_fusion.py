@@ -39,7 +39,7 @@ def test_a_soft_rule_from_the_anchor_family_never_seconds_it():
     """A hard rule plus a soft one from the same family, on different evidence, is still one family: AMBER.
 
     S8 used to carry this shape live (R-RBI-INV hard F1 plus R-CALLER-1600 soft F1) and
-    tests/test_scenarios.py asserted it there. The pass-6 build scoped R-CALLER-1600 to messages claiming to be
+    tests/test_scenarios.py asserted it there. A later change scoped R-CALLER-1600 to messages claiming to be
     a bank, which is correct and left no scenario carrying the shape, so the invariant is pinned here instead.
     """
     v = fuse(CLAIM, [sig("A", Family.F1, Severity.HARD, "claim"), sig("B", Family.F1, Severity.SOFT, "issuer:ed_portal")])

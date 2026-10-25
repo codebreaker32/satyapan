@@ -99,8 +99,8 @@ def test_no_score_ever_reaches_the_customer(engine):
 
 
 # ---------------------------------------------------------------- one instruction
-# A judge read the card aloud as a frightened 70-year-old would hear it: cut the call, do not send the money, verify
-# with the ED, we will help you report it. Four things to remember under pressure. The card now carries one.
+# Read aloud as a frightened 70-year-old would hear it, the card used to give four instructions (cut the call, do not
+# send the money, verify with the ED, get help to report it): too many to remember under pressure. It now gives one.
 
 def test_do_now_is_exactly_one_instruction_in_every_scenario_and_language(engine):
     for sid in sorted(SCENARIOS):
@@ -163,8 +163,8 @@ def test_read_aloud_is_the_stop_line_the_headline_the_reasons_and_one_instructio
 
 
 def test_the_ed_passcode_reason_states_only_the_checkable_fact(engine):
-    """The judge singled out RED reason 3: it explained ED's passcode procedure and then told her to confirm with ED,
-    which is an instruction she cannot act on at a counter. The reason is now the fact; the route is in say_next."""
+    """RED reason 3 used to explain ED's passcode procedure and then tell her to confirm with ED, which is an
+    instruction she cannot act on at a counter. The reason is now the fact; the route is in say_next."""
     for lang, must, gone in (("en", "carries a passcode", ("website", "confirm with ED")),
                              ("hi", "पासकोड होता है", ("वेबसाइट", "पुष्टि"))):
         card = engine.card(run_scenario_id(engine, "S3-ed-summons"), lang)
@@ -223,7 +223,7 @@ def test_a_grey_card_that_was_asked_for_money_keeps_the_money_wording(engine, la
 
 @pytest.mark.parametrize("lang", ["hi", "en"])
 def test_the_benign_rekyc_sms_is_amber_without_a_word_about_sending_money(engine, lang):
-    """The judge's case: instruction NONE, no payee, R-BANK-SELF on an outbound-log miss. The verdict is right and
+    """A benign re-KYC SMS: instruction NONE, no payee, R-BANK-SELF on an outbound-log miss. The verdict is right and
     stays AMBER. The copy no longer tells her to stop paying when nobody asked her to pay."""
     case = run_text(engine, "Dear Customer, your Demo Bank KYC is due for re-verification. Please update your KYC "
                             "records at your nearest Demo Bank branch within 7 days. - Demo Bank")

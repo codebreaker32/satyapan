@@ -1,13 +1,13 @@
 """The four-eyes rules hold whatever a name is spelled with, and a strike is not a way around them.
 
-Bug hunt findings, each reproduced in-process before the fix:
-- 14 / 33: strike a field on a RED case, it re-runs AMBER or GREY, and the same officer releases it alone.
-- 30: blank-looking names (Hangul fillers, the Braille blank, a lone variation selector) passed as a co-signer.
-- 31: the officer's own id with a Cyrillic letter, full-width letters or an invisible mark passed as a second person.
-- 24 / 32: one analyst confirmed their own campaign-memory entry by retyping their id in another case.
-- 16: a re-run (re-encode, run again) re-extracted a struck field while the signed log said the strike stood.
-- 17 / 22: a strike of a field the claim does not have, or of an unknown field, was recorded as if it happened.
-- 35-adjacent: approving an unknown memory entry gave HTTP 500.
+Regressions, each reproduced in-process before the fix:
+- Strike a field on a RED case, it re-runs AMBER or GREY, and the same officer releases it alone.
+- Blank-looking names (Hangul fillers, the Braille blank, a lone variation selector) passed as a co-signer.
+- The officer's own id with a Cyrillic letter, full-width letters or an invisible mark passed as a second person.
+- One analyst confirmed their own campaign-memory entry by retyping their id in another case.
+- A re-run (re-encode, run again) re-extracted a struck field while the signed log said the strike stood.
+- A strike of a field the claim does not have, or of an unknown field, was recorded as if it happened.
+- Approving an unknown memory entry gave HTTP 500.
 """
 from __future__ import annotations
 

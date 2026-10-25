@@ -40,8 +40,8 @@ def test_every_message_is_counted_exactly_once(result):
 
 
 def test_the_committed_report_matches_a_fresh_run(result):
-    """The numbers judges read are the numbers the engine gives today. Compared only when the same optional layers
-    are installed (an install without the models gives different, equally honest numbers); a rule change that moves
+    """The published numbers are the numbers the engine gives today. Compared only when the same optional layers
+    are installed (an install without the models gives different, equally valid numbers); a rule change that moves
     a verdict fails here until `satyapan evaluate` is run again."""
     if not RESULTS.exists():
         pytest.skip("no committed results yet: run `satyapan evaluate`")

@@ -1,11 +1,10 @@
 """The passive register is blind to direction, and the benign half of it is money arriving for the customer.
 
-The pass-5 gate paid the bill for this one. The pass had just added the passive register so that a forged legal
-notice ("the sum is required to be remitted to the account specified herein") would read as a demand. The same
-grammar is how a bank announces a maturity, a refund, a salary or an interest credit — and the gate wrote two
-sentences that took the bank's own FD-maturity letter all the way to RED, with the customer card saying "Please
-stop. Do not send this money now." about her own matured deposit. That is the exact defect the rest of this pass
-exists to fix, re-created one layer up.
+The passive register was added so that a forged legal notice ("the sum is required to be remitted to the account
+specified herein") would read as a demand. The same grammar is how a bank announces a maturity, a refund, a salary
+or an interest credit, and an adversarial review wrote two sentences that took the bank's own FD-maturity letter all
+the way to RED, with the customer card saying "Please stop. Do not send this money now." about her own matured
+deposit: the benign-letter-to-RED defect, re-created one layer up.
 
 The verb lexeme cannot separate direction: "credited" was excluded and "remitted" was not, and both run both ways.
 The gate is the money itself. When the matched clause names the money as something arriving, the passive does not

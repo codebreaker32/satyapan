@@ -1,8 +1,8 @@
 """A bank's own recovery letter is a polite ORDER, and that is still enough for RED. Recorded, not fixed.
 
-The 19 Oct pass-1 adversarial gate found two benign bank letters going from AMBER to RED on the verbs that pass
-added, and the verbs came out again (`tests/test_euphemism_bounds.py::DROPPED_19_OCT`). This file holds the part
-that did not close, because closing it is a change to two rules this pass does not own:
+An adversarial review found two benign bank letters going from AMBER to RED on newly added instruction verbs, and
+those verbs were removed again (`tests/test_euphemism_bounds.py::DROPPED_19_OCT`). This file holds the part that is
+still open, because closing it is a change to two rules, not to the extractor:
 
     R-BANK-NEVER-MOVE-FD is BANK_SELF + TRANSFER_TO_ACCOUNT with no further condition, and
     R-BANK-SELF (hard, F2) fires on every outbound-log miss.
@@ -10,8 +10,8 @@ that did not close, because closing it is a change to two rules this pass does n
 Two hard rules in two families is RED. So on a message that claims to be the bank, ANY instruction the extractor
 reads is RED, and the card then says "Please stop. Do not send this money now." about the bank's own letter. The
 verb list is not what does this: the sentences below use `deposit`, `arrange the settlement of` and bare
-`transfer`, all of which read before 19 Oct and read today. Dropping verbs one at a time can only ever move
-which strings land on it.
+`transfer`, all of which were read before those verbs were added and are still read. Dropping verbs one at a
+time can only ever move which strings land on it.
 
 What the extractor does here is right, and that is the reason this is not an extractor fix: these letters DO
 instruct a payment. "Verify the instruction, not just the pixels" is the product's own sentence, and the instruction
@@ -30,7 +30,7 @@ from tests.conftest import run_text
 
 # Ordinary, polite, imperative letters from a bank to its own borrower, each with the amount and the account the
 # bank wants it in. Every one is a sentence a real recovery or EMI letter carries, and every one of the verbs in
-# them predates the 19 Oct pass.
+# them was read before the dropped verbs were added.
 BANK_ORDERS = [
     ("deposit", "Demo Bank Loan Recovery Cell: Kindly deposit Rs 2,50,000 in this loan account before "
                 "30 November to regularise your loan. Account 3001122334455.", 250000),

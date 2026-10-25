@@ -75,7 +75,7 @@ def test_owner_filler_rejects_prepositional_mentions():
 
 def test_owner_possessive_and_scam_fillers_still_claim():
     for text, owner in [("RBI monitoring account", ClaimedOwner.RBI), ("court's registry account", ClaimedOwner.COURT),
-                        # the ad-lib digital-arrest nouns a judge would type live must keep claiming an owner
+                        # ad-lib digital-arrest nouns typed in live must keep claiming an owner
                         ("CBI investigation account", ClaimedOwner.AGENCY), ("ED custody account", ClaimedOwner.AGENCY),
                         ("RBI refund account", ClaimedOwner.RBI), ("court deposit account", ClaimedOwner.COURT),
                         ("police seizure account", ClaimedOwner.AGENCY), ("customs clearance account", ClaimedOwner.AGENCY),
@@ -121,7 +121,7 @@ def test_stray_rm_token_is_not_a_bank_claim():
 
 
 def test_the_customers_own_account_is_not_a_payee():
-    """The judge's sentence. A benign re-KYC letter named her own savings account as the payee.
+    """A benign re-KYC letter used to name her own savings account as the payee.
 
     A payee is an assertion about where money is being sent. That number is what goes to the beneficiary-name
     look-up, to the I4C suspect registry and into the signed evidence pack, and it is what the card calls the

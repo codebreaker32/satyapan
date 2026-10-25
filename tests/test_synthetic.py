@@ -156,7 +156,7 @@ KNOWN = {
     ("IFSC", "SBIN0004321"),     # real bank prefix with an invented branch code (S2 scenario)
     ("IFSC", "HDFC0000213"),     # real bank prefix (S3, S5d, S9, S9b control, labelled set, campaign memory)
     ("IFSC", "SBIN0000691"),     # real bank prefix (S7 court order)
-    ("UPI ID", "9354209849@slc"),  # a team member's own test ID, added at her request (name_lookup.json _note)
+    ("UPI ID", "9354209849@slc"),  # a team member's own test ID, used with her agreement (name_lookup.json _note)
     ("number", "9354209849"),
 }
 

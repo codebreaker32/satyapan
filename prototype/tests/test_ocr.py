@@ -19,7 +19,7 @@ from tests.notice_render import NoFont, render_notice as _render  # noqa: E402  
 
 
 def render_notice(text: str, path: Path) -> None:
-    """The synthetic notice (tests/notice_render.py); skips where this box has no DejaVu or Arial font."""
+    """The synthetic notice (tests/notice_render.py); skips where no DejaVu or Arial font is installed."""
     try:
         _render(text, path)
     except NoFont as e:

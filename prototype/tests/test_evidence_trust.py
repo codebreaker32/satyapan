@@ -1,10 +1,10 @@
 """Verification trusts the bank's own evidence key, never the key a pack carries inside itself.
 
-Bug hunt, finding 29 (critical): a pack whose verdict was changed to MATCHES, with its decisions replaced, re-signed
+Regression: a pack whose verdict was changed to MATCHES, with its decisions replaced, re-signed
 with a fresh key and posted to /api/evidence/verify came back "Verifies.", because verify_pack checked the signature
-against the public key written in the pack. Finding 35: a null, empty or list signature gave HTTP 500.
+against the public key written in the pack. A null, empty or list signature also gave HTTP 500.
 
-The byte-flip moment (beat 8) must keep working: a fresh pack verifies, one flipped manifest byte fails.
+The demo's byte-flip check must keep working: a fresh pack verifies, one flipped manifest byte fails.
 """
 from __future__ import annotations
 

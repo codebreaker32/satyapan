@@ -1,4 +1,4 @@
-"""Consent is enforced by the service, not only by the browser (bug hunt raw findings 19 and 31).
+"""Consent is enforced by the service, not only by the browser.
 
 C2 (may we include it in a report) was recorded and never read: help_report was accepted and signed next to
 consent.report=false. C1 (may we check it) was enforced only by the console's new-case form.

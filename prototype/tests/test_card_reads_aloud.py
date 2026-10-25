@@ -1,7 +1,7 @@
 """What the customer actually hears, and the four ways the card out-ran its own claim.
 
-Every test here comes from a judge reading the card off the screen on 18/19 Oct, as the frightened 70-year-old it is
-written for would hear it. Four separate contradictions, one shape: the card asserted something the engine had not
+Every test here comes from reading the card off the screen as the frightened 70-year-old it is written for would
+hear it. Four separate contradictions, one shape: the card asserted something the engine had not
 established, or said a word the product bans.
 
 1. The officer's band said "Verify before paying" on an AMBER whose own coverage sentence on the same screen said
@@ -37,7 +37,7 @@ MONEY = {"en": re.compile(r"\bmoney\b|\bpay\b|\bpays\b|\bpaying\b|\bpayment\b|\b
          "hi": re.compile(r"पैसा|पैसे|पैसों|भुगतान|रुपये|रक़म|रकम")}
 
 # A benign Demo Bank re-KYC letter: `instruction=NONE`, no payee, and two independent families on it, so the
-# verdict is a real AMBER and not a contrived one. This is the judge's own probe text.
+# verdict is a real AMBER and not a contrived one.
 REKYC = ("Dear Customer, your Demo Bank KYC is due for re-verification. Please update your KYC records at your "
          "nearest Demo Bank branch within 7 days. - Demo Bank")
 # The same shape with money in it, as the control for every no-payment assertion below.
@@ -276,7 +276,7 @@ def test_the_call_line_is_bound_by_the_forbidden_word_lint():
 
 # ---------------------------------------------------------------- 4. no technical token in the spoken card
 #
-# Each entry is a token a judge found being read aloud, or one that would read the same way if it reached the card.
+# Each entry is a token that was found being read aloud, or one that would read the same way if it reached the card.
 # The officer's evidence row, the citation and the signed pack carry all of them; the card carries none.
 NEVER_SPOKEN = {
     "SIMULATED": "provenance about the detector, stamped by forensics.to_signal",
@@ -300,7 +300,7 @@ def test_no_card_reads_a_technical_token_aloud(engine):
 
 @pytest.mark.parametrize("lang", ["hi", "en"])
 def test_the_simulated_marker_stays_on_the_officers_row_and_leaves_the_card(engine, lang):
-    """The pass-5 move, applied to the forensics stamp: the property stays, the surface changes.
+    """As with the outbound-log coverage: the forensics stamp stays on the officer's row and leaves the card.
 
     The assertion on the signal is what stops this becoming a test about nothing. If forensics ever stops stamping
     the marker, this fails instead of quietly proving that the card does not carry a marker nobody produced.

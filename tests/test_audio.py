@@ -138,7 +138,7 @@ def test_a_missing_or_broken_file_abstains(tmp_path):
 
 def test_a_missing_voice_model_is_not_blamed_on_the_recording(tmp_path, monkeypatch):
     """Weights missing from the cache must read as the model being unavailable, never as the customer's file being
-    unreadable (24 Oct: a half-finished download made every voice note say 'the audio could not be read')."""
+    unreadable (a half-finished download once made every voice note say 'the audio could not be read')."""
     import forensics.audio as audio
 
     def no_model(*a, **kw):

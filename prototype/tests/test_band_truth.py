@@ -1,8 +1,8 @@
-"""The officer's band says what actually happened (bug hunt findings 5, 15, 21).
+"""The officer's band says what actually happened.
 
-- 15 / 21: a two-family AMBER capped because no money demand was read printed "One hard rule fired. One rule alone
+- A two-family AMBER capped because no money demand was read printed "One hard rule fired. One rule alone
   never gives RED." The verdict now carries `no_money_cap`, and the band branches on it.
-- 5: a GREY with an account said "the bank's own records found nothing wrong" when the name look-up did not hold the
+- A GREY with an account said "the bank's own records found nothing wrong" when the name look-up did not hold the
   account at all.
 """
 from __future__ import annotations

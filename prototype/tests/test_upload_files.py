@@ -1,12 +1,12 @@
-"""A judge's own files, as phones and laptops actually write them (bug hunt findings 6, 7, 8, 9/34, 10/26, 11, 12).
+"""Uploaded files, as phones and laptops actually write them.
 
-- 6: a phone photo (landscape pixels plus EXIF Orientation 6 or 3) was OCR'd sideways and gave GREY.
-- 7: a truncated PDF gave 422 and the console said no OCR was installed.
-- 8: every PDF showed a raw PIL error with the laptop's upload path, signed into the pack.
-- 9 / 34: a file name over 252 UTF-8 bytes gave HTTP 500, after the media was already added to the case.
-- 10 / 26: an uploaded .txt was recorded as OCR output.
-- 11: a UTF-16 .txt was read as NUL-interleaved bytes and a scam gave GREY.
-- 12: a password-locked PDF was refused with a sentence saying it was not a PDF.
+- A phone photo (landscape pixels plus EXIF Orientation 6 or 3) was OCR'd sideways and gave GREY.
+- A truncated PDF gave 422 and the console said no OCR was installed.
+- Every PDF showed a raw PIL error with the server's upload path, signed into the pack.
+- A file name over 252 UTF-8 bytes gave HTTP 500, after the media was already added to the case.
+- An uploaded .txt was recorded as OCR output.
+- A UTF-16 .txt was read as NUL-interleaved bytes and a scam gave GREY.
+- A password-locked PDF was refused with a sentence saying it was not a PDF.
 """
 from __future__ import annotations
 

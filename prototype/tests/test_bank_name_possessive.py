@@ -1,8 +1,8 @@
 """The bank's bare name is somebody's account, not a claim to be the bank, when a possessive sits in front of it.
 
-Bug hunt, finding 1 (critical): "Beta, please transfer 5000 to my Demo Bank account ... - Mummy" gave RED, with
+Regression: "Beta, please transfer 5000 to my Demo Bank account ... - Mummy" gave RED, with
 claimed_issuer BANK_SELF taken from "Demo Bank" in "my Demo Bank account", and the card told the customer that
-Demo Bank had no record of sending it. A mother, an employer or a tenant never claimed to be the bank.
+Demo Bank had no record of sending it. A mother, an employer or a tenant writing this is not claiming to be the bank.
 """
 from __future__ import annotations
 
@@ -55,8 +55,8 @@ WRONG_TRANSFER_SCAMS = [
 
 @pytest.mark.parametrize("text", WRONG_TRANSFER_SCAMS)
 def test_a_wrong_transfer_scam_that_asks_for_money_back_stays_flagged(engine, text):
-    """Found by an independent probe of tonight's changes: with the possessive rule these went from RED / AMBER to
-    GREY. A message that asks for money keeps its bank claim, as it did before the rule existed."""
+    """A first version of the possessive rule took these from RED / AMBER to GREY. A message that asks for money
+    keeps its bank claim, as it did before the rule existed."""
     assert run_text(engine, text).verdict.outcome is not Outcome.GREY
 
 

@@ -138,7 +138,7 @@ def _forensics_line(meta, capsys):
 
 def test_preflight_forensics_not_connected_is_a_fail(capsys):
     """It was a skip, and preflight then exited 0 on a server whose uploads got no face or voice check at all, while
-    the run-sheet says every line must PASS (bug hunt raw finding 48)."""
+    the run-sheet says every line must PASS."""
     line = _forensics_line({"forensics": {"service": None}}, capsys)
     assert line.startswith("FAIL") and "no face or voice check" in line and "SIMULATED" not in line
 

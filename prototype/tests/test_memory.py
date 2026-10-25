@@ -44,7 +44,7 @@ def test_a_known_script_with_a_new_account_says_what_changed(engine):
 
 def test_a_disguised_copy_still_matches():
     """Look-alike letters, a zero-width space and leetspeak: the same letter to a reader, and to the raw word overlap
-    that shipped before 23 Oct a different one. The control half shows the raw measure really did miss it."""
+    that shipped earlier a different one. The control half shows the raw measure really did miss it."""
     from satyapan.memory import jaccard, tokens
     mem = CampaignMemory(DATA_DIR / "mocks" / "campaign_memory.json", now=NOW)
     template = next(e for e in mem.entries if e["id"] == "CM-0001")["template_text"]

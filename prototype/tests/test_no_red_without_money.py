@@ -1,9 +1,9 @@
 """The fourth fusion invariant: no RED when the engine read no money demand.
 
-A hackathon judge pasted a genuine, benign bank letter — a head-office recovery cell writing about an overdue home
-loan, no payee account, no money instruction, `instruction=NONE` — and the customer card told a real customer to
-stop. That is the worst defect this product can ship, because "verify the instruction, not just the pixels" is its own
-sentence: a verdict that fires when nothing about money was read contradicts the thing we claim to do.
+A genuine bank letter (a head-office recovery cell writing about an overdue home loan) has no payee account and no
+money instruction, `instruction=NONE`; a RED on it would tell a real customer to stop a legitimate payment. That is
+the worst defect this product can ship, because "verify the instruction, not just the pixels" is its own sentence: a
+verdict that fires when nothing about money was read contradicts what the product claims to do.
 
 The invariant lives in `fusion.fuse`, next to the two-families rule, and is the last thing checked before a RED is
 returned. Two halves, and both matter:
@@ -113,14 +113,14 @@ def test_the_cap_never_makes_a_verdict_more_severe():
 # ---------------------------------------------------------------- end to end, through the real pipeline
 #
 # The unit tests above hand `fuse` its signals. These two run pasted text through the extractor, the rulebook and
-# the mock adapters, so the invariant is proved on the path the judge actually used rather than on a constructed
-# signal list.
+# the mock adapters, so the invariant is proved on the path a pasted message actually takes rather than on a
+# constructed signal list.
 
 JUDGE_LETTER = ("Demo Bank Loan Recovery Cell, Head Office. Your home loan account is overdue by Rs 2,84,000. "
                 "Recovery proceedings before the Debts Recovery Tribunal may follow and the property may be "
                 "auctioned under the SARFAESI Act. You may pay at any branch counter.")
 # Two independent families fire on this one and nothing in it asks for money: R-BANK-SELF (F2, the bank's outbound
-# log) and R-DOMAIN-BANKIN (F1, the message itself). Before this pass it was a RED.
+# log) and R-DOMAIN-BANKIN (F1, the message itself). Before this invariant it was a RED.
 TWO_FAMILIES_NO_MONEY = ("Demo Bank: your KYC is due for re-verification. Update your records at demobank-kyc.com "
                          "within 7 days.")
 

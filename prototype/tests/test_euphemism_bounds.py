@@ -1,8 +1,8 @@
-"""The widened instruction verbs, held to both edges by the pass-3 adversarial gate's own probes.
+"""The widened instruction verbs, held to both edges by adversarial probes.
 
-Pass 3 widened TRANSFER_TO_ACCOUNT to the euphemism family (park, place, move, remit, route, consolidate, shift,
+TRANSFER_TO_ACCOUNT was widened to the euphemism family (park, place, move, remit, route, consolidate, shift,
 deposit and the Hinglish and Devanagari equivalents), because a textbook digital-arrest script that said "park your
-entire liquid holdings" instead of "transfer" fell to GREY. The gate then found both edges of that change:
+entire liquid holdings" instead of "transfer" fell to GREY. Adversarial review then found both edges of that change:
 
 1. The gap between a verb and its context excluded newlines, so the whole family died on a wrapped paste. A PDF, an
    OCR'd notice and a WhatsApp forward all arrive wrapped, which is most of what an officer actually sees.
@@ -63,7 +63,7 @@ def ex() -> RulesExtractor:
 
 @pytest.mark.parametrize("text", WRAPPED)
 def test_a_line_break_does_not_kill_the_instruction(ex, text):
-    """The gate's finding: the headline fix only worked on unwrapped text."""
+    """The widened family used to work only on unwrapped text."""
     claim = ex.extract(text)
     assert claim.instruction == Instruction.TRANSFER_TO_ACCOUNT, f"a wrapped paste lost its instruction: {text!r}"
     assert claim.instruction_span is not None
@@ -85,13 +85,13 @@ def test_an_ordinary_bank_sentence_is_not_a_payment_instruction(ex, text):
     )
 
 
-# ---- the verbs added on 19 Oct, pass 1 ---------------------------------------------------------------------
-# A judge's romanised-Marathi probe ("Rs 6,50,000 tya Customs Clearance Account 39920114477 var wire kara")
+# ---- the second set of added verbs -------------------------------------------------------------------------
+# A romanised-Marathi probe ("Rs 6,50,000 tya Customs Clearance Account 39920114477 var wire kara")
 # returned instruction NONE and scored GREY, because "wire" was not in the family. "push", "credit this account
-# with" and "arrange the settlement of" were on the same backlog line (decisions.md, 18 Oct pass 3). Two of the
-# four came out again the same day; see DROPPED_19_OCT below.
+# with" and "arrange the settlement of" were on the same backlog line (decisions.md). Two of the four were
+# removed again; see DROPPED_19_OCT below.
 #
-# Each one keeps the pass-3 discipline: bounded on BOTH sides of the verb, gated on a money word AND a
+# Each one keeps the euphemism family's discipline: bounded on BOTH sides of the verb, gated on a money word AND a
 # POINTED-AT destination, and carrying a negative probe that was genuinely at risk. Two of them needed a fourth
 # gate of their own and the negative probes below are the reason:
 #   - "wire" is also a noun, and the noun runs the other way ("the incoming wire of Rs 4,20,000 has been
@@ -122,7 +122,7 @@ NEW_VERBS = [
 # card then says "Please stop. Do not send this money now" on the bank's own letter.
 #
 # So BOTH columns are asserted silent. The demand column is a deliberate false negative, recorded here rather
-# than hidden: the engine is narrower than it was for one pass, and a later pass that re-adds either form has to
+# than hidden: the engine is deliberately narrower here, and a later change that re-adds either form has to
 # come past the benign twin to do it. The demands still reach the officer through everything else the message
 # says (an account the beneficiary look-up can check, a claimed owner, pressure cues, the flag itself).
 DROPPED_19_OCT = [
@@ -180,8 +180,8 @@ def test_a_new_verb_stays_silent_on_an_ordinary_bank_sentence(ex, verb, benign, 
 def test_the_new_verbs_negative_probes_were_genuinely_at_risk():
     """Not a tautology: each negative probe carries the verb, a money word and the word "account".
 
-    A negative probe that was never at risk proves nothing — the pass-3 gate's own lesson, recorded in
-    decisions.md ("park the car in the visitor bay" has neither context word). This asserts the probes above are
+    A negative probe that was never at risk proves nothing, as recorded in decisions.md ("park the car in the
+    visitor bay" has neither context word). This asserts the probes above are
     the other kind: every one of them would match the family with its extra gate removed.
     """
     import re
@@ -204,7 +204,7 @@ def test_the_new_verbs_negative_probes_were_genuinely_at_risk():
 def test_the_pointer_requirement_is_what_drops_the_benign_sentence():
     """Not a tautology: without the pointed-destination requirement the benign sentence reads as an instruction.
 
-    Rebuilds the family the way it was before the gate's finding (bare destination) and shows it firing, so a
+    Rebuilds the family the way it was before the pointed-destination fix (bare destination) and shows it firing, so a
     future edit that drops the requirement fails here instead of shipping money wording onto a benign card.
     """
     import re

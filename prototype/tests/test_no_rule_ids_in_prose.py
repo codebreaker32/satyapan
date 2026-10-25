@@ -1,9 +1,9 @@
 """No raw rule id in anything a person reads.
 
-`verdict.explanation` used to print "R-BANK-RM-PHONE means the customer should verify before paying." Pass 1 patched
-one branch of that in the console by swapping ids for rulebook titles at render time, but the engine string still
-carried the id, and the explanation also reaches the CLI, `satyapan demo` and the evidence pack. It is fixed in
-`fusion` now, at compose time, where the rule's own title is available.
+`verdict.explanation` used to print "R-BANK-RM-PHONE means the customer should verify before paying." An earlier
+fix patched one branch of that in the console by swapping ids for rulebook titles at render time, but the engine
+string still carried the id, and the explanation also reaches the CLI, `satyapan demo` and the evidence pack. It is
+fixed in `fusion` now, at compose time, where the rule's own title is available.
 
 The id is not removed from the data. It stays on `anchor_rule`, on `second_family` and on every `signals[].rule_id`,
 which is what the case record and the signed pack carry, and what the officer expands on the signal row.

@@ -1,7 +1,7 @@
-"""Nobody is nobody, whatever it is spelled with.
+"""A name with no visible glyph is nobody, whatever it is spelled with.
 
-The pass-4 adversarial gate signed a decision as U+200B and, worse, released a RED case with a zero-width space
-as the co-signer: one officer defeating the four-eyes rule alone, which is a stated design invariant.
+An adversarial probe signed a decision as U+200B and also released a RED case with a zero-width space as the
+co-signer: one officer defeating the four-eyes rule alone, which is a stated design invariant.
 `"​".isspace()` is False, so it survived `str.strip()` and satisfied every check the engine had.
 
 `models.visible_name` is the one answer: a name with no visible glyph is nobody. These tests pin it at the three
@@ -46,7 +46,7 @@ def test_a_real_name_survives(value, want):
 
 @pytest.mark.parametrize("ghost", INVISIBLE)
 def test_an_invisible_co_signer_cannot_release_a_red_alone(engine, ghost):
-    """The gate's worst finding: four eyes satisfied by one officer and a zero-width space."""
+    """Four eyes must not be satisfied by one officer and a zero-width space."""
     case = run_scenario_id(engine, "S3-ed-summons")
     assert case.verdict.outcome.value == "RED"
     with pytest.raises(PermissionError, match="co-sign"):

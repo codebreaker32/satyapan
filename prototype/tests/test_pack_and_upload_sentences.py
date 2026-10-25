@@ -1,8 +1,8 @@
-"""Small truths the bug hunt's raw list found (raw findings 21 and 41).
+"""Pack verification and upload refusals state exactly what is true.
 
-- 21: the lenient base64 decoder let an altered signature text still verify ('!' or a newline inserted, bytes after
+- The lenient base64 decoder let an altered signature text still verify ('!' or a newline inserted, bytes after
   the padding, a different last character that decodes to the same bytes).
-- 41: the size refusal for a Hindi .txt reported its byte count as characters.
+- The size refusal for a Hindi .txt reported its byte count as characters.
 """
 from __future__ import annotations
 
@@ -49,7 +49,7 @@ def test_txt_size_refusal_counts_bytes_as_bytes():
 @pytest.mark.parametrize("field, value", [("signed_at", "2020-01-01T00:00:00+00:00"),
                                           ("signer", {"name": "Evidence signer", "mock": False, "route": "AWS KMS"})])
 def test_the_shown_signing_time_and_signer_are_signed_too(engine, field, value):
-    """Raw finding 21, second half: signed_at and the signer label sat outside the signature, so a pack with a
+    """signed_at and the signer label used to sit outside the signature, so a pack with a
     back-dated signing time or a signer relabelled 'not a mock' still verified."""
     pack = engine.evidence_pack(run_scenario_id(engine, "S3-ed-summons"))
     key = engine.signer.public_key_b64()
