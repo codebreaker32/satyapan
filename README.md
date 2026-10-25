@@ -123,7 +123,7 @@ These sets are used only to set the detectors' thresholds and to measure how oft
 or fine-tuned on them. They are downloaded to a local `clips/` folder that is never committed. Only the resulting
 calibration numbers, and a list of which files were used, go into `calibration/`. Two exceptions in the demo: the
 live face check (run-sheet beat 4) shows one UniDataPro face-swap clip, unmodified, and the live voice-clone case
-(beat 2) uploads one IndicSynth clip as a WhatsApp-like voice note. No other calibration clip is shown.
+(beat 2) uploads one IndicSynth clip re-encoded as a WhatsApp-like voice note. No other public clip is shown.
 
 | Dataset | Used for | Format | Licence / access | How much we use |
 |---|---|---|---|---|
