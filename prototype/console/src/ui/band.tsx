@@ -43,7 +43,7 @@ export function VerdictBand({ view, titles }: Props) {
         <p className="en">{v.headline_en}</p>
       </div>
       <div className="band-rests">
-        {/* Media was judged, so the combined score decided (Bhawna, 24 Oct): the rule-ladder headings below would
+        {/* Media was judged, so the combined score decided: the rule-ladder headings below would
             say "one rule alone never gives RED", which is no longer what decided this case. Officer only; the
             customer card never shows a score. */}
         {sc && (

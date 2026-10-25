@@ -40,7 +40,7 @@ export interface Claim {
   urls: Grounded[]
   language_hint: string
   extractor: string
-  // the offline helper reader (Llama 3.2 3B on this laptop) names the fields it filled; each is quoted from the message
+  // the offline helper reader (Llama 3.2 3B, run locally) names the fields it filled; each is quoted from the message
   read_by_llm?: string[]
   digital_arrest_span?: Span | null
 }
@@ -258,7 +258,7 @@ export class ApiError extends Error {
 
 // A dead wire is not a refusal. With the network cut, the officer used to read "Refused: Failed to fetch" in the
 // action pane — a raw browser string, carrying the same word as a genuine policy refusal, and silent on the only
-// question that matters: did the decision get recorded? It did not: the request never reached the service, so
+// question that matters, whether the decision was recorded. It was not: the request never reached the service, so
 // nothing was written, and the officer can press the button again.
 //
 // The same class is thrown by the read paths, where nothing was being recorded in the first place, so the

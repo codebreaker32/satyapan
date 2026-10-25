@@ -14,10 +14,9 @@ const INSTRUCTION_NAMES: Record<string, string> = {
 
 // What the engine could and could not read out of THIS message, on every outcome.
 //
-// The pass-5 judge pasted ten messages and five got a verdict worth arguing with. In four of the five the engine
-// had quietly failed to read one field — a Devanagari masthead it did not recognise as a claim of identity, a
-// passive "is required to be remitted" it did not see as an instruction — and the screen gave no sign of it. GREY
-// already composes a prose version of this; RED, AMBER and MATCHES said nothing at all.
+// When the engine fails to read one field (a Devanagari masthead it does not recognise as a claim of identity, a
+// passive "is required to be remitted" it does not see as an instruction), the verdict can be wrong with no sign
+// on screen. GREY already composes a prose version of this; RED, AMBER and MATCHES said nothing at all.
 //
 // Every line here is derived from the same claim object the rules consumed, never written by hand, so the strip
 // and the verdict cannot disagree. It is deliberately dull: it reports, it does not judge.
@@ -26,8 +25,8 @@ interface Props {
 }
 
 // "Latin" is a script name an officer reads as a language, and the extractor's version string is an internal
-// identifier that has no business in officer prose (the rulebook ids were taken out of it two passes ago for
-// exactly this reason). Say what she would say.
+// identifier that has no business in officer prose (the rulebook ids were taken out of it for the same
+// reason). Use the words an officer would use.
 const SCRIPT: Record<string, string> = {
   hi: 'in Devanagari',
   en: 'in the Roman alphabet',

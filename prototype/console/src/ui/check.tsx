@@ -216,7 +216,7 @@ export function Check({ view, titles }: Props) {
             />
           ))}
           {/* The empty state is a sentence, not a row: .feat is a two-column grid, so a bare text node used to
-              render one word per line in the exact place a judge looks to see why nothing fired. */}
+              render one word per line in the exact place a reader looks to see why nothing fired. */}
           {features.length === 0 && (
             <li className="feat feat-empty">
               <p>No rule fired on this message.</p>
@@ -397,8 +397,8 @@ function Feature({
         {n}
       </span>
       <div className="feat-body">
-        {/* Up to five pills per row made eight distinct pill shapes on one case screen, and the judge counted tag
-            soup as a generic tell on the main path. They were never five peers, and flattening them all into the
+        {/* Up to five pills per row made eight distinct pill shapes on one case screen, which read as tag soup
+            on the main path. They were never five peers, and flattening them all into the
             same chip is what cost the two that matter their weight. A pill now means one of two things and
             nothing else: this row is why the verdict is legal (Anchor, Second), or trust what it says less
             (Simulated, Mock lookup). How strong the check is reads as a phrase beside the family word, because

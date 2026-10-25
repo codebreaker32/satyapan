@@ -1,23 +1,22 @@
-// The console's capture tool. One command takes every screen a judge or a reviewer looks at, at the three
-// widths the run holds us to: 1440x900, the venue projector's 1280x720, and 390 wide.
+// The console's capture tool. One command takes every screen a reviewer looks at, at the three supported
+// widths: 1440x900, the common projector size 1280x720, and 390 wide.
 //
-//   cd satyapan/console && npm run build
-//   /home/aman/projects/raksham/satyapan/.venv/bin/satyapan serve --port 8010
-//   node e2e/capture.mjs pass1-after            -> docs/cloud-run/captures/pass1-after/
-//   node e2e/capture.mjs pass1-after --only case-red --widths 1280
-//   node e2e/capture.mjs pass1-offline --offline  -> the same screens with the service unreachable
+//   cd prototype/console && npm run build
+//   satyapan serve --port 8010
+//   node e2e/capture.mjs after            -> docs/cloud-run/captures/after/
+//   node e2e/capture.mjs after --only case-red --widths 1280
+//   node e2e/capture.mjs offline --offline  -> the same screens with the service unreachable
 //
 // `--offline` aborts the whole /api surface in the browser, which is what the officer sees when the service is
-// not running. It is a mode of this script rather than a script of its own, for the reason below: four one-off
-// capture scripts had each drifted out of date before pass 1 replaced them with this one.
+// not running. It is a mode of this script rather than a separate script, because separate one-off capture
+// scripts drift out of date.
 //
-// It replaced three one-off capture scripts (capture-1280x720, capture-scenarios, capture-pass6). Each had been
-// written for one pass and each still selected `.row-item.scenario`, the row class the pass-6 landing rewrite
-// removed, so all three silently stopped working and the next pass's "before" captures would have been taken by
-// hand. The selectors live in ONE place now, beside the e2e that has to keep them true.
+// This script replaced three one-off capture scripts (capture-1280x720, capture-scenarios, capture-pass6). Each
+// still selected `.row-item.scenario` after the landing rewrite removed that row class, so all three silently
+// stopped working. The selectors live in ONE place now, beside the e2e that has to keep them true.
 //
 // Shots are viewport-sized by default, never fullPage: a capture that scrolls hides the fold, and the fold is
-// the thing being judged. `--full` adds a whole-page shot beside each viewport one.
+// what is being reviewed. `--full` adds a whole-page shot beside each viewport one.
 import { chromium } from '../../../deck/node_modules/playwright/index.mjs'
 import { mkdir } from 'node:fs/promises'
 

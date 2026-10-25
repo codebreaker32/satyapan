@@ -37,8 +37,8 @@ export function integrationHonesty(meta: Meta): string {
 //
 // The whole page is rendered from `/api/meta`, which App fetches, so App hands down whatever went wrong with it
 // along with the way to ask again. Without that this page said "Loading…" for as long as the service stayed down —
-// a sentence that is false the moment the request has already failed, and the one word a judge reads as "slow"
-// rather than "broken".
+// a sentence that is false the moment the request has already failed, and a word that reads as "slow" rather
+// than "broken".
 export function Rulebook({ meta, trouble, onRetry }: { meta: Meta | null; trouble?: unknown; onRetry?: () => void }) {
   if (!meta)
     return (

@@ -2,12 +2,11 @@ import { ApiError, OfflineError } from '../lib/api'
 
 // What the officer reads when a request did not work, and the one place the console decides those words.
 //
-// Pass 5 (18 Oct) established the distinction on the action path and decisions.md records it: an unreachable
-// service reads "Not recorded: ... nothing was recorded", never "Refused: Failed to fetch", because "refused" is
-// what a policy refusal says and she has to be able to tell a dead wire from a rule saying no. The read paths
-// never got it: with the wire cut `#/cases` rendered its heading, its lede and nothing else, and the failure
-// showed up only as an unhandled page error in devtools. A judge called that "a blank screen" and it capped
-// UI/UX at 6.
+// The action path makes the distinction and decisions.md records it: an unreachable service reads "Not
+// recorded: ... nothing was recorded", never "Refused: Failed to fetch", because "refused" is what a policy
+// refusal says and she has to be able to tell a dead wire from a rule saying no. The read paths used to lack it:
+// with the wire cut `#/cases` rendered its heading, its lede and nothing else, and the failure showed up only
+// as an unhandled page error in devtools, which reads as a blank screen.
 //
 // Two prefixes across the whole console, and only two:
 //   "Refused: …"      the service answered and said no — a policy refusal, a 403, a 422, a 404.
@@ -16,9 +15,9 @@ import { ApiError, OfflineError } from '../lib/api'
 // The third is the second with the verb the path was actually doing; inventing a different vocabulary for reads
 // would have given the officer two things to learn for one fact about the wire.
 
-// A condition the screen checked itself, in a sentence we wrote: "Choose a file first." It is neither a refusal
-// nor a dead wire and must not be dressed as either. Carrying it as its own type is what lets everything else
-// fall back to a sentence of ours instead of to a raw browser string.
+// A condition the screen checked itself, in the console's own sentence: "Choose a file first." It is neither a
+// refusal nor a dead wire and must not be dressed as either. Carrying it as its own type is what lets everything
+// else fall back to a console sentence instead of to a raw browser string.
 export class Blocked extends Error {}
 
 // Nothing the browser threw ever reaches the officer: "Failed to fetch", "NetworkError" and "TypeError" are not

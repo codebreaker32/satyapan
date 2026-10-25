@@ -99,7 +99,7 @@ synthetic file was made, and the rules the hand-written data follows: `synthetic
 
 All synthetic, except the recorded registry answers in `prototype/data/mocks/web_registry.json`, which are real
 public records, and one real UPI test ID in the name look-up mock, which belongs to a team member and was added
-with that member's consent.
+at that member's request.
 
 | Dataset | Format | Provenance / consent | Size |
 |---|---|---|---|

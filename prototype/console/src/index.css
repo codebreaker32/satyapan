@@ -278,11 +278,10 @@ textarea {
   display: grid;
   gap: 4px;
 }
-/* The active item was a filled magenta pill. Two things were wrong with it. It is the admin-template signature,
-   one of the two generic tells the judge has named on the main path every pass; and the accent has a recorded job
-   in this product — the one callout colour, for span highlights, leader lines and callout numbers — so spending
-   it on chrome made the nav the most saturated object on a GREY screen, competing with the verdict band for the
-   eye. The mark is now a thread down the left edge of the item, which is the direction's own motif (the security
+/* The active item was a filled magenta pill. Two things were wrong with it. It is the generic admin-template
+   signature; and the accent has a recorded job in this product (the one callout colour, for span highlights,
+   leader lines and callout numbers), so spending it on chrome made the nav the most saturated object on a GREY
+   screen, competing with the verdict band for the eye. The mark is now a thread down the left edge of the item, which is the direction's own motif (the security
    thread in a banknote), with the weight and the full ink carrying the state beside it. */
 .nav a {
   display: block;
@@ -680,13 +679,13 @@ textarea {
   line-height: 1.4;
 }
 
-/* Projector sizes (1280x720 is the common venue size). The card's three reasons and the officer's actions have to
+/* Projector sizes (1280x720 is the common projector size). The card's three reasons and the officer's actions have to
    clear the fold together, so the card steps down one notch here; 18px at 1280 is still the deck's reading size. */
 @media (max-width: 1366px) {
   .counter {
     grid-template-columns: minmax(0, 62fr) minmax(0, 38fr);
     /* the bottom padding is tight on purpose: it lets the step strip's first row show above 720 even on the
-       longest card, so a judge can see there is more of the case below the counter pane */
+       longest card, so a reader can see there is more of the case below the counter pane */
     padding: 16px 40px 10px;
     gap: 14px 36px;
   }
@@ -1528,7 +1527,7 @@ mark.span:hover .callout-no {
   max-width: 72ch;
   font-variant-numeric: tabular-nums;
 }
-/* A disclosure for detail a judge may ask for but the officer does not need at a glance. */
+/* A disclosure for detail a reviewer may ask for but the officer does not need at a glance. */
 .fold > :not(summary) {
   margin: 10px 0 0;
   max-width: 88ch;
@@ -1542,7 +1541,7 @@ mark.span:hover .callout-no {
 .record-why > p {
   margin: 10px 0 0;
 }
-/* Evaluation: the detectors' measured accuracy, one table per check. The two numbers a judge asks for (false alarms
+/* Evaluation: the detectors' measured accuracy, one table per check. The two headline numbers (false alarms
    on genuine clips the threshold never saw, fakes caught) are set one step up the ladder; the counts behind them
    stay at small-print size on the line below. */
 .acc-group {

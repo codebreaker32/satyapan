@@ -90,8 +90,8 @@ export function Actions({ view, onView }: Props) {
   // GREY is not "safe" and a matching signature is not permission to pay. Every action stays available either way.
   const urgeHold = outcome === 'RED' || outcome === 'AMBER'
 
-  // A decision with nobody's name on it used to be accepted and sealed into the signed pack: the judge recorded a
-  // hold as actor "". The whole accountability story — the screen advises, the officer decides, a RED release needs
+  // A decision with nobody's name on it used to be accepted and sealed into the signed pack: a hold could be
+  // recorded as actor "". The whole accountability story — the screen advises, the officer decides, a RED release needs
   // a second person, the pack is signed — rests on this string. The service refuses a blank one; the screen says so
   // before the officer presses anything, rather than letting them hit a refusal.
   const unsigned = actor.trim() === ''
@@ -123,9 +123,8 @@ export function Actions({ view, onView }: Props) {
       </div>
 
       {/* The one place FRMU is spelled out. It is the bank's own word and an officer never needs it expanded, but
-          at the finale the people reading this screen are jurors, and an unexplained acronym on the main path cost
-          a point on quality of demonstration three passes running. Expanded here, once, where the acronym first
-          appears; the buttons below keep the short form the officer actually says. */}
+          a reader from outside the bank does, and an unexplained acronym on the main path is a barrier. Expanded
+          here, once, where the acronym first appears; the buttons below keep the short form the officer says. */}
       {(view.review_triggers?.length ?? 0) > 0 && (
         <p className="act-req">
           <b>Needs FRMU review:</b>{' '}
@@ -229,8 +228,8 @@ export function Actions({ view, onView }: Props) {
       {/* Not a decision: a correction to what was extracted, which sends the claim back through the rules. It is
           kept out of the decision set and says what pressing it will do. */}
       <div className="actions act-fix" role="group" aria-label="Correct the extraction">
-        {/* Ghost, like the release beside it. The judge counted a block of equal-weight grey buttons as a generic
-            tell, and these were not equals: the two onward routes are a pair, the release and the strike are the
+        {/* Ghost, like the release beside it. A block of equal-weight grey buttons reads as generic, and these
+            were not equals: the two onward routes are a pair, the release and the strike are the
             quiet ways back. Weight now says which is which, so the filled grey is spent on the pair alone. */}
         <button className="btn btn-sm btn-ghost act-quiet" disabled={stop || striking || present.length === 0} onClick={() => { setField(present[0][0]); setStriking(true) }}>
           Strike a wrong field

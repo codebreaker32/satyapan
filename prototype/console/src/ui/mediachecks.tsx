@@ -6,9 +6,9 @@ import { Trouble } from './trouble'
 
 // What each face, voice or document check found, one line per check, with the numbers that make it checkable: the
 // score against the line for that kind of input, how many genuine clips set that line, and how often genuine clips
-// that did not set it were flagged (calibration/accuracy.json, through /api/accuracy). A judge's first question
-// about a detector is "how often is it wrong about real people"; the answer belongs beside the result, not only on
-// the Evaluation page. Officer-only: the customer card never shows a score.
+// that did not set it were flagged (calibration/accuracy.json, through /api/accuracy). The first question about a
+// detector is "how often is it wrong about real people"; the answer belongs beside the result, not only on the
+// Evaluation page. Officer-only: the customer card never shows a score.
 
 let accuracyOnce: Promise<Accuracy> | null = null
 

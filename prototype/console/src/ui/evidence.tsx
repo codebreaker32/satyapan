@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { api, type EvidencePack, type Label } from '../lib/api'
 import { rupees, when } from '../lib/format'
 
-// The signed evidence pack, with the demo's memorable moment: flip one byte, watch it fail, restore it, watch it pass.
+// The signed evidence pack, with its tamper check: flip one byte, watch it fail, restore it, watch it pass.
 export function EvidencePanel({ caseId, signer, version }: { caseId: string; signer: Label | null; version: string | number }) {
   const [original, setOriginal] = useState<EvidencePack | null>(null)
   const [shown, setShown] = useState<EvidencePack | null>(null)

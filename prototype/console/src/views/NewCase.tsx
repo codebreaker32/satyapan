@@ -459,9 +459,9 @@ function Recorder({ onDone }: { onDone: (f: File) => void }) {
   }
   useEffect(() => stopTracks, [])
 
-  // The level meter. A muted or wrong microphone hands the browser silence without any error: on 23 Oct a
-  // 23-second recording reached the server holding nothing but the microphone's noise floor, and nobody could tell
-  // until the check came back with no text. A bar that moves while she speaks, and a line when it does not, shows
+  // The level meter. A muted or wrong microphone hands the browser silence without any error: a 23-second test
+  // recording reached the server holding nothing but the microphone's noise floor, and nothing showed it until
+  // the check came back with no text. A bar that moves while she speaks, and a line when it does not, shows
   // it during the recording instead. It reads the same stream the recorder saves.
   const listen = (ctx: AudioContext, s: MediaStream) => {
     const analyser = ctx.createAnalyser()

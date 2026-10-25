@@ -82,9 +82,8 @@ export default function App() {
               <strong>{meta.bank_name}</strong>
             </p>
           )}
-          {/* The mock disclosure ran to eleven lines of grey fine print on every screen. It is the honesty asset
-              and it stays word for word; it is now one line that opens, so it reads as a statement a visitor can
-              check rather than as small print they learn to skip. */}
+          {/* The mock disclosure, word for word, folded into one line that opens: eleven lines of grey fine print
+              on every screen read as small print a visitor learns to skip, not as a statement they can check. */}
           {meta && (
             <details className="rail-disclose">
               <summary>Everything shown is synthetic</summary>

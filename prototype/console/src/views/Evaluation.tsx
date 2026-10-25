@@ -181,7 +181,7 @@ function sourceWords(id: string): string {
 
 // The face and voice checks' measured accuracy, exactly as scripts/accuracy_card.py wrote it from the calibration
 // runs: the outcomes are the ones the officer sees (flagged, unsure, no signs), false alarms are also counted on
-// genuine clips that did not set the threshold, and the failure cases are named. A judge's first question about a
+// genuine clips that did not set the threshold, and the failure cases are named. The first question about a
 // detector is "how often is it wrong on real people"; the answer is on screen, with its sample sizes.
 function DetectorAccuracy({ reload }: { reload: number }) {
   const [acc, setAcc] = useState<Accuracy | null>(null)

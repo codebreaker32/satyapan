@@ -3,8 +3,8 @@
 //
 // Expects the built console served by the API on port 8010 (E2E_BASE overrides,
 // default http://127.0.0.1:8010):
-//   cd satyapan/console && npm run build
-//   /home/aman/projects/raksham/satyapan/.venv/bin/satyapan serve --port 8010
+//   cd prototype/console && npm run build
+//   satyapan serve --port 8010
 //   npm run e2e
 //
 // Plain node script in the style of .impeccable/review/*.mjs: no test framework,
@@ -57,8 +57,8 @@ async function openControls(page) {
   await page.waitForSelector('details.home-more[open] .scenario-row', { state: 'visible', timeout: WAIT })
 }
 
-// Run a scenario the way the officer does: from the Scenarios page, by its visible title. Since pass 6 the whole
-// row is the control (`.scenario-hit`), so there is no separate "Run" button to find.
+// Run a scenario the way the officer does: from the Scenarios page, by its visible title. The whole row is the
+// control (`.scenario-hit`), so there is no separate "Run" button to find.
 async function runScenario(page, titleById, id) {
   await openScenarios(page)
   const row = page.locator('.scenario-row', { hasText: titleById[id] })
@@ -223,8 +223,8 @@ try {
     const g = await classify()
     if (g && g !== 'other' && seq[seq.length - 1] !== g) seq.push(g)
   }
-  // Since the counter pane (18 Oct, pass 1) the card and the officer's actions sit side by side under the band, card
-  // first, so tab order follows the reading order: what you tell her, what you do, then the detail below.
+  // In the counter pane the card and the officer's actions sit side by side under the band, card first, so tab
+  // order follows the reading order: what the customer is told, what the officer does, then the detail below.
   const orderOk = seq.indexOf('card') === 0 && seq.includes('actions') && seq.includes('features') &&
     seq.indexOf('card') < seq.indexOf('actions') && seq.indexOf('actions') < seq.indexOf('features')
   check(orderOk, 'keyboard: tab order reaches the card, then the actions, then the features', `got ${JSON.stringify(seq)}`)
@@ -380,9 +380,9 @@ try {
   )
 
   // -- i. projector drill: the S1 beat at 1280x720 ----------------------------
-  // Venue projectors are commonly 1280x720 (the Round-1 deck is built at that size),
-  // so the demo's first beat must hold there: band word, both named checks and the
-  // officer actions above the fold, with no horizontal overflow.
+  // Projectors are commonly 1280x720, so the first beat must hold there: band word,
+  // both named checks and the officer actions above the fold, with no horizontal
+  // overflow.
   const ctx720 = await browser.newContext({ viewport: { width: 1280, height: 720 } })
   const page720 = await ctx720.newPage()
   try {
@@ -411,8 +411,8 @@ try {
     )
 
     // -- i2. the counter pane: the whole customer card clears the fold on every verdict ----
-    // The card is the only artefact the customer ever sees. Before the counter pane it sat about a screen and a half
-    // down. Every verdict's stop line, every numbered reason and the "do now" line must be readable without scrolling.
+    // The card is the only artefact the customer ever sees. Every verdict's stop line, every numbered reason and
+    // the "do now" line must be readable without scrolling.
     // S3 is the longest card in the set (the forged summons: three reasons plus the coaching line), so it is the
     // one that decides whether the claim holds — not S1, which is the shortest RED. Both languages are measured:
     // English wraps wider than Devanagari here, and the officer may switch tabs in front of the customer.
@@ -462,8 +462,8 @@ try {
         `1280x720 ${outcome}: the hold is ${wantPrimary ? '' : 'not '}the emphasised action`,
         `class "${holdClass}"`,
       )
-      // The note that restated the emphasis in words ("RED asks you to pause the transfer...") was cut in the
-      // ui-distill pass; the button's weight above says it. What must hold is that nothing else claims the slot.
+      // The note that restated the emphasis in words ("RED asks you to pause the transfer...") was removed; the
+      // button's weight above says it. What must hold is that nothing else claims the slot.
       check(
         (await page720.locator('.act-head').innerText()).trim() === '',
         `1280x720 ${outcome}: before a decision the receipt slot is empty`,
@@ -509,10 +509,10 @@ try {
     }
 
     // -- i3b. the type ladder on the case screen ----
-    // The design brief holds a screen to about six distinct sizes and the judge counted ten on this one for four
-    // passes. Two of them were accidents rather than decisions (a 1.15em case id at 23px, and anything that set
-    // no size at all inheriting the 18px root), so they are gone and the ceiling is now asserted rather than
-    // re-counted by eye every pass. Raising this number is a design decision, not a maintenance edit.
+    // The design brief holds a screen to about six distinct sizes; this one previously rendered ten. Two of them
+    // were accidents rather than decisions (a 1.15em case id at 23px, and anything that set no size at all
+    // inheriting the 18px root), so they are gone and the ceiling is asserted rather than counted by eye.
+    // Raising this number is a design decision, not a maintenance edit.
     const ladder = await typeSizes(page720)
     check(
       ladder.length <= 6,
@@ -552,11 +552,11 @@ try {
     )
     // Nothing on the landing carries the filled weight at rest. "Open a case by hand" used to share it with the
     // Run buttons and sat higher, so the most authoritative control on the home screen led to an empty form;
-    // since pass 6 the row itself is the control and there is no Run button to emphasise either.
+    // the row itself is now the control and there is no Run button to emphasise either.
     //
     // This assertion used to read `every(t => t === 'Run')` over the filled buttons. When the Run buttons went
-    // away the list became empty and `[].every(...)` is true, so it passed while proving nothing — the same
-    // tautology shape the adversarial gate has caught twice before. Count, then name.
+    // away the list became empty and `[].every(...)` is true, so it passed while proving nothing. Count, then
+    // name.
     const landingPrimaries = await page720.evaluate(() =>
       [...document.querySelectorAll('.main .btn-primary')].map((b) => (b.textContent ?? '').trim()),
     )
@@ -582,7 +582,7 @@ try {
     await page720.waitForTimeout(150)
     check(!(await holdBtn.isDisabled()), 'unsigned: typing a staff id enables the decision again')
 
-    // -- i4d. a file we cannot read lands on a sentence, not a stack trace ----
+    // -- i4d. an unreadable file lands on a sentence, not a stack trace ----
     const badUpload = await page720.evaluate(async (base) => {
       const open = await fetch(`${base}/api/cases`, {
         method: 'POST',
@@ -604,8 +604,8 @@ try {
     )
 
     // -- i4e. the coverage strip: what the check could and could not read, on every outcome ----
-    // Five of the pass-5 judge's ten probes got a verdict worth arguing with, and in four of them the engine had
-    // quietly failed to read one field. GREY already said so in prose; RED, AMBER and MATCHES said nothing.
+    // A missed field (an unrecognised masthead, a passive instruction) used to leave no trace on screen. GREY
+    // already said so in prose; RED, AMBER and MATCHES said nothing.
     for (const [id, outcome] of [
       ['S3-ed-summons', 'RED'],
       ['S5c-ed-summons-1h-old', 'AMBER'],
@@ -615,10 +615,8 @@ try {
       await runScenario(page720, titleById, id)
       await visible(page720.locator('.coverage'), `${outcome}: the coverage strip is on screen`)
       const strip = (await page720.locator('.coverage').innerText()) ?? ''
-      // The strip names the script it read in the words an officer would use. It said "Read as Latin ... by
-      // rules-1.0" until the 18 Oct pass-6 build, which is a script name an officer reads as a language and an
-      // internal version string; this assertion was still matching the old sentence, and nothing caught it
-      // because the pass that changed the words never got to run the e2e.
+      // The strip names the script it read in the words an officer would use. It used to say "Read as Latin ...
+      // by rules-1.0", a script name an officer reads as a language and an internal version string.
       check(
         /read in the roman alphabet|read in devanagari|read in a mix of/i.test(strip),
         `${outcome}: the strip names the script it read`,
@@ -652,9 +650,9 @@ try {
 
     // -- i4g. the same cut wire on every READ path ----
     // With the network cut `#/cases` rendered its heading, its lede and nothing else: no message, no retry, no
-    // sign that anything had failed, and the error only in the devtools console. The judge called it "a blank
-    // screen" and it capped UI/UX at 6. Every view that fetches on mount now says what happened in a plain
-    // sentence and offers a Retry that re-runs the fetch in place.
+    // sign that anything had failed, and the error only in the devtools console: in effect a blank screen. Every
+    // view that fetches on mount now says what happened in a plain sentence and offers a Retry that re-runs the
+    // fetch in place.
     //
     // RAW is the set of browser strings that must never reach a branch counter. "Failed to fetch" is Chrome's;
     // the other two are what the same failure says in other engines and in other shapes.
@@ -683,7 +681,7 @@ try {
         // meta the app had already loaded successfully, and it quietly proved nothing.
         await off.reload()
         await off.waitForSelector(r.ready, { timeout: WAIT })
-        // The notice is the whole point: before this pass nothing rendered at all on #/cases.
+        // The notice is the point of the check: without it nothing rendered at all on #/cases.
         const shown = await visible(
           off.locator('.main .notice-warn'),
           `offline ${r.label}: the screen says the read failed instead of rendering nothing`,
@@ -694,7 +692,7 @@ try {
         check(!RAW.test(text), `offline ${r.label}: no raw browser string reaches the officer`, text)
         check(r.names.test(text), `offline ${r.label}: the sentence names what could not be read`, text)
         // The sentence has to say the screen is empty because nothing was read. Without this clause an empty
-        // session and a dead wire look the same, which is the lie item 4 of the brief is about.
+        // session and a dead wire look the same, and the empty screen would misreport a failure.
         check(
           /nothing was read/i.test(text),
           `offline ${r.label}: the sentence separates "nothing there" from "nothing read"`,
@@ -720,7 +718,7 @@ try {
         check(await alive(off), `offline ${r.label}: Retry re-runs the fetch in place, without reloading the page`)
       }
       // The rulebook used to say "Loading…" for as long as the service stayed down — false the moment the request
-      // has already failed, and the one word a judge reads as "slow" rather than "broken".
+      // has already failed, and a word that reads as "slow" rather than "broken".
       await off.route('**/api/meta', (req) => req.abort())
       await off.goto(`${base}/#/rulebook`)
       await off.reload() // App fetches meta once per document, so this needs a fresh one
@@ -775,9 +773,9 @@ try {
       await off.route('**/api/cases', (req) => req.abort())
       await off.goto(`${base}/#/cases`)
       await off.waitForSelector('.main .notice-warn', { timeout: WAIT })
-      // Both halves in one assertion on purpose. "No cases yet" is absent on a failed read today and was absent
-      // before this pass too (the list simply stayed null), so on its own that half proves nothing; what is new is
-      // that the failure is named. Asserting the pair is what makes the check discriminating.
+      // Both halves in one assertion on purpose. "No cases yet" was absent on a failed read even before the
+      // failure was named (the list simply stayed null), so on its own that half proves nothing. Asserting the
+      // pair is what makes the check discriminating.
       const casesOff = (await off.locator('.main').innerText()) ?? ''
       check(
         /not loaded/i.test(casesOff) && !/no cases yet/i.test(casesOff),
@@ -813,7 +811,7 @@ try {
     await visible(page720.getByText('You say next'), 'card: the officer-only "you say next" lines are shown apart from the card')
 
     // -- i7. a recorded decision is acknowledged where the officer is looking ----
-    // Before this pass the only above-the-fold change after pressing Hold was the button turning muted.
+    // Without the acknowledgement the only above-the-fold change after pressing Hold was the button turning muted.
     await runScenario(page720, titleById, 'S1-rm-voice-note')
     await page720.getByRole('button', { name: 'Hold the transfer' }).click()
     await page720.waitForSelector('.act-done', { timeout: WAIT })
@@ -833,7 +831,7 @@ try {
   fail('e2e run completed without an unexpected error', e instanceof Error ? e.message : String(e))
 } finally {
   await browser.close()
-  // leave the server as clean as we found it, so a run just before the demo leaves nothing on screen
+  // leave the server as it was found, so an e2e run leaves no cases on screen
   await fetch(`${base}/api/demo/reset`, { method: 'POST' }).catch(() => {})
 }
 

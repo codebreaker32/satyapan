@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { Card } from '../lib/api'
 
-// The engine's Card carries say_next; the shared type has not caught up yet, so widen it here rather than reach
-// into another strand's file. These lines are the officer's and never go in read_aloud or the copied text.
+// The engine's Card carries say_next; the shared type does not declare it yet, so widen it here rather than
+// edit the shared type. These lines are the officer's and never go in read_aloud or the copied text.
 type OfficerCard = Card & { say_next?: string[] }
 
 // What the officer reads to the customer: a stop line, three reasons she can check, and ONE instruction. Everything

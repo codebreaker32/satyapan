@@ -2,9 +2,9 @@
 //
 //   node e2e/type-scale.mjs '#/case/SP-XXXX' [--width 1280] [--base http://127.0.0.1:8010]
 //
-// The design brief holds the console to about six distinct sizes per screen and the judge has counted ten on the
-// case screen for four passes running. Counting by eye off a screenshot is how it stayed at ten: derived sizes
-// (`1.2em`), responsive step-downs and inherited defaults do not show up in a grep of the stylesheet. This reads
+// The design brief holds the console to about six distinct sizes per screen. Counting by eye off a screenshot
+// misses sizes: derived sizes (`1.2em`), responsive step-downs and inherited defaults do not show up in a grep
+// of the stylesheet. This reads
 // the computed size of every leaf text node in the content column, which is what a reader's eye actually sorts.
 import { chromium } from '../../../deck/node_modules/playwright/index.mjs'
 

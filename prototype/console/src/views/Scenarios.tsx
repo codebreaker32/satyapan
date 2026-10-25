@@ -4,8 +4,8 @@ import { rupees } from '../lib/format'
 import { go } from '../lib/router'
 import { Trouble, writeTrouble } from '../ui/trouble'
 
-// The finale runs through fixtures: five beats that show the mechanism, then the controls that show it is not
-// trigger-happy. Every verdict on screen comes from the engine at the moment you press Run.
+// The walkthrough runs through fixtures: five beats that show the mechanism, then the controls that show it is
+// not trigger-happy. Every verdict on screen comes from the engine at the moment you press Run.
 const DEMO_ORDER = ['S1-rm-voice-note', 'S1b-rm-own-phone', 'S2-rbi-video', 'S3-ed-summons', 'S4-claim-only']
 
 // The engine verdicts in milliseconds, so a fixed "X.X s" would round to a meaningless 0.0 s.
@@ -97,7 +97,7 @@ export function Scenarios({ onRun, reload = 0 }: { onRun: (v: CaseView) => void;
   }
 
   if (!list) {
-    // The headline and the lede stay: they are what the screen IS, and a juror who arrives on a dead service
+    // The headline and the lede stay: they are what the screen IS, and a visitor who arrives on a dead service
     // should still read what Satyapan does rather than an error on a blank page.
     return (
       <>
@@ -125,11 +125,10 @@ export function Scenarios({ onRun, reload = 0 }: { onRun: (v: CaseView) => void;
 
   return (
     <>
-      {/* A worklist, not a document. The judge's words for the old landing were "the demo's first frame is a grey
-          document": 114 words of prose and seventeen identical black Run buttons before a juror saw a single
-          verdict. The product's one memorable object is the verdict band, and it was a click away from everything
-          anyone saw first. Now the whole row is the control, the five beats are the first frame, and a row that
-          has been run repaints in its own outcome colour, so the screen changes state in front of the room. */}
+      {/* A worklist, not a document. The old landing put 114 words of prose and seventeen identical black Run
+          buttons before a single verdict, and the product's one memorable object, the verdict band, was a click
+          away from everything seen first. Now the whole row is the control, the five beats are the first frame,
+          and a row that has been run repaints in its own outcome colour, so the screen visibly changes state. */}
       <header className="page-head home-head">
         <div className="stack">
           <h1>Check the instruction behind a flagged transfer</h1>
@@ -155,9 +154,9 @@ export function Scenarios({ onRun, reload = 0 }: { onRun: (v: CaseView) => void;
       <section className="section home-list">
         <div className="home-sec">
           <h2>Five beats that show the mechanism</h2>
-          {/* "pytest asserts RED" used to sit on every row, so the first thing a juror's eye met on the product's
+          {/* "pytest asserts RED" used to sit on every row, so the first thing a reader met on the product's
               home screen was a test-runner's name. The claim it was making is worth keeping and belongs here,
-              said once, in words anyone in the room can follow. Before a run a row now says nothing at all about
+              said once, in plain words. Before a run a row now says nothing at all about
               the answer, which is the stronger version of "nothing is pre-computed". */}
           <p className="muted">Nothing is pre-computed: press a row to run the engine.</p>
         </div>
@@ -182,7 +181,7 @@ export function Scenarios({ onRun, reload = 0 }: { onRun: (v: CaseView) => void;
       </section>
 
       {/* The rehearsal controls live at the foot, not on the product's home screen: a reset button beside the
-          headline told a juror they were looking at a demo harness before they had looked at anything else. */}
+          headline said "demo harness" before the reader had looked at anything else. */}
       <section className="section home-foot">
         <div className="inline">
           <span className="muted small">Rehearsal controls</span>
