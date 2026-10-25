@@ -8,6 +8,12 @@ citizen who is not standing at a bank counter (docs/architecture.md, section 3):
 - No bank records. Reasons resting on the bank's own records (family F2: outbound log, beneficiary look-up, ledger)
   are left out. In this bot they would come from the demo bank's labelled mocks, and "no money was credited to your
   account" would be a claim about an account the bot has never seen.
+- No mock shown as a live look-up. The I4C suspect registry and ED's verify-summon page are answered from labelled
+  mocks in the prototype (prototype/satyapan/adapters.py), so "we checked, and this account is on the government's
+  suspect list" is left out too. The officer console shows those labels; a citizen's chat has nowhere to show them.
+- A slot freed that way may go to a detector's own reason (family F3: voice, face, document), worded exactly as the
+  card words it (`card.ground_reason` uses the rulebook sentence for these), so a voice note's reply can still say
+  what the voice check found. Never a simulated result.
 - No scores, and never the words safe, fake, fraud or genuine (nor their Hindi equivalents). A reason that still
   carries one is dropped rather than reworded on the fly.
 - Every reply to a check ends with the official-channel and 1930 line.
@@ -173,6 +179,10 @@ NO_SHOWN_REASON = ("The checks found warning signs in this message.", "जाँ
 BANK_RECORD_FAMILY = "F2"
 BANK_RECORD_RULES = ("R-BANK-SELF", "R-BANK-RM-PHONE", "R-PAYEE-NAME", "R-PAYEE-NOT-SENDER", "R-RECEIVER-NAME",
                      "R-LEDGER", "R-OWN-SIGNATURE")
+# Rules whose finding is a look-up the prototype answers from a labelled mock (adapters.MockSuspectRegistry, the ED
+# verify-summon mock). R-ED-NO-PASSCODE and R-ED-CHANNEL read the notice itself and stay.
+MOCK_LOOKUP_RULES = ("R-SUSPECT", "R-ED-SUMMONS-NOTFOUND", "R-ED-WINDOW", "R-ED-FOUND")
+DETECTOR_FAMILY = "F3"
 
 
 def shown_outcome(outcome: str) -> str:
@@ -185,26 +195,41 @@ def _signal_index(view: dict) -> dict[str, dict]:
     return {s.get("rule_id"): s for s in verdict.get("signals") or [] if isinstance(s, dict)}
 
 
+def _shown(text: str) -> bool:
+    return bool(text) and not forbidden_in(text) and not SCORE_LIKE.search(text) and "SIMULATED" not in text
+
+
 def citizen_reasons(view: dict, lang: str, outcome: str) -> list[str]:
-    """The card's reasons a citizen may be shown, at most three, in her language."""
+    """The card's reasons a citizen may be shown, at most three, in her language; then, if a slot is free, what a
+    detector found."""
     if outcome == "MATCHES":
         return []
     card = ((view.get("card") or {}).get(lang)) or {}
     signals = _signal_index(view)
     out: list[str] = []
+    used: set[str] = set()
     for r in card.get("reasons") or []:
         text = (r.get("text") or "").strip()
         rule = r.get("rule_id") or ""
         sig = signals.get(rule, {})
-        if not text:
-            continue
         if sig.get("family") == BANK_RECORD_FAMILY or rule in BANK_RECORD_RULES or sig.get("severity") == "match":
             continue
-        if forbidden_in(text) or SCORE_LIKE.search(text):
+        if rule in MOCK_LOOKUP_RULES or not _shown(text):
             continue
         out.append(text)
+        used.add(rule)
         if len(out) == 3:
-            break
+            return out
+    for rule, sig in signals.items():
+        if sig.get("family") != DETECTOR_FAMILY or sig.get("severity") not in ("hard", "soft") or rule in used:
+            continue
+        if (sig.get("detail") or {}).get("simulated"):
+            continue
+        text = str(sig.get("reason_hi" if lang == "hi" else "reason_en") or "").strip()
+        if _shown(text):
+            out.append(text)
+            if len(out) == 3:
+                break
     return out
 
 

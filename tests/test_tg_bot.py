@@ -303,7 +303,7 @@ def test_reasons_that_break_the_rules_are_left_out():
         {"text": "We have no record of sending this message.", "rule_id": "R-BANK-SELF"},
         {"text": "The police never ask for money on a call.", "rule_id": "R-DIGITAL-ARREST-PAY"},
         {"text": "It asks you to move money to a safe account.", "rule_id": "R-AGENCY-PAY"},
-        {"text": "The payee is a new account.", "rule_id": "R-SUSPECT"},
+        {"text": "The payee is a new account.", "rule_id": "R-RBI-INV"},
         {"text": "The website was registered last week.", "rule_id": "R-WEBSITE-NEW"},
         {"text": "A fourth clean reason.", "rule_id": "R-CAMPAIGN-MATCH"}]}}
     signals = [{"rule_id": "R-BANK-SELF", "family": "F2", "severity": "hard"}]
@@ -311,6 +311,38 @@ def test_reasons_that_break_the_rules_are_left_out():
     assert "1. The police never ask" in text and "2. The payee is a new account." in text
     assert "3. The website was registered" in text and "fourth" not in text   # three at most
     assert "no record" not in text   # the bank's own records are not the citizen's
+
+
+def test_mock_lookups_are_not_shown_and_a_detector_fills_the_slot():
+    """The voice note of the end-to-end run: the card's three were digital arrest, the suspect registry (a labelled
+    mock) and the payee look-up (bank records). The citizen sees the first and what the voice check found."""
+    cards = {"en": {"headline": "Stop and verify through the official channel", "reasons": [
+        {"text": "There is no digital arrest in Indian law.", "rule_id": "R-DIGITAL-ARREST-PAY"},
+        {"text": "We checked, and this account is already on the government's cyber-crime suspect list.",
+         "rule_id": "R-SUSPECT"},
+        {"text": "The account belongs to someone else.", "rule_id": "R-PAYEE-NAME"}]}}
+    signals = [{"rule_id": "R-DIGITAL-ARREST-PAY", "family": "F1", "severity": "hard"},
+               {"rule_id": "R-SUSPECT", "family": "F1", "severity": "hard"},
+               {"rule_id": "R-PAYEE-NAME", "family": "F2", "severity": "hard"},
+               {"rule_id": "R-PRESSURE-CUES", "family": "F5", "severity": "soft", "reason_en": "Pressure."},
+               {"rule_id": "R-AUDIO-SYNTH", "family": "F3", "severity": "soft",
+                "reason_en": "This voice shows signs of being computer-generated (high). It is one of the checks, "
+                             "not proof on its own.", "detail": {"score": 0.97, "simulated": False}}]
+    text = reply_for(stub_view("SP-00000001", "RED", lang_cards=cards, signals=signals), "en")
+    assert "1. There is no digital arrest" in text
+    assert "2. This voice shows signs of being computer-generated (high)." in text
+    assert "suspect list" not in text and "belongs to" not in text and "Pressure" not in text and "3." not in text
+
+
+def test_a_simulated_detector_result_is_never_shown():
+    cards = {"en": {"headline": "Verify before paying", "reasons": []}}
+    signals = [{"rule_id": "R-AUDIO-SYNTH", "family": "F3", "severity": "soft",
+                "reason_en": "This voice shows signs of being computer-generated (high) (SIMULATED).",
+                "detail": {"simulated": True}},
+               {"rule_id": "R-VIDEO-SYNTH", "family": "F3", "severity": "soft",
+                "reason_en": "The face shows signs of manipulation (moderate) (SIMULATED).", "detail": {}}]
+    text = reply_for(stub_view("SP-00000001", "AMBER", lang_cards=cards, signals=signals), "en")
+    assert "voice" not in text and "face" not in text and W.NO_SHOWN_REASON[0] in text
 
 
 def test_red_with_no_reason_left_still_says_why():
