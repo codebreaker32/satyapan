@@ -1,6 +1,6 @@
 # Satyapan (सत्यापन)
 
-**Verify the instruction, not the pixels.**
+**Verify the instruction, not just the pixels.**
 
 When a bank pauses a large, unusual transfer, Satyapan helps the officer check the "official" voice note, video or
 notice behind it against issuer rules and the bank's own records, together with a calibrated deepfake check on the

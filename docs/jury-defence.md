@@ -44,7 +44,7 @@ replays recorded answers) [prototype/satyapan/adapters.py].
 >
 > The amount reported for digital-arrest scams and related cyber crime rose from 91.14 crore rupees in 2022 to
 > 1,935.51 crore in 2024. On deepfakes circulating in the wild, open detectors lose about half their AUC. So we
-> verify the instruction, not the pixels.
+> verify the instruction, not just the pixels.
 
 Sources: the flag and amount are the demo's own case (premature FD closure, RTGS to a first-time payee, Rs 38,00,000)
 [scripts/build_demo_cases.py; prototype/data/fixtures/scenarios.json S3]; the flag, the officer's "are you sure?"

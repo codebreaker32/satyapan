@@ -1,6 +1,6 @@
 # Satyapan: architecture and finale plan
 
-**Verify the instruction, not the pixels.** When a bank pauses a large, unusual transfer, Satyapan helps the officer
+**Verify the instruction, not just the pixels.** When a bank pauses a large, unusual transfer, Satyapan helps the officer
 check the "official" voice note, video or notice behind it. The instruction checks and the deepfake check count half
 each in a combined score (agreed by the team on 24 Oct, `docs/changes-2026-10-24.md`); the officer always decides.
 
