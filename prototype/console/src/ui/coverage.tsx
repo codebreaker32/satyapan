@@ -40,20 +40,6 @@ const SOURCE: Record<string, string> = {
   ocr: 'text read off the scanned notice',
   text: 'message as pasted',
 }
-const RECORD: Record<string, string> = {
-  'issuer:ed_portal': "ED's own verification service",
-  'registry:suspect': 'the I4C suspect registry',
-  'bank:outbound_log': "the bank's outbound log",
-  'bank:name_lookup': "the bank's beneficiary name look-up",
-  'bank:ledger': "the bank's ledger",
-  'bank:signature': "the bank's content signature",
-  'bank:paused_payment': "the bank's record of the paused payment",
-  'web:registry': "the domain registry's record of the website",
-  'memory:template': 'campaign memory',
-  'media:video': 'the face check on the video',
-  'media:audio': 'the voice check',
-  'media:document': 'the document check',
-}
 
 export function Coverage({ view }: Props) {
   const claim = view.case.claim
@@ -87,16 +73,6 @@ export function Coverage({ view }: Props) {
   const payee = claim.payee.account || claim.payee.ifsc || claim.payee.vpa
   ;(payee ? read : missed).push(payee ? 'a payee to send money to' : 'no payee to send money to')
 
-  // Which outside records a signal rests on. This NAMES them rather than counting them: a count read as "how many
-  // lookups ran", which is not what it is — a rule that runs a lookup and finds nothing clean produces no signal,
-  // so the count said "no outside record was checked" on a case where the beneficiary name look-up had run and
-  // cleared the payee, and said "1" on a MATCHES whose band names two records. Naming what a signal rests on is
-  // the claim the data actually supports.
-  // A media check that found nothing or abstained did not fire, so it is not named here (the "Also noted" list and
-  // the band say what it did).
-  const fired = v.signals.filter((s) => !(s.family === 'F3' && (s.severity === 'abstain' || s.severity === 'info')))
-  const rested = [...new Set(fired.filter((s) => s.evidence_key.includes(':')).map((s) => RECORD[s.evidence_key] ?? s.evidence_key))]
-  const others = (claim as unknown as { other_issuers?: Array<{ value: string }> }).other_issuers ?? []
 
   // Claim-only mode has no artefact: the officer ticked boxes, nothing was read from a message, and saying "read
   // as Latin by picklist. It read an authority..." credits the extractor with the officer's own input.
@@ -109,7 +85,7 @@ export function Coverage({ view }: Props) {
       </h2>
       <p className="coverage-line">
         {picklist ? (
-          <>Nothing was read from an artefact. The media was not shown, so these are the fields the officer ticked in claim-only mode: {join(read)}.</>
+          <>Claim-only mode: nothing was read; the officer ticked {join(read)}.</>
         ) : claim.source === 'none' ? (
           // It used to read "Read in the Roman alphabet, from the none. It read nothing." about a recording that
           // reached the server silent: the strip named a script and a source for text that did not exist.
@@ -121,18 +97,7 @@ export function Coverage({ view }: Props) {
             {missed.length > 0 ? (describes ? ` This message carries ${join(missed)}.` : ` It found ${join(missed)}.`) : ''}
           </>
         )}
-        {rested.length > 0 ? ` The checks that fired rest on ${join(rested)}.` : ' No outside record was named by any check that fired.'}
       </p>
-      {others.length > 0 && (
-        <p className="coverage-line muted">
-          This message also names {join(others.map((o) => ISSUER_NAMES[o.value] ?? o.value.replace(/_/g, ' ')))}, which it does not claim to be.
-        </p>
-      )}
-      {!describes && (
-        <p className="coverage-line muted small">
-          Anything the check could not read is a gap in what the rules could use, not a finding about the message.
-        </p>
-      )}
     </section>
   )
 }

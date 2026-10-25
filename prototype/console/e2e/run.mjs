@@ -462,9 +462,11 @@ try {
         `1280x720 ${outcome}: the hold is ${wantPrimary ? '' : 'not '}the emphasised action`,
         `class "${holdClass}"`,
       )
-      await visible(
-        page720.locator('.act-note', { hasText: wantPrimary ? 'asks you to pause the transfer' : 'recommends no action' }),
-        `1280x720 ${outcome}: the action note says why`,
+      // The note that restated the emphasis in words ("RED asks you to pause the transfer...") was cut in the
+      // ui-distill pass; the button's weight above says it. What must hold is that nothing else claims the slot.
+      check(
+        (await page720.locator('.act-head').innerText()).trim() === '',
+        `1280x720 ${outcome}: before a decision the receipt slot is empty`,
       )
     }
 

@@ -1384,7 +1384,8 @@ mark.span:hover .callout-no {
 .home-more {
   margin-top: 18px;
 }
-.home-more > summary {
+.home-more > summary,
+.fold > summary {
   display: inline-block;
   padding: 8px 12px;
   border-radius: var(--r);
@@ -1394,7 +1395,8 @@ mark.span:hover .callout-no {
   cursor: pointer;
   transition: background-color var(--t) var(--ease);
 }
-.home-more > summary:hover {
+.home-more > summary:hover,
+.fold > summary:hover {
   background: var(--panel-2);
 }
 .home-more > p {
@@ -1526,15 +1528,19 @@ mark.span:hover .callout-no {
   max-width: 72ch;
   font-variant-numeric: tabular-nums;
 }
-/* The engine's own account of the verdict, under the record at full width (it was one word per line in the
-   Policy row's value column). */
+/* A disclosure for detail a judge may ask for but the officer does not need at a glance. */
+.fold > :not(summary) {
+  margin: 10px 0 0;
+  max-width: 88ch;
+}
+/* The engine's own account of the verdict, folded under the record at full width. */
 .record-why {
   margin: 0;
   max-width: 90ch;
   color: var(--ink-2);
 }
-.record-why strong {
-  color: var(--ink);
+.record-why > p {
+  margin: 10px 0 0;
 }
 /* Evaluation: the detectors' measured accuracy, one table per check. The two numbers a judge asks for (false alarms
    on genuine clips the threshold never saw, fakes caught) are set one step up the ladder; the counts behind them

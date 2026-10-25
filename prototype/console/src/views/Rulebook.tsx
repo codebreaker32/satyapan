@@ -64,8 +64,7 @@ export function Rulebook({ meta, trouble, onRetry }: { meta: Meta | null; troubl
         <div className="stack">
           <h1>Rulebook {meta.rulebook.version}</h1>
           <p>
-            Each rule carries a primary citation and the date it was checked. A rule whose citation is not verified is demoted to soft when
-            the rulebook loads, so it can never anchor a RED. Rulebook hash <span className="hash">{meta.rulebook.sha256.slice(0, 16)}</span>.
+            An unverified citation is demoted to soft, so it never anchors a RED. Hash <span className="hash">{meta.rulebook.sha256.slice(0, 16)}</span>.
           </p>
         </div>
       </header>
@@ -102,7 +101,6 @@ export function Rulebook({ meta, trouble, onRetry }: { meta: Meta | null; troubl
       <section className="section section-alt">
         <h2>Integrations, honestly labelled</h2>
         <p className="muted">
-          In the prototype every outside lookup reads a JSON file. The label says what the real source is, who owns it and how it is reached.{' '}
           {integrationHonesty(meta)}
         </p>
         <ul className="rows">

@@ -50,15 +50,10 @@ export function Memory({ reload = 0 }: { reload?: number }) {
       <header className="page-head">
         <div className="stack">
           <h1>Campaign memory</h1>
-          <p>
-            A template enters memory only after two different analysts approve it, and only with the customer's consent. A match is a soft
-            signal: it can make a case AMBER, never RED on its own.
-          </p>
-          {/* A div, not a p: `.page-head p` would override the notice colour. maxWidth keeps it to the measure of the text above. */}
+          <p>Two different analysts approve each template. A match is soft: never RED on its own.</p>
+          {/* A div, not a p: `.page-head p` would override the notice colour. */}
           <div className="notice" style={{ maxWidth: '70ch' }}>
-            <span className="tag tag-sim">Seeded demo data</span> The entries that ship with the prototype are synthetic fixtures: their
-            dates, branches, counts and CFCFRMS notes describe an imagined deployment, not a bank's history. Anything proposed from a case
-            in this session is added live and is cleared by the demo reset.
+            <span className="tag tag-sim">Seeded demo data</span> The shipped entries are synthetic; this session's proposals clear on reset.
           </div>
         </div>
         <label className="field">

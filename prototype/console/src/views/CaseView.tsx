@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api, type CaseView as View, type Meta } from '../lib/api'
-import { clock, spellsAmount, when } from '../lib/format'
+import { clock, when } from '../lib/format'
 import { Actions, statusWord } from '../ui/actions'
-import { Rupee } from '../ui/rupee'
 import { VerdictBand, humanise } from '../ui/band'
 import { CustomerCard } from '../ui/card'
 import { Check } from '../ui/check'
@@ -194,36 +193,14 @@ export function CaseView({ id, view, onView, meta, reload = 0 }: Props) {
                 <span>{when(c.created_at)}</span>
               </div>
               <div className="row-item label">
-                <strong>Bank flag</strong>
+                <strong>Consent</strong>
                 <span>
-                  {c.flag.reason}
-                  {c.flag.amount_inr > 0 && !spellsAmount(c.flag.reason) && (
-                    <>
-                      {' · '}
-                      <Rupee n={c.flag.amount_inr} />
-                    </>
-                  )}
-                  {(c.flag.payee_vpa || c.flag.payee_account) && (
-                    <>
-                      {' · paying to '}
-                      <span className="hash">{c.flag.payee_vpa || c.flag.payee_account}</span>
-                    </>
-                  )}
-                  {' · '}
-                  {c.flag.channel}
-                </span>
-              </div>
-              <div className="row-item label">
-                <strong>Consent, read aloud in {c.consent.read_aloud_lang === 'hi' ? 'Hindi' : 'English'}</strong>
-                <span>
-                  check this message: {c.consent.check ? 'yes' : 'no'} · include it in a report: {c.consent.report ? 'yes' : 'no'} · add its
-                  fingerprint to campaign memory: {c.consent.memory ? 'yes' : 'no'}
-                  {c.consent.recorded_at ? ` · recorded ${clock(c.consent.recorded_at)}` : ''}
+                  {consentWords(c.consent)} · read in {c.consent.read_aloud_lang === 'hi' ? 'Hindi' : 'English'}
                 </span>
               </div>
               <div className="row-item label">
                 <strong>Mode</strong>
-                <span>{view.inputs.mode === 'claim-only' ? 'claim-only: the officer ticked what she was told' : 'media shown by the customer'}</span>
+                <span>{view.inputs.mode === 'claim-only' ? 'claim-only' : 'media'}</span>
               </div>
               {c.verdict && (
                 <div className="row-item label">
@@ -238,7 +215,7 @@ export function CaseView({ id, view, onView, meta, reload = 0 }: Props) {
 
           <div className="stack">
             <h3>Decisions</h3>
-            {c.decisions.length === 0 && <p className="muted">No decision yet. The screen advises; the officer decides.</p>}
+            {c.decisions.length === 0 && <p className="muted">No decision yet.</p>}
             <ul className="rows">
               {c.decisions.map((d, i) => (
                 <li className="row-item decision" key={i}>
@@ -268,11 +245,12 @@ export function CaseView({ id, view, onView, meta, reload = 0 }: Props) {
           </div>
         </div>
         {c.verdict && (
-          // The engine's own account of this verdict, signed into the pack word for word. It used to sit in the Policy
-          // row's narrow value column, one word per line on a projector.
-          <p className="record-why">
-            <strong>In the engine's words:</strong> {humanise(c.verdict.explanation, titles)}
-          </p>
+          // The engine's own account of this verdict, signed into the pack word for word. Folded: the band already
+          // names the checks it rests on.
+          <details className="record-why fold">
+            <summary>In the engine's words</summary>
+            <p>{humanise(c.verdict.explanation, titles)}</p>
+          </details>
         )}
       </section>
 
@@ -290,4 +268,12 @@ export function CaseView({ id, view, onView, meta, reload = 0 }: Props) {
       )}
     </>
   )
+}
+
+// "check, report and memory", or what she agreed to with what she did not
+function consentWords(k: { check: boolean; report: boolean; memory: boolean }): string {
+  const parts: Array<[string, boolean]> = [['check', k.check], ['report', k.report], ['memory', k.memory]]
+  const yes = parts.filter(([, v]) => v).map(([w]) => w)
+  const no = parts.filter(([, v]) => !v).map(([w]) => w)
+  return `${yes.length ? yes.join(', ') : 'none'}${no.length ? ` · no ${no.join(', no ')}` : ''}`
 }

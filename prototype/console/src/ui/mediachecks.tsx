@@ -143,10 +143,7 @@ export function MediaChecks({ view }: { view: CaseView }) {
         })}
       </ul>
       {error !== null && acc === null && <Trouble error={error} what="the detector accuracy figures" onRetry={retry} />}
-      <p className="muted small">
-        A check that is unsure is not counted. One that found no signs counts 0% and never confirms a file is genuine.
-        {acc && ' The rates come from the Evaluation page.'}
-      </p>
+      <p className="muted small">Unsure is not counted; no signs found never means genuine.</p>
     </section>
   )
 }

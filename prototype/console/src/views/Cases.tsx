@@ -31,10 +31,7 @@ export function Cases({ reload = 0 }: { reload?: number }) {
   return (
     <>
       <header className="page-head">
-        <div className="stack">
-          <h1>Cases this session</h1>
-          <p>Cases live in memory for the demo. In the bank they would sit in the fraud unit's case system with the evidence pack attached.</p>
-        </div>
+        <h1>Cases this session</h1>
         <a className="btn btn-primary" href="#/new">
           Open a new case
         </a>

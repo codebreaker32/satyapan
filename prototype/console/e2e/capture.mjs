@@ -48,6 +48,7 @@ const SHOTS = [
   { name: 'memory', route: '#/memory', ready: '.page-head' },
   { name: 'rulebook', route: '#/rulebook', ready: '.page-head' },
   { name: 'newcase', route: '#/new', ready: 'form, .page-head' },
+  { name: 'evaluation', route: '#/evaluation', ready: '.page-head' },
   { name: 'case-red', scenario: 'S3-ed-summons' },
   { name: 'case-amber', scenario: 'S5c-ed-summons-1h-old' },
   { name: 'case-grey', scenario: 'S5b-real-rbi-advisory' },

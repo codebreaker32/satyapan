@@ -110,8 +110,6 @@ export function Check({ view, titles }: Props) {
         <p className="message-meta">
           {sourceWord[claim.source] ?? claim.source}
           {view.inputs.sender_number ? ` · from ${view.inputs.sender_number}` : ''}
-          {' · extractor '}
-          {claim.extractor}
         </p>
         {claim.read_by_llm && claim.read_by_llm.length > 0 && (
           // The rules-based reader came first; the offline model only filled what it left empty, each part quoted

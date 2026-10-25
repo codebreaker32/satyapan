@@ -80,8 +80,6 @@ export default function App() {
           {meta && (
             <p>
               <strong>{meta.bank_name}</strong>
-              <br />
-              rulebook {meta.rulebook.version} · {meta.policy_version}
             </p>
           )}
           {/* The mock disclosure ran to eleven lines of grey fine print on every screen. It is the honesty asset

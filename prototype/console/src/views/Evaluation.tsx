@@ -54,12 +54,17 @@ export function Evaluation({ reload = 0 }: { reload?: number }) {
         <div className="stack">
           <h1>Evaluation</h1>
           <p>
-            <strong>{result._note}</strong> {s.total} messages, each labelled scam or genuine by what it really is, run through
-            the engine on {result.made}
-            {result.commit ? ` (commit ${result.commit})` : ''}. Rulebook {result.environment.rulebook}; audio detector{' '}
-            {DETECTOR_NAMES[result.environment.audio_detector] ?? result.environment.audio_detector}; meaning model{' '}
-            {result.environment.meaning_model ? 'on' : 'off'}.
+            <strong>{result._note}</strong> {s.total} labelled messages, run on {result.made}.
           </p>
+          <details className="fold">
+            <summary>How it was run</summary>
+            <p>
+              Each message is labelled scam or genuine by what it really is
+              {result.commit ? `; commit ${result.commit}` : ''}. Rulebook {result.environment.rulebook}; audio detector{' '}
+              {DETECTOR_NAMES[result.environment.audio_detector] ?? result.environment.audio_detector}; meaning model{' '}
+              {result.environment.meaning_model ? 'on' : 'off'}.
+            </p>
+          </details>
         </div>
       </header>
 
@@ -83,8 +88,8 @@ export function Evaluation({ reload = 0 }: { reload?: number }) {
           <div className="stack">
             <h3>Scams outside scope ({s.out_of_scope_scams.n})</h3>
             <p>
-              {s.out_of_scope_scams.RED + s.out_of_scope_scams.AMBER} flagged ({s.out_of_scope_scams.flagged_pct}%). Family
-              emergency, lottery, job and similar scams are not what Satyapan checks; they are listed so the gap is visible.
+              {s.out_of_scope_scams.RED + s.out_of_scope_scams.AMBER} flagged ({s.out_of_scope_scams.flagged_pct}%). Lottery, job and
+              family-emergency scams are out of scope.
             </p>
           </div>
         </div>
@@ -201,10 +206,7 @@ function DetectorAccuracy({ reload }: { reload: number }) {
   return (
     <section className="section">
       <h2>Face and voice checks: measured accuracy</h2>
-      <p>
-        {acc._note} Face: {modelWords(acc.models.face)} (revision {revision(acc.models.face)}). Voice: {modelWords(acc.models.voice)} (revision{' '}
-        {revision(acc.models.voice)}). Made {acc.made}.
-      </p>
+      <p>Public clips, never customer data. Made {acc.made}.</p>
       {(['face', 'voice'] as const).map((check) => {
         const rows = acc.cells.filter((c) => c.check === check)
         if (rows.length === 0) return null
@@ -252,19 +254,26 @@ function DetectorAccuracy({ reload }: { reload: number }) {
           </div>
         )
       })}
-      <p className="muted small">
-        Flagged counts in the score; unsure is not counted; declined means the check would not judge the clip (too short, face
-        too small, frames disagree). Sources:{' '}
-        {[...new Set(acc.cells.flatMap((c) => [...c.genuine.sources, ...c.fake.sources]).map(sourceWords))].join('; ')}.
-      </p>
-      <h3>Where it fails</h3>
-      <ul className="stack" style={{ gap: 4 }}>
-        {acc.failure_cases.map((f) => (
-          <li key={f.text}>
-            <b>{f.check}:</b> {f.text}
-          </li>
-        ))}
-      </ul>
+      <details className="fold">
+        <summary>How it was measured, and where it fails</summary>
+        <p>
+          {acc._note} Face: {modelWords(acc.models.face)} (revision {revision(acc.models.face)}). Voice: {modelWords(acc.models.voice)} (revision{' '}
+          {revision(acc.models.voice)}).
+        </p>
+        <p className="muted small">
+          Flagged counts in the score; unsure is not counted; declined means the check would not judge the clip (too short, face
+          too small, frames disagree). Sources:{' '}
+          {[...new Set(acc.cells.flatMap((c) => [...c.genuine.sources, ...c.fake.sources]).map(sourceWords))].join('; ')}.
+        </p>
+        <h3>Where it fails</h3>
+        <ul className="stack" style={{ gap: 4 }}>
+          {acc.failure_cases.map((f) => (
+            <li key={f.text}>
+              <b>{f.check}:</b> {f.text}
+            </li>
+          ))}
+        </ul>
+      </details>
     </section>
   )
 }

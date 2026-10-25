@@ -107,8 +107,8 @@ export function Actions({ view, onView }: Props) {
 
   return (
     <>
-      {/* One slot, always mounted so the change is announced: before a decision it says which action the outcome
-          asks for; once one is recorded it becomes the receipt for it. */}
+      {/* One slot, always mounted so the change is announced: empty before a decision (the emphasised button already
+          says which action the outcome asks for); once one is recorded it becomes the receipt for it. */}
       <div className="act-head" role="status" aria-live="polite">
         {last ? (
           <div className="act-done">
@@ -119,13 +119,7 @@ export function Actions({ view, onView }: Props) {
             </p>
             <p className="act-done-sub">{WAY_BACK[last.action] ?? 'This decision stays in the record.'}</p>
           </div>
-        ) : (
-          <p className="act-note">
-            {urgeHold
-              ? `${outcome} asks you to pause the transfer, so the hold is the emphasised action. Everything else stays open to you.`
-              : `${outcome ?? 'This outcome'} recommends no action, so nothing here is emphasised. The screen advises; you decide.`}
-          </p>
-        )}
+        ) : null}
       </div>
 
       {/* The one place FRMU is spelled out. It is the bank's own word and an officer never needs it expanded, but
@@ -134,7 +128,7 @@ export function Actions({ view, onView }: Props) {
           appears; the buttons below keep the short form the officer actually says. */}
       {(view.review_triggers?.length ?? 0) > 0 && (
         <p className="act-req">
-          <b>Needs FRMU review</b> (the bank's fraud risk management unit) before any high-impact action:{' '}
+          <b>Needs FRMU review:</b>{' '}
           {view.review_triggers!.join('; ')}.
         </p>
       )}
@@ -154,8 +148,7 @@ export function Actions({ view, onView }: Props) {
         </label>
         {unsigned && (
           <p className="act-note" id="act-unsigned">
-            Type your staff id before recording a decision. Every decision is signed into the evidence pack with
-            the name you put here.
+            Type your staff id before recording a decision.
           </p>
         )}
         <button
@@ -181,7 +174,7 @@ export function Actions({ view, onView }: Props) {
           </button>
         </div>
         {!c.consent.report && (
-          <p className="act-fix-note">She did not agree to including this in a report (C2), so reporting is off.</p>
+          <p className="act-fix-note">Reporting is off: no consent to report (C2).</p>
         )}
         {needsCoSign ? (
           <button
@@ -236,13 +229,10 @@ export function Actions({ view, onView }: Props) {
       {/* Not a decision: a correction to what was extracted, which sends the claim back through the rules. It is
           kept out of the decision set and says what pressing it will do. */}
       <div className="actions act-fix" role="group" aria-label="Correct the extraction">
-        <p className="act-fix-note" id="act-fix-note">
-          Read a field wrong? The rules re-run without it.
-        </p>
         {/* Ghost, like the release beside it. The judge counted a block of equal-weight grey buttons as a generic
             tell, and these were not equals: the two onward routes are a pair, the release and the strike are the
             quiet ways back. Weight now says which is which, so the filled grey is spent on the pair alone. */}
-        <button className="btn btn-sm btn-ghost act-quiet" aria-describedby="act-fix-note" disabled={stop || striking || present.length === 0} onClick={() => { setField(present[0][0]); setStriking(true) }}>
+        <button className="btn btn-sm btn-ghost act-quiet" disabled={stop || striking || present.length === 0} onClick={() => { setField(present[0][0]); setStriking(true) }}>
           Strike a wrong field
         </button>
 

@@ -105,8 +105,7 @@ export function Scenarios({ onRun, reload = 0 }: { onRun: (v: CaseView) => void;
           <div className="stack">
             <h1>Check the instruction behind a flagged transfer</h1>
             <p className="lede">
-              The bank paused a transfer. The customer is at the counter with an “official” notice telling her to
-              send the money.
+              The bank paused a transfer; an “official” notice tells the customer to send the money.
             </p>
           </div>
         </header>
@@ -135,8 +134,7 @@ export function Scenarios({ onRun, reload = 0 }: { onRun: (v: CaseView) => void;
         <div className="stack">
           <h1>Check the instruction behind a flagged transfer</h1>
           <p className="lede">
-            The bank paused a transfer. The customer is at the counter with an “official” notice telling her to
-            send the money.
+            The bank paused a transfer; an “official” notice tells the customer to send the money.
           </p>
         </div>
         <a className="btn" href="#/new">
@@ -161,10 +159,7 @@ export function Scenarios({ onRun, reload = 0 }: { onRun: (v: CaseView) => void;
               home screen was a test-runner's name. The claim it was making is worth keeping and belongs here,
               said once, in words anyone in the room can follow. Before a run a row now says nothing at all about
               the answer, which is the stronger version of "nothing is pre-computed". */}
-          <p className="muted">
-            Nothing is pre-computed. Press a row; the engine checks it in front of you, and the committed test
-            suite asserts the same outcome.
-          </p>
+          <p className="muted">Nothing is pre-computed: press a row to run the engine.</p>
         </div>
         <ul className="rows beats">
           {demo.map((s, i) => (
@@ -178,11 +173,6 @@ export function Scenarios({ onRun, reload = 0 }: { onRun: (v: CaseView) => void;
           <summary>
             {controls.length} more cases: controls that should not fire, and further attacks
           </summary>
-          <p className="muted small">
-            Controls: a genuine signed bank SMS, a real RBI advisory, a valid ED summons, and cases that stop at AMBER.
-            Further attacks that should give RED: a copied house-tax notice, an e-challan paid to a person, and a
-            prompt-injection line.
-          </p>
           <ul className="rows">
             {controls.map((s) => (
               <Row key={s.id} s={s} ran={ran[s.id]} running={running} onRun={run} />
@@ -203,9 +193,8 @@ export function Scenarios({ onRun, reload = 0 }: { onRun: (v: CaseView) => void;
           </button>
           {timing && timing.count > 0 && timing.session_p50_verdict_ms != null && (
             <span className="muted small">
-              p50 engine verdict time this session: {fmtVerdictTime(timing.session_p50_verdict_ms)} · engine only, on
-              scenarios that carry their transcripts · session timing, not a benchmark · machine time, while the officer's
-              whole check at the counter is meant to take about 10 seconds
+              p50 engine verdict time this session: {fmtVerdictTime(timing.session_p50_verdict_ms)} · engine only ·
+              session timing, not a benchmark
             </span>
           )}
         </div>

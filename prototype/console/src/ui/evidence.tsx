@@ -79,9 +79,8 @@ export function EvidencePanel({ caseId, signer, version }: { caseId: string; sig
     <div className="stack" style={{ gap: 16 }}>
       {signer?.mock && (
         <p className="notice">
-          <span className="tag tag-sim">Mock signer</span> The signature below is made here with a local Ed25519 key pair, generated on
-          first run into <span className="hash">satyapan/evidence/keys/</span> and never committed. In production the signer would be{' '}
-          {signer.production_source.split(';')[0]}. The full label is in the Signer row below.
+          <span className="tag tag-sim">Mock signer</span> A local Ed25519 key; production would use{' '}
+          {signer.production_source.split(';')[0]}.
         </p>
       )}
       <div className="pack">
@@ -100,12 +99,6 @@ export function EvidencePanel({ caseId, signer, version }: { caseId: string; sig
           {signer ? (
             <>
               {signer.route}
-              {signer.mock && (
-                <>
-                  {' '}
-                  <span className="tag tag-accent">Mock of {signer.production_source}</span>
-                </>
-              )}
             </>
           ) : (
             'local Ed25519 key'

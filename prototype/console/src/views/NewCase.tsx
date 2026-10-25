@@ -159,10 +159,7 @@ export function NewCase({ onView }: { onView: (v: CaseView) => void }) {
   return (
     <form onSubmit={submit}>
       <header className="page-head">
-        <div className="stack">
-          <h1>Open a case</h1>
-          <p>In the bank the flag arrives from transaction monitoring. Here you type it, take consent aloud, and give the check what the customer showed you.</p>
-        </div>
+        <h1>Open a case</h1>
       </header>
 
       <section className="section">
@@ -268,8 +265,7 @@ export function NewCase({ onView }: { onView: (v: CaseView) => void }) {
                   }} accept="audio/*,video/*,image/*,.pdf,.txt,.opus,.weba,.amr,.aac,.m4a,.3gp,.mkv,.mov" />
               </label>
               <p className="muted small">
-                Voice notes and audio (ogg, opus, mp3, wav, m4a, aac, amr), video (mp4, mov, webm, 3gp, mkv), a photo of a notice, a PDF
-                or text, up to 100 MB. The file stays on this laptop.
+                Up to 100 MB. The file stays on this laptop.
               </p>
               <Recorder
                 onDone={(f) => {
@@ -300,7 +296,6 @@ export function NewCase({ onView }: { onView: (v: CaseView) => void }) {
                   </button>
                 </div>
               </div>
-              <p className="muted small">The language the document or recording is in, so it is read correctly.</p>
               <label className="field">
                 <span>Sender or caller number, if known</span>
                 <input className="input" value={sender} onChange={(e) => setSender(e.target.value)} placeholder="+91…" />
@@ -315,7 +310,7 @@ export function NewCase({ onView }: { onView: (v: CaseView) => void }) {
 
         {mode === 'picklist' && (
           <div className="stack" style={{ gap: 16 }}>
-            <p className="muted">The media was deleted or never shown. The officer ticks what the customer says she was told; the issuer rulebook and the bank's records still run.</p>
+            <p className="muted">No media: tick what she was told. The rulebook and the bank's records still run.</p>
             <div className="grid-2">
               <label className="field">
                 <span>Who the caller claimed to be</span>
@@ -595,7 +590,7 @@ function Recorder({ onDone }: { onDone: (f: File) => void }) {
           Recorded {seconds} s, but almost no sound reached the microphone{mic ? ` (“${mic}”)` : ''}. Check that it is the right microphone and is not muted, then record again.
         </p>
       ) : (
-        state === 'done' && <p className="muted small">Recorded {seconds} s. Speech-to-text reads it when you run the check, and its text appears under “What the message claims”.</p>
+        state === 'done' && <p className="muted small">Recorded {seconds} s.</p>
       )}
       {problem && (
         <p className="notice notice-warn" role="alert">
