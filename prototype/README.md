@@ -1,6 +1,6 @@
 # Satyapan · सत्यापन
 
-**Verify the instruction, not the pixels.**
+**Verify the instruction, not just the pixels.**
 
 When a bank's own controls pause a large, unusual transfer, Satyapan helps the fraud-response officer check the
 "official" voice note, video or notice behind it, in about ten seconds, against issuer rules and the bank's own
@@ -133,7 +133,7 @@ resting on different evidence, and one hard rule alone gives AMBER. When media w
 judge it, the instruction checks and the deepfake check count half each, and 40% or more is RED (a very strong
 deepfake alone reaches it). Either way, **a money demand must have been read out of the message**: with no
 instruction and no payee, a RED is capped at AMBER, because a verdict that stops a payment the engine never saw
-contradicts "verify the instruction, not the pixels". "Could not confirm" is never shown as "safe". The card never
+contradicts "verify the instruction, not just the pixels". "Could not confirm" is never shown as "safe". The card never
 says "fake", "genuine" or "fraud" (tests enforce it).
 
 **Rulebook** (`data/rules/rulebook.yaml`): every rule has a primary citation, the date it was checked, sign-off

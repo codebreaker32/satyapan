@@ -35,7 +35,7 @@ from .models import Case, Consent, Flag, Issuer, visible_name
 from .pipeline import STATE_DIR, Satyapan
 from .rules import ISSUER_EN
 
-app = FastAPI(title="Satyapan", version=__version__, description="Verify the instruction, not the pixels.")
+app = FastAPI(title="Satyapan", version=__version__, description="Verify the instruction, not just the pixels.")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"], allow_methods=["*"], allow_headers=["*"])
 
 # The website check answers from the registry records saved on 23 Oct unless SATYAPAN_LIVE_WEB=1, which asks the

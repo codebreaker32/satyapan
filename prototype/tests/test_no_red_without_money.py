@@ -2,7 +2,7 @@
 
 A hackathon judge pasted a genuine, benign bank letter — a head-office recovery cell writing about an overdue home
 loan, no payee account, no money instruction, `instruction=NONE` — and the customer card told a real customer to
-stop. That is the worst defect this product can ship, because "verify the instruction, not the pixels" is its own
+stop. That is the worst defect this product can ship, because "verify the instruction, not just the pixels" is its own
 sentence: a verdict that fires when nothing about money was read contradicts the thing we claim to do.
 
 The invariant lives in `fusion.fuse`, next to the two-families rule, and is the last thing checked before a RED is

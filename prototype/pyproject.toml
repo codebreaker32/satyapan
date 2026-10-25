@@ -1,7 +1,7 @@
 [project]
 name = "satyapan"
 version = "0.1.0"
-description = "Satyapan: verify the instruction, not the pixels. Bank-side verification of 'official' communications behind flagged transfers."
+description = "Satyapan: verify the instruction, not just the pixels. Bank-side verification of 'official' communications behind flagged transfers."
 requires-python = ">=3.11"
 dependencies = [
   "pydantic>=2",

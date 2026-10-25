@@ -67,7 +67,7 @@ export default function App() {
           </a>
           {/* The product's own sentence, under its name. It used to sit in the rail's foot in small grey type,
               below a column of empty dark, which is the last place anyone reads. */}
-          <p className="rail-line">Verify the instruction, not the pixels.</p>
+          <p className="rail-line">Verify the instruction, not just the pixels.</p>
         </div>
         <nav className="nav" aria-label="Sections">
           {NAV.map((n) => (

@@ -306,7 +306,7 @@ def cmd_evaluate(args) -> int:
 
 
 def main(argv=None) -> int:
-    p = argparse.ArgumentParser(prog="satyapan", description="Verify the instruction, not the pixels.")
+    p = argparse.ArgumentParser(prog="satyapan", description="Verify the instruction, not just the pixels.")
     sub = p.add_subparsers(dest="cmd", required=True)
     d = sub.add_parser("demo", help="run the finale scenarios from data/fixtures/scenarios.json")
     d.add_argument("--lang", default="hi", choices=["hi", "en"])

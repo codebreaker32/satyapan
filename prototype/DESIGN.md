@@ -63,7 +63,7 @@ set, not outside it. Closing those is a backlog item, not a claim this file may 
 ## Layout
 
 - Shell: 224px sticky rail (`--shell`) with the bilingual wordmark, the product's own sentence under it ("Verify
-  the instruction, not the pixels", which used to sit at the foot below a column of empty dark), and Scenarios /
+  the instruction, not just the pixels", which used to sit at the foot below a column of empty dark), and Scenarios /
   Cases / Memory / Rulebook; content column fills the rest. **The active item is a 3px accent thread down its
   left edge with the full ink beside it, never a filled pill** (19 Oct). Two reasons: a filled highlight pill is
   the admin-template signature and the judge named it a generic tell on the main path every pass; and the accent

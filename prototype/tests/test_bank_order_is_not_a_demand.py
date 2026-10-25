@@ -14,7 +14,7 @@ verb list is not what does this: the sentences below use `deposit`, `arrange the
 which strings land on it.
 
 What the extractor does here is right, and that is the reason this is not an extractor fix: these letters DO
-instruct a payment. "Verify the instruction, not the pixels" is the product's own sentence, and the instruction
+instruct a payment. "Verify the instruction, not just the pixels" is the product's own sentence, and the instruction
 is real. What is wrong is a rule that reads "the bank asked for money" as "the bank never asks for money".
 
 The assertions are `xfail(strict=True)`, so the day the structure changes they XPASS, this file fails loudly, and

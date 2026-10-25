@@ -26,7 +26,7 @@ When a bank's existing controls pause a large, unusual transfer, Satyapan lets t
 
 ## Positioning
 
-"Verify the instruction, not the pixels." Detectors chase every new generator and lose 45–50% accuracy on real 2024 deepfakes. Satyapan checks facts the scam cannot fake: whether the authority could ever have sent that instruction (no "digital arrest" exists in Indian law; ED summonses carry a verifiable passcode; RBI gives no investment advice) and what the bank itself knows (we never sent this message; that refund never arrived; the "RBI account" belongs to a private firm). A perfect deepfake still fails because the instruction is impossible. Only a bank can run the bank-truth checks, which is why it lives at the bank's pause and is owned by its fraud unit.
+"Verify the instruction, not just the pixels." Detectors chase every new generator and lose 45–50% accuracy on real 2024 deepfakes. Satyapan checks facts the scam cannot fake: whether the authority could ever have sent that instruction (no "digital arrest" exists in Indian law; ED summonses carry a verifiable passcode; RBI gives no investment advice) and what the bank itself knows (we never sent this message; that refund never arrived; the "RBI account" belongs to a private firm). A perfect deepfake still fails because the instruction is impossible. Only a bank can run the bank-truth checks, which is why it lives at the bank's pause and is owned by its fraud unit.
 
 ## Operating Context
 
