@@ -79,6 +79,8 @@ export function Check({ view, titles }: Props) {
     return set
   }, [lit, pairs])
 
+  const flagPayee = Boolean(view.case.flag.payee_vpa || view.case.flag.payee_account)
+  const flagNoted = noted.some((s) => s.reason_en.startsWith('Bank flag: '))
   const neededMeta = useMemo(() => new Set(pairs.map((p) => p.to).filter((t) => t.startsWith('meta:'))), [pairs])
   const pinnedSignal = pinned?.kind === 'signal' ? pinned.id : null
 
@@ -163,21 +165,25 @@ export function Check({ view, titles }: Props) {
               compared as a fingerprint of the full text
             </MetaRow>
           )}
-          <MetaRow {...rowProps('meta:flag')} label="Bank flag">
-            {view.case.flag.reason}
-            {view.case.flag.amount_inr > 0 && !spellsAmount(view.case.flag.reason) && (
-              <>
-                {' · '}
-                <Rupee n={view.case.flag.amount_inr} />
-              </>
-            )}
-            {(view.case.flag.payee_vpa || view.case.flag.payee_account) && (
-              <>
-                {' · paying to '}
-                <span className="hash">{view.case.flag.payee_vpa || view.case.flag.payee_account}</span>
-              </>
-            )}
-          </MetaRow>
+          {/* The flag's reason already sits under "Also noted, never counted" as a context cue; show the row only
+              when a check points at it or it carries a payee that cue does not. */}
+          {(neededMeta.has('meta:flag') || flagPayee || !flagNoted) && (
+            <MetaRow {...rowProps('meta:flag')} label="Bank flag">
+              {view.case.flag.reason}
+              {view.case.flag.amount_inr > 0 && !spellsAmount(view.case.flag.reason) && (
+                <>
+                  {' · '}
+                  <Rupee n={view.case.flag.amount_inr} />
+                </>
+              )}
+              {(view.case.flag.payee_vpa || view.case.flag.payee_account) && (
+                <>
+                  {' · paying to '}
+                  <span className="hash">{view.case.flag.payee_vpa || view.case.flag.payee_account}</span>
+                </>
+              )}
+            </MetaRow>
+          )}
         </div>
         {noted.length > 0 && (
           <div className="noted">
@@ -214,9 +220,7 @@ export function Check({ view, titles }: Props) {
           {features.length === 0 && (
             <li className="feat feat-empty">
               <p>No rule fired on this message.</p>
-              <p className="muted">
-                The check ran and found nothing to report. That is not a confirmation that the message is safe.
-              </p>
+              <p className="muted">That is not a confirmation that the message is safe.</p>
             </li>
           )}
         </ul>
